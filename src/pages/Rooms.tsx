@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Users, Maximize2, Wifi, Wind, Coffee, Bath, Check } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
-import roomSuite from "@/assets/room-suite.jpg";
-import roomDeluxe from "@/assets/room-deluxe.jpg";
-import roomStandard from "@/assets/room-standard.jpg";
+import { supabase } from "@/integrations/supabase/client";
+import roomSuiteImg from "@/assets/room-suite.jpg";
+import roomDeluxeImg from "@/assets/room-deluxe.jpg";
+import roomStandardImg from "@/assets/room-standard.jpg";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -15,41 +16,11 @@ const fadeUp = {
   transition: { duration: 0.7 },
 };
 
-const allRooms = [
-  {
-    id: "royal-suite",
-    name: "Royal Suite",
-    category: "Suite",
-    price: 350,
-    size: "65m²",
-    guests: 2,
-    image: roomSuite,
-    description: "Our most prestigious accommodation features a private terrace with panoramic medina views, a sitting area with traditional Moroccan salon, and a marble bathroom with hammam-inspired shower.",
-    amenities: ["King bed", "Private terrace", "Marble bathroom", "Air conditioning", "Free WiFi", "Breakfast included", "Bathrobes & slippers", "Mini bar", "Nespresso machine", "Room service"],
-  },
-  {
-    id: "deluxe-room",
-    name: "Deluxe Room",
-    category: "Deluxe",
-    price: 220,
-    size: "40m²",
-    guests: 2,
-    image: roomDeluxe,
-    description: "Spacious and elegantly appointed, our Deluxe Rooms feature hand-carved cedarwood ceilings, zellige tile accents, and views overlooking the courtyard or the medina rooftops.",
-    amenities: ["Queen bed", "Courtyard view", "En-suite bathroom", "Air conditioning", "Free WiFi", "Breakfast included", "Bathrobes", "Safe box"],
-  },
-  {
-    id: "standard-room",
-    name: "Standard Room",
-    category: "Standard",
-    price: 150,
-    size: "25m²",
-    guests: 2,
-    image: roomStandard,
-    description: "Cozy and charming, our Standard Rooms offer all the essential comforts wrapped in authentic Moroccan decor with traditional textiles and artisanal details.",
-    amenities: ["Double bed", "Garden view", "Private bathroom", "Air conditioning", "Free WiFi", "Breakfast included"],
-  },
-];
+const imageMap: Record<string, string> = {
+  "royal-suite": roomSuiteImg,
+  "deluxe-room": roomDeluxeImg,
+  "standard-room": roomStandardImg,
+};
 
 const categories = ["All", "Suite", "Deluxe", "Standard"];
 
@@ -64,12 +35,20 @@ const amenityIcons: Record<string, typeof Wifi> = {
 
 const Rooms = () => {
   const [filter, setFilter] = useState("All");
-  const filtered = filter === "All" ? allRooms : allRooms.filter((r) => r.category === filter);
+  const [rooms, setRooms] = useState<any[]>([]);
+
+  useEffect(() => {
+    supabase.from("rooms").select("*").eq("is_available", true).order("price_per_night", { ascending: false }).then(({ data }) => {
+      if (data) setRooms(data);
+    });
+  }, []);
+
+  const filtered = filter === "All" ? rooms : rooms.filter((r) => r.category === filter);
 
   return (
     <Layout>
       <section className="relative h-[50vh] min-h-[350px] flex items-center justify-center overflow-hidden">
-        <img src={roomSuite} alt="Luxury suite" className="absolute inset-0 w-full h-full object-cover" width={1024} height={1024} />
+        <img src={roomSuiteImg} alt="Luxury suite" className="absolute inset-0 w-full h-full object-cover" width={1024} height={1024} />
         <div className="overlay-dark" />
         <div className="relative z-10 text-center px-4">
           <p className="text-gold-light text-sm tracking-[0.4em] uppercase font-body mb-4">Accommodations</p>
@@ -99,18 +78,18 @@ const Rooms = () => {
             {filtered.map((room, i) => (
               <motion.div key={room.id} {...fadeUp} transition={{ delay: i * 0.1, duration: 0.7 }} className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
                 <div className={`overflow-hidden aspect-[4/3] ${i % 2 === 1 ? "lg:order-2" : ""}`}>
-                  <img src={room.image} alt={room.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" width={1280} height={960} />
+                  <img src={imageMap[room.slug] || roomSuiteImg} alt={room.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" width={1280} height={960} />
                 </div>
                 <div>
                   <h3 className="text-2xl sm:text-3xl font-display font-bold text-charcoal mb-2">{room.name}</h3>
                   <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground font-body">
                     <span className="flex items-center gap-1"><Maximize2 className="w-4 h-4" /> {room.size}</span>
-                    <span className="flex items-center gap-1"><Users className="w-4 h-4" /> {room.guests} Guests</span>
+                    <span className="flex items-center gap-1"><Users className="w-4 h-4" /> {room.max_guests} Guests</span>
                   </div>
                   <div className="moroccan-divider !mx-0 mb-4" />
                   <p className="text-muted-foreground font-body leading-relaxed mb-6">{room.description}</p>
                   <div className="grid grid-cols-2 gap-2 mb-6">
-                    {room.amenities.map((a) => {
+                    {(room.amenities || []).map((a: string) => {
                       const Icon = amenityIcons[a] || Check;
                       return (
                         <div key={a} className="flex items-center gap-2 text-sm text-charcoal-light font-body">
@@ -122,7 +101,7 @@ const Rooms = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-sm text-muted-foreground font-body">From </span>
-                      <span className="text-2xl font-display font-bold text-gold">€{room.price}</span>
+                      <span className="text-2xl font-display font-bold text-gold">€{room.price_per_night}</span>
                       <span className="text-sm text-muted-foreground font-body"> / night</span>
                     </div>
                     <Link to={`/booking?room=${room.id}`} className="btn-luxury text-xs">Book Now</Link>
