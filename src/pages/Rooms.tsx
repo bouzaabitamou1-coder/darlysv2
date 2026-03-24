@@ -125,7 +125,7 @@ const Rooms = () => {
                       <span className="text-2xl font-display font-bold text-gold">€{room.price}</span>
                       <span className="text-sm text-muted-foreground font-body"> / night</span>
                     </div>
-                    <Link to="/contact" className="btn-luxury text-xs">Book Now</Link>
+                    <Link to={`/booking?room=${room.id}`} className="btn-luxury text-xs">Book Now</Link>
                   </div>
                 </div>
               </motion.div>
