@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
 import Layout from "@/components/layout/Layout";
+import { supabase } from "@/integrations/supabase/client";
 import SectionHeading from "@/components/ui/SectionHeading";
 import heroImage from "@/assets/hero-riad.jpg";
 import { toast } from "sonner";
