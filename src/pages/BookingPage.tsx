@@ -303,11 +303,11 @@ const BookingPage = () => {
 // Room selector for when no room is pre-selected
 const RoomSelector = ({ onSelect }: { onSelect: (room: any) => void }) => {
   const [rooms, setRooms] = useState<any[]>([]);
-  useState(() => {
+  useEffect(() => {
     supabase.from("rooms").select("*").eq("is_available", true).then(({ data }) => {
       if (data) setRooms(data);
     });
-  });
+  }, []);
 
   return (
     <div className="space-y-2">
