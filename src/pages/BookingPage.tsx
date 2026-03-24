@@ -34,13 +34,21 @@ const BookingPage = () => {
   const [step, setStep] = useState(1);
 
   // Load room data
-  useState(() => {
+  useEffect(() => {
     if (roomSlug) {
       supabase.from("rooms").select("*").eq("slug", roomSlug).single().then(({ data }) => {
         if (data) setRoom(data);
       });
+    } else {
+      // Try loading by ID (from query param)
+      const roomId = searchParams.get("room");
+      if (roomId) {
+        supabase.from("rooms").select("*").eq("id", roomId).single().then(({ data }) => {
+          if (data) setRoom(data);
+        });
+      }
     }
-  });
+  }, [roomSlug]);
 
   const nights = form.checkIn && form.checkOut
     ? Math.max(1, Math.ceil((new Date(form.checkOut).getTime() - new Date(form.checkIn).getTime()) / (1000 * 60 * 60 * 24)))
