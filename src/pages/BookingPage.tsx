@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Calendar, Users, CreditCard, ChevronRight } from "lucide-react";
@@ -34,13 +34,21 @@ const BookingPage = () => {
   const [step, setStep] = useState(1);
 
   // Load room data
-  useState(() => {
+  useEffect(() => {
     if (roomSlug) {
       supabase.from("rooms").select("*").eq("slug", roomSlug).single().then(({ data }) => {
         if (data) setRoom(data);
       });
+    } else {
+      // Try loading by ID (from query param)
+      const roomId = searchParams.get("room");
+      if (roomId) {
+        supabase.from("rooms").select("*").eq("id", roomId).single().then(({ data }) => {
+          if (data) setRoom(data);
+        });
+      }
     }
-  });
+  }, [roomSlug]);
 
   const nights = form.checkIn && form.checkOut
     ? Math.max(1, Math.ceil((new Date(form.checkOut).getTime() - new Date(form.checkIn).getTime()) / (1000 * 60 * 60 * 24)))
@@ -295,11 +303,11 @@ const BookingPage = () => {
 // Room selector for when no room is pre-selected
 const RoomSelector = ({ onSelect }: { onSelect: (room: any) => void }) => {
   const [rooms, setRooms] = useState<any[]>([]);
-  useState(() => {
+  useEffect(() => {
     supabase.from("rooms").select("*").eq("is_available", true).then(({ data }) => {
       if (data) setRooms(data);
     });
-  });
+  }, []);
 
   return (
     <div className="space-y-2">

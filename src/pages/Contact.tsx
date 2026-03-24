@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
 import Layout from "@/components/layout/Layout";
+import { supabase } from "@/integrations/supabase/client";
 import SectionHeading from "@/components/ui/SectionHeading";
 import heroImage from "@/assets/hero-riad.jpg";
 import { toast } from "sonner";
@@ -17,18 +18,26 @@ const Contact = () => {
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
       toast.error("Please fill in all required fields.");
       return;
     }
     setSending(true);
-    setTimeout(() => {
-      setSending(false);
+    const { error } = await supabase.from("contact_messages").insert({
+      name: form.name.trim(),
+      email: form.email.trim(),
+      subject: form.subject.trim() || null,
+      message: form.message.trim(),
+    });
+    setSending(false);
+    if (error) {
+      toast.error("Failed to send message. Please try again.");
+    } else {
       toast.success("Thank you! Your message has been sent successfully.");
       setForm({ name: "", email: "", subject: "", message: "" });
-    }, 1500);
+    }
   };
 
   return (
