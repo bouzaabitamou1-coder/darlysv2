@@ -24,7 +24,11 @@ const SectionHeading = ({ subtitle, title, description, light, align = "center" 
     <h2 className={`text-3xl sm:text-4xl lg:text-5xl font-display font-bold leading-tight ${light ? "text-cream" : "text-charcoal"}`}>
       {title}
     </h2>
-    {align === "center" && <div className="moroccan-divider mt-6" />}
+    {align === "center" && (
+      <div className="star-separator">
+        <span className="text-gold text-sm">✦</span>
+      </div>
+    )}
     {description && (
       <p className={`mt-6 max-w-2xl text-base leading-relaxed font-body ${align === "center" ? "mx-auto" : ""} ${light ? "text-cream/70" : "text-muted-foreground"}`}>
         {description}
