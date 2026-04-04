@@ -2,8 +2,10 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
-import galleryCourtyard from "@/assets/gallery-courtyard.jpg";
-import heroImage from "@/assets/hero-riad.jpg";
+import darlysDetail from "@/assets/darlys-detail.jpg";
+import darlysExterior from "@/assets/darlys-exterior.jpg";
+import darlysPatioHero from "@/assets/darlys-patio-hero.jpg";
+import darlysHero from "@/assets/darlys-hero-1.jpg";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -22,7 +24,7 @@ const values = [
 const About = () => (
   <Layout>
     <section className="relative h-[60vh] min-h-[400px] flex items-center justify-center overflow-hidden">
-      <img src={heroImage} alt="Dar Lys riad" className="absolute inset-0 w-full h-full object-cover" width={1920} height={1080} />
+      <img src={darlysPatioHero} alt="Dar Lys patio" className="absolute inset-0 w-full h-full object-cover" width={1920} height={1080} />
       <div className="overlay-dark" />
       <div className="relative z-10 text-center px-4">
         <p className="text-gold-light text-sm tracking-[0.4em] uppercase font-body mb-4">Our Story</p>
@@ -38,17 +40,17 @@ const About = () => (
             <h2 className="text-3xl sm:text-4xl font-display font-bold text-charcoal leading-tight mb-6">A Legacy Reimagined</h2>
             <div className="moroccan-divider !mx-0 mb-6" />
             <p className="text-muted-foreground leading-relaxed mb-4 font-body">
-              Originally built in the 18th century, Dar Lys was once the private residence of a prominent Fassi merchant family. For generations, its walls witnessed celebrations, scholarly gatherings, and the daily rhythms of life in the medina.
+              Dar Lys is the new address in the heart of the Fès medina, offering a charming stay in the spiritual capital. Tadelakt walls harmoniously blend with zellige and stucco in lily or honeycomb patterns.
             </p>
             <p className="text-muted-foreground leading-relaxed mb-4 font-body">
-              In 2008, a team of passionate artisans and designers embarked on a meticulous restoration, preserving every piece of zellige, carved plaster, and cedarwood while introducing modern comforts that today's travelers expect.
+              Carefully chosen artworks and objects complement the furniture, inspired by Moroccan craftsmanship and culture. Dar Lys was entirely built in the spirit of the medina and the ancient Fassi residences.
             </p>
             <p className="text-muted-foreground leading-relaxed font-body">
-              Today, Dar Lys stands as a testament to the enduring beauty of Moroccan architecture — a place where history breathes through every archway and where guests discover the true essence of Fassi hospitality.
+              Dar Lys invites you on a journey of discovery, to experience the new face of Fès — anchored in its traditions and open to the world.
             </p>
           </motion.div>
           <motion.div {...fadeUp} transition={{ delay: 0.2, duration: 0.7 }}>
-            <img src={galleryCourtyard} alt="Courtyard" className="w-full aspect-[4/5] object-cover" loading="lazy" width={1280} height={960} />
+            <img src={darlysDetail} alt="Architectural detail" className="w-full aspect-[4/5] object-cover" loading="lazy" width={1280} height={960} />
           </motion.div>
         </div>
       </div>
@@ -69,7 +71,7 @@ const About = () => (
     </section>
 
     <section className="relative py-24 overflow-hidden">
-      <img src={heroImage} alt="Riad atmosphere" className="absolute inset-0 w-full h-full object-cover" loading="lazy" width={1920} height={1080} />
+      <img src={darlysExterior} alt="Dar Lys exterior" className="absolute inset-0 w-full h-full object-cover" loading="lazy" width={1920} height={1080} />
       <div className="overlay-dark" />
       <div className="relative z-10 text-center px-4">
         <motion.div {...fadeUp}>

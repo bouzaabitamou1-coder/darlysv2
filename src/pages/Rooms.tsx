@@ -5,9 +5,11 @@ import { Users, Maximize2, Wifi, Wind, Coffee, Bath, Check } from "lucide-react"
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { supabase } from "@/integrations/supabase/client";
-import roomSuiteImg from "@/assets/room-suite.jpg";
-import roomDeluxeImg from "@/assets/room-deluxe.jpg";
-import roomStandardImg from "@/assets/room-standard.jpg";
+import roomHeroBanner from "@/assets/room-hero-banner.jpg";
+import roomClassique from "@/assets/room-classique.jpg";
+import roomDeluxe from "@/assets/room-deluxe.jpg";
+import roomSuperieure from "@/assets/room-superieure.jpg";
+import roomFamily from "@/assets/room-family.jpg";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -17,9 +19,13 @@ const fadeUp = {
 };
 
 const imageMap: Record<string, string> = {
-  "royal-suite": roomSuiteImg,
-  "deluxe-room": roomDeluxeImg,
-  "standard-room": roomStandardImg,
+  "royal-suite": roomSuperieure,
+  "deluxe-room": roomDeluxe,
+  "standard-room": roomClassique,
+  "la-classique": roomClassique,
+  "la-deluxe": roomDeluxe,
+  "la-superieure": roomSuperieure,
+  "la-lys-family": roomFamily,
 };
 
 const categories = ["All", "Suite", "Deluxe", "Standard"];
@@ -48,7 +54,7 @@ const Rooms = () => {
   return (
     <Layout>
       <section className="relative h-[50vh] min-h-[350px] flex items-center justify-center overflow-hidden">
-        <img src={roomSuiteImg} alt="Luxury suite" className="absolute inset-0 w-full h-full object-cover" width={1024} height={1024} />
+        <img src={roomHeroBanner} alt="Luxury suite" className="absolute inset-0 w-full h-full object-cover" width={1024} height={1024} />
         <div className="overlay-dark" />
         <div className="relative z-10 text-center px-4">
           <p className="text-gold-light text-sm tracking-[0.4em] uppercase font-body mb-4">Accommodations</p>
@@ -78,7 +84,7 @@ const Rooms = () => {
             {filtered.map((room, i) => (
               <motion.div key={room.id} {...fadeUp} transition={{ delay: i * 0.1, duration: 0.7 }} className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
                 <div className={`overflow-hidden aspect-[4/3] ${i % 2 === 1 ? "lg:order-2" : ""}`}>
-                  <img src={imageMap[room.slug] || roomSuiteImg} alt={room.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" width={1280} height={960} />
+                  <img src={imageMap[room.slug] || roomDeluxe} alt={room.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" width={1280} height={960} />
                 </div>
                 <div>
                   <h3 className="text-2xl sm:text-3xl font-display font-bold text-charcoal mb-2">{room.name}</h3>
