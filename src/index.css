@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -47,10 +47,13 @@
     --terracotta: 15 50% 55%;
     --olive: 80 20% 40%;
     --teal: 180 25% 35%;
+    --morocco-green: 160 35% 30%;
+    --morocco-red: 5 55% 45%;
 
     --font-display: 'Playfair Display', serif;
     --font-body: 'Inter', sans-serif;
     --font-accent: 'Cormorant Garamond', serif;
+    --font-arabic: 'Amiri', serif;
 
     --shadow-luxury: 0 4px 30px -5px hsl(36 45% 60% / 0.15);
     --shadow-card: 0 2px 20px -4px hsl(20 10% 15% / 0.08);
@@ -91,6 +94,10 @@
     font-family: var(--font-accent);
   }
 
+  .text-arabic {
+    font-family: var(--font-arabic);
+  }
+
   .section-padding {
     @apply px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-28;
   }
@@ -99,8 +106,37 @@
     @apply max-w-7xl mx-auto;
   }
 
+  /* Traditional Moroccan zellige-inspired divider */
   .moroccan-divider {
-    @apply w-20 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto;
+    @apply w-24 h-px mx-auto relative;
+    background: linear-gradient(90deg, transparent, hsl(var(--gold)) 20%, hsl(var(--gold)) 80%, transparent);
+  }
+
+  .moroccan-divider::before {
+    content: '✦';
+    @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2;
+    color: hsl(var(--gold));
+    font-size: 10px;
+    background: inherit;
+  }
+
+  /* Moroccan arch frame for images */
+  .moroccan-arch {
+    clip-path: polygon(0% 15%, 5% 8%, 15% 3%, 30% 0.5%, 50% 0%, 70% 0.5%, 85% 3%, 95% 8%, 100% 15%, 100% 100%, 0% 100%);
+  }
+
+  /* Zellige pattern overlay */
+  .zellige-pattern {
+    background-image: 
+      repeating-linear-gradient(45deg, transparent, transparent 10px, hsl(var(--gold) / 0.03) 10px, hsl(var(--gold) / 0.03) 11px),
+      repeating-linear-gradient(-45deg, transparent, transparent 10px, hsl(var(--gold) / 0.03) 10px, hsl(var(--gold) / 0.03) 11px);
+  }
+
+  /* Subtle arabesque border */
+  .arabesque-border {
+    border-image: linear-gradient(90deg, transparent, hsl(var(--gold) / 0.4), hsl(var(--gold)), hsl(var(--gold) / 0.4), transparent) 1;
+    border-width: 1px 0;
+    border-style: solid;
   }
 
   .gold-gradient {
@@ -117,6 +153,11 @@
   .overlay-dark {
     @apply absolute inset-0;
     background: linear-gradient(180deg, hsl(var(--charcoal) / 0.3) 0%, hsl(var(--charcoal) / 0.6) 100%);
+  }
+
+  .overlay-warm {
+    @apply absolute inset-0;
+    background: linear-gradient(180deg, hsl(var(--warm-brown) / 0.2) 0%, hsl(var(--charcoal) / 0.6) 100%);
   }
 
   .overlay-gold {
@@ -177,6 +218,27 @@
   .card-luxury:hover {
     box-shadow: var(--shadow-elevated);
     transform: translateY(-4px);
+  }
+
+  /* Traditional section with warm bg */
+  .section-warm {
+    background: linear-gradient(180deg, hsl(var(--cream-dark)) 0%, hsl(var(--cream)) 100%);
+  }
+
+  /* Ornamental star separator */
+  .star-separator {
+    @apply flex items-center justify-center gap-3 my-8;
+  }
+
+  .star-separator::before,
+  .star-separator::after {
+    content: '';
+    @apply h-px flex-1 max-w-[80px];
+    background: linear-gradient(90deg, transparent, hsl(var(--gold) / 0.5));
+  }
+
+  .star-separator::after {
+    background: linear-gradient(90deg, hsl(var(--gold) / 0.5), transparent);
   }
 }
 
