@@ -2,14 +2,27 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
-import heroImage from "@/assets/hero-riad.jpg";
-import roomSuite from "@/assets/room-suite.jpg";
+import heroImage from "@/assets/darlys-hero-1.jpg";
+import heroImage2 from "@/assets/darlys-hero-2.jpg";
+import patioHero from "@/assets/darlys-patio-hero.jpg";
+import patio from "@/assets/darlys-patio.jpg";
+import exterior from "@/assets/darlys-exterior.jpg";
+import detail from "@/assets/darlys-detail.jpg";
+import salon from "@/assets/gallery-salon.jpg";
+import terrasse from "@/assets/gallery-terrasse.jpg";
+import patioFull from "@/assets/gallery-patio-full.jpg";
+import roomClassique from "@/assets/room-classique.jpg";
 import roomDeluxe from "@/assets/room-deluxe.jpg";
-import roomStandard from "@/assets/room-standard.jpg";
-import restaurantImg from "@/assets/restaurant.jpg";
-import spaImg from "@/assets/spa.jpg";
-import galleryCourtyard from "@/assets/gallery-courtyard.jpg";
-import galleryTea from "@/assets/gallery-tea.jpg";
+import roomSuperieure from "@/assets/room-superieure.jpg";
+import roomFamily from "@/assets/room-family.jpg";
+import restaurantZahra from "@/assets/restaurant-zahra.jpg";
+import restaurantPatio from "@/assets/restaurant-patio.jpg";
+import restaurantBar from "@/assets/restaurant-bar.jpg";
+import spaHammam from "@/assets/spa-hammam.jpg";
+import spaGallery1 from "@/assets/spa-gallery-1.jpg";
+import spaBeauty from "@/assets/spa-beauty.jpg";
+import gallerySpaDetail from "@/assets/gallery-spa-detail.jpg";
+import galleryBar from "@/assets/gallery-bar.jpg";
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
@@ -19,14 +32,27 @@ const fadeUp = {
 };
 
 const allImages = [
-  { src: heroImage, category: "Riad", alt: "Riad courtyard at night" },
-  { src: roomSuite, category: "Rooms", alt: "Royal suite" },
-  { src: roomDeluxe, category: "Rooms", alt: "Deluxe room" },
-  { src: roomStandard, category: "Rooms", alt: "Standard room" },
-  { src: restaurantImg, category: "Dining", alt: "Rooftop restaurant" },
-  { src: spaImg, category: "Spa", alt: "Spa and hammam" },
-  { src: galleryCourtyard, category: "Riad", alt: "Courtyard with fountain" },
-  { src: galleryTea, category: "Dining", alt: "Moroccan tea ceremony" },
+  { src: heroImage, category: "Riad", alt: "Dar Lys entrance" },
+  { src: heroImage2, category: "Riad", alt: "Dar Lys courtyard" },
+  { src: patioHero, category: "Riad", alt: "Patio panoramic view" },
+  { src: patio, category: "Riad", alt: "Patio with fountain" },
+  { src: exterior, category: "Riad", alt: "Riad exterior view" },
+  { src: detail, category: "Riad", alt: "Architectural detail" },
+  { src: salon, category: "Riad", alt: "Lounge salon" },
+  { src: terrasse, category: "Riad", alt: "Panoramic terrace" },
+  { src: patioFull, category: "Riad", alt: "Patio full view" },
+  { src: roomClassique, category: "Rooms", alt: "La Classique room" },
+  { src: roomDeluxe, category: "Rooms", alt: "La Deluxe room" },
+  { src: roomSuperieure, category: "Rooms", alt: "La Supérieure room" },
+  { src: roomFamily, category: "Rooms", alt: "La Lys Family room" },
+  { src: restaurantZahra, category: "Dining", alt: "Restaurant Zahra" },
+  { src: restaurantPatio, category: "Dining", alt: "Patio dining" },
+  { src: restaurantBar, category: "Dining", alt: "Le Syl Bar" },
+  { src: galleryBar, category: "Dining", alt: "Bar ambiance" },
+  { src: spaHammam, category: "Spa", alt: "Hammam treatments" },
+  { src: spaGallery1, category: "Spa", alt: "Spa interior" },
+  { src: spaBeauty, category: "Spa", alt: "Beauty center" },
+  { src: gallerySpaDetail, category: "Spa", alt: "Spa detail" },
 ];
 
 const categories = ["All", "Riad", "Rooms", "Dining", "Spa"];
@@ -39,7 +65,7 @@ const Gallery = () => {
   return (
     <Layout>
       <section className="relative h-[50vh] min-h-[350px] flex items-center justify-center overflow-hidden">
-        <img src={galleryCourtyard} alt="Gallery" className="absolute inset-0 w-full h-full object-cover" width={1280} height={960} />
+        <img src={patioHero} alt="Gallery" className="absolute inset-0 w-full h-full object-cover" width={1280} height={960} />
         <div className="overlay-dark" />
         <div className="relative z-10 text-center px-4">
           <p className="text-gold-light text-sm tracking-[0.4em] uppercase font-body mb-4">Visual Journey</p>

@@ -3,13 +3,16 @@ import { motion } from "framer-motion";
 import { Star, Utensils, Sparkles, ArrowRight } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
-import heroImage from "@/assets/hero-riad.jpg";
-import roomSuite from "@/assets/room-suite.jpg";
+import heroImage from "@/assets/darlys-hero-1.jpg";
+import heroImage2 from "@/assets/darlys-patio-hero.jpg";
 import roomDeluxe from "@/assets/room-deluxe.jpg";
-import restaurantImg from "@/assets/restaurant.jpg";
-import spaImg from "@/assets/spa.jpg";
-import galleryCourtyard from "@/assets/gallery-courtyard.jpg";
+import roomClassique from "@/assets/room-classique.jpg";
+import restaurantImg from "@/assets/darlys-restaurant.jpg";
+import spaImg from "@/assets/spa-hammam.jpg";
+import galleryCourtyard from "@/assets/darlys-patio.jpg";
 import galleryTea from "@/assets/gallery-tea.jpg";
+import darlysExterior from "@/assets/darlys-exterior.jpg";
+import gallerySalon from "@/assets/gallery-salon.jpg";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -83,7 +86,7 @@ const AboutPreview = () => (
           </h2>
           <div className="moroccan-divider !mx-0 mb-6" />
           <p className="text-muted-foreground leading-relaxed mb-4 font-body">
-            Nestled within the labyrinthine streets of the Fès medina, Dar Lys is a meticulously restored 18th-century riad that offers an oasis of calm and luxury. Every corner tells a story of Moroccan craftsmanship — from intricate zellige tilework to hand-carved cedarwood ceilings.
+            Nestled within the labyrinthine streets of the Fès medina, Dar Lys is a meticulously restored riad that offers an oasis of calm and luxury. Every corner tells a story of Moroccan craftsmanship — from intricate zellige tilework to hand-carved cedarwood ceilings.
           </p>
           <p className="text-muted-foreground leading-relaxed mb-8 font-body">
             Our philosophy is simple: blend the authentic spirit of Moroccan hospitality with the refinement of modern luxury, creating unforgettable moments for every guest.
@@ -105,8 +108,8 @@ const AboutPreview = () => (
 );
 
 const rooms = [
-  { name: "Royal Suite", price: "350", size: "65m²", image: roomSuite, desc: "The epitome of luxury with private terrace and panoramic views" },
-  { name: "Deluxe Room", price: "220", size: "40m²", image: roomDeluxe, desc: "Elegant comfort with traditional Moroccan design elements" },
+  { name: "La Deluxe", price: "350", size: "30m²", image: roomDeluxe, desc: "Spacious and refined with a relaxing blend of natural tones and rich furnishings" },
+  { name: "La Classique", price: "220", size: "19m²", image: roomClassique, desc: "Warm and cozy with discreet elegance and exceptional design" },
 ];
 
 const RoomsPreview = () => (
@@ -143,8 +146,8 @@ const RoomsPreview = () => (
 );
 
 const experiences = [
-  { icon: Utensils, title: "Fine Dining", desc: "Savor authentic Moroccan cuisine on our candlelit rooftop terrace", image: restaurantImg, link: "/restaurant" },
-  { icon: Sparkles, title: "Spa & Hammam", desc: "Rejuvenate body and soul with traditional hammam rituals", image: spaImg, link: "/spa" },
+  { icon: Utensils, title: "Restaurant & Bar", desc: "Savor authentic Moroccan cuisine in an exclusive and intimate setting", image: restaurantImg, link: "/restaurant" },
+  { icon: Sparkles, title: "Spa & Hammam", desc: "Rejuvenate body and soul with traditional hammam rituals at the Lotus Spa", image: spaImg, link: "/spa" },
 ];
 
 const ExperiencesSection = () => (
@@ -203,7 +206,7 @@ const GalleryPreview = () => (
     <div className="container-luxury">
       <SectionHeading subtitle="Gallery" title="Glimpses of Dar Lys" />
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 lg:gap-4">
-        {[heroImage, roomSuite, restaurantImg, spaImg, galleryCourtyard, galleryTea].map((img, i) => (
+        {[heroImage2, roomDeluxe, restaurantImg, spaImg, galleryCourtyard, gallerySalon].map((img, i) => (
           <motion.div key={i} {...fadeUp} transition={{ duration: 0.5, delay: i * 0.08 }} className="overflow-hidden aspect-square group">
             <img src={img} alt={`Dar Lys gallery ${i + 1}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" width={640} height={640} />
           </motion.div>
@@ -218,7 +221,7 @@ const GalleryPreview = () => (
 
 const CTASection = () => (
   <section className="relative py-24 sm:py-32 overflow-hidden">
-    <img src={roomSuite} alt="Luxury room" className="absolute inset-0 w-full h-full object-cover" loading="lazy" width={1024} height={1024} />
+    <img src={darlysExterior} alt="Dar Lys exterior" className="absolute inset-0 w-full h-full object-cover" loading="lazy" width={1024} height={1024} />
     <div className="overlay-dark" />
     <div className="relative z-10 text-center px-4">
       <motion.div {...fadeUp}>

@@ -3,8 +3,11 @@ import { Link } from "react-router-dom";
 import { Clock, Star } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
-import restaurantImg from "@/assets/restaurant.jpg";
-import galleryTea from "@/assets/gallery-tea.jpg";
+import restaurantHero from "@/assets/restaurant-hero.jpg";
+import restaurantZahra from "@/assets/restaurant-zahra.jpg";
+import restaurantPatio from "@/assets/restaurant-patio.jpg";
+import restaurantBar from "@/assets/restaurant-bar.jpg";
+import galleryBar from "@/assets/gallery-bar.jpg";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -44,7 +47,7 @@ const menuSections = [
 const Restaurant = () => (
   <Layout>
     <section className="relative h-[50vh] min-h-[350px] flex items-center justify-center overflow-hidden">
-      <img src={restaurantImg} alt="Rooftop restaurant" className="absolute inset-0 w-full h-full object-cover" width={1024} height={1024} />
+      <img src={restaurantHero} alt="Le Syl Bar at Dar Lys" className="absolute inset-0 w-full h-full object-cover" width={1024} height={1024} />
       <div className="overlay-dark" />
       <div className="relative z-10 text-center px-4">
         <p className="text-gold-light text-sm tracking-[0.4em] uppercase font-body mb-4">Gastronomy</p>
@@ -56,22 +59,54 @@ const Restaurant = () => (
       <div className="container-luxury">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-20">
           <motion.div {...fadeUp}>
-            <span className="text-sm tracking-[0.3em] uppercase font-body text-gold block mb-3">Culinary Journey</span>
+            <span className="text-sm tracking-[0.3em] uppercase font-body text-gold block mb-3">Restaurant Zahra</span>
             <h2 className="text-3xl sm:text-4xl font-display font-bold text-charcoal leading-tight mb-6">A Feast for the Senses</h2>
             <div className="moroccan-divider !mx-0 mb-6" />
             <p className="text-muted-foreground leading-relaxed mb-4 font-body">
-              Our rooftop restaurant offers an unforgettable dining experience under the stars of Fès. Chef Fatima crafts each dish using locally sourced ingredients and recipes passed down through generations.
+              Decorated in rich burgundy tones, adorned with chandeliers and oriental art, Restaurant Zahra offers authentic cuisine in an exclusive and intimate atmosphere.
             </p>
             <p className="text-muted-foreground leading-relaxed mb-6 font-body">
-              From fragrant tagines simmered for hours to delicate pastries made fresh each morning, every meal at Dar Lys is a celebration of Moroccan culinary heritage.
+              Dinner is a gourmet parenthesis; a journey through the classics of Fès cuisine, celebrated for its refinement and flavors.
             </p>
-            <div className="flex items-center gap-6 text-sm text-charcoal-light font-body">
-              <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-gold" /> Breakfast: 7:30 – 10:30</div>
-              <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-gold" /> Dinner: 19:00 – 22:00</div>
+            <div className="space-y-2 text-sm text-charcoal-light font-body">
+              <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-gold" /> Breakfast: 7:00 – 11:00</div>
+              <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-gold" /> Lunch: 12:00 – 15:00</div>
+              <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-gold" /> Dinner: 19:00 – 00:00</div>
             </div>
           </motion.div>
           <motion.div {...fadeUp} transition={{ delay: 0.2, duration: 0.7 }}>
-            <img src={galleryTea} alt="Moroccan tea service" className="w-full aspect-square object-cover" loading="lazy" width={1280} height={960} />
+            <img src={restaurantZahra} alt="Restaurant Zahra interior" className="w-full aspect-square object-cover" loading="lazy" width={1280} height={960} />
+          </motion.div>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-20">
+          <motion.div {...fadeUp} transition={{ delay: 0.2, duration: 0.7 }} className="lg:order-1">
+            <img src={restaurantPatio} alt="Le Patio dining" className="w-full aspect-square object-cover" loading="lazy" width={1280} height={960} />
+          </motion.div>
+          <motion.div {...fadeUp} className="lg:order-2">
+            <span className="text-sm tracking-[0.3em] uppercase font-body text-gold block mb-3">Le Patio</span>
+            <h2 className="text-3xl sm:text-4xl font-display font-bold text-charcoal leading-tight mb-6">Dining in the Courtyard</h2>
+            <div className="moroccan-divider !mx-0 mb-6" />
+            <p className="text-muted-foreground leading-relaxed mb-4 font-body">
+              Served in the lounge or in the central patio, breakfast highlights fresh and seasonal products. Local recipes blend with classic morning delights for maximum vitamins and energy.
+            </p>
+            <p className="text-muted-foreground leading-relaxed font-body">
+              Salads, bowls, grills, and planchas are served at lunch in the patio or on the panoramic terrace.
+            </p>
+          </motion.div>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center mb-20">
+          <motion.div {...fadeUp}>
+            <span className="text-sm tracking-[0.3em] uppercase font-body text-gold block mb-3">Le Syl Bar</span>
+            <h2 className="text-3xl sm:text-4xl font-display font-bold text-charcoal leading-tight mb-6">Natural Living</h2>
+            <div className="moroccan-divider !mx-0 mb-6" />
+            <p className="text-muted-foreground leading-relaxed font-body">
+              Dar Lys introduces you to natural living, alcohol-free! Le Syl Bar welcomes you in a cozy and warm atmosphere with a selection of natural juices, fruit and vegetable mocktails, teas and infusions, coffees to delight body and spirit.
+            </p>
+          </motion.div>
+          <motion.div {...fadeUp} transition={{ delay: 0.2, duration: 0.7 }}>
+            <img src={restaurantBar} alt="Le Syl Bar" className="w-full aspect-square object-cover" loading="lazy" width={1280} height={960} />
           </motion.div>
         </div>
 
