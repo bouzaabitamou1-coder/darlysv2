@@ -10,9 +10,10 @@ import roomClassique from "@/assets/room-classique.jpg";
 import restaurantImg from "@/assets/darlys-restaurant.jpg";
 import spaImg from "@/assets/spa-hammam.jpg";
 import galleryCourtyard from "@/assets/darlys-patio.jpg";
-import galleryTea from "@/assets/gallery-tea.jpg";
 import darlysExterior from "@/assets/darlys-exterior.jpg";
 import gallerySalon from "@/assets/gallery-salon.jpg";
+import foodTagine from "@/assets/food-tagine.jpg";
+import foodTea from "@/assets/food-tea.jpg";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -24,31 +25,39 @@ const fadeUp = {
 const HeroSection = () => (
   <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
     <img src={heroImage} alt="Dar Lys luxury riad courtyard in Fes" className="absolute inset-0 w-full h-full object-cover" width={1920} height={1080} />
-    <div className="overlay-dark" />
+    <div className="overlay-warm" />
     <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
       <motion.p
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className="text-gold-light text-sm tracking-[0.4em] uppercase font-body mb-6"
+        className="text-arabic text-gold-light text-xl mb-4"
       >
-        Luxury Riad in Fès, Morocco
+        دار اللّيس
       </motion.p>
       <motion.h1
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.4 }}
-        className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-display font-bold text-cream leading-[1.1] mb-6"
+        className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-display font-bold text-cream leading-[1.1] mb-4"
       >
         Dar Lys
       </motion.h1>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.5 }}
+        className="star-separator"
+      >
+        <span className="text-gold text-lg">✦</span>
+      </motion.div>
       <motion.p
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.6 }}
         className="text-cream/70 text-lg sm:text-xl font-accent italic max-w-xl mx-auto mb-10"
       >
-        Where timeless Moroccan elegance meets modern luxury in the heart of the ancient medina
+        Riad de charme au cœur de la médina millénaire de Fès
       </motion.p>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -57,7 +66,7 @@ const HeroSection = () => (
         className="flex flex-col sm:flex-row gap-4 justify-center"
       >
         <Link to="/rooms" className="btn-hero">
-          Explore Rooms
+          Discover Rooms
         </Link>
         <Link to="/about" className="btn-hero border-cream/30 bg-transparent hover:bg-cream/10 hover:border-cream/50">
           Our Story
@@ -76,30 +85,33 @@ const HeroSection = () => (
 );
 
 const AboutPreview = () => (
-  <section className="section-padding bg-cream">
+  <section className="section-padding bg-cream zellige-pattern">
     <div className="container-luxury">
       <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
         <motion.div {...fadeUp}>
-          <span className="text-sm tracking-[0.3em] uppercase font-body text-gold block mb-3">Welcome to Dar Lys</span>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-charcoal leading-tight mb-6">
-            A Haven of Peace in the Medina
+          <span className="text-sm tracking-[0.3em] uppercase font-body text-gold block mb-3">Bienvenue à Dar Lys</span>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-charcoal leading-tight mb-2">
+            Un Havre de Paix
           </h2>
+          <p className="text-arabic text-muted-foreground text-lg mb-4">واحة سلام في قلب المدينة العتيقة</p>
           <div className="moroccan-divider !mx-0 mb-6" />
           <p className="text-muted-foreground leading-relaxed mb-4 font-body">
-            Nestled within the labyrinthine streets of the Fès medina, Dar Lys is a meticulously restored riad that offers an oasis of calm and luxury. Every corner tells a story of Moroccan craftsmanship — from intricate zellige tilework to hand-carved cedarwood ceilings.
+            Dar Lys est la nouvelle adresse en plein cœur de la médina de Fès. Des murs en tadelakt se marient harmonieusement au zellige et stucs aux motifs de lys ou nids d'abeilles.
           </p>
           <p className="text-muted-foreground leading-relaxed mb-8 font-body">
-            Our philosophy is simple: blend the authentic spirit of Moroccan hospitality with the refinement of modern luxury, creating unforgettable moments for every guest.
+            Dar Lys a été entièrement construit dans le respect de l'esprit de la médina et des anciennes demeures fassies. Un lieu authentique qui invite modernité et tradition.
           </p>
           <Link to="/about" className="btn-outline-luxury">
             Discover Our Story
           </Link>
         </motion.div>
         <motion.div {...fadeUp} transition={{ duration: 0.7, delay: 0.2 }} className="relative">
-          <img src={galleryCourtyard} alt="Riad courtyard" className="w-full aspect-[4/5] object-cover" loading="lazy" width={1280} height={960} />
+          <div className="moroccan-arch">
+            <img src={galleryCourtyard} alt="Riad courtyard" className="w-full aspect-[4/5] object-cover" loading="lazy" width={1280} height={960} />
+          </div>
           <div className="absolute -bottom-6 -left-6 bg-gold p-6 hidden lg:block">
-            <p className="text-cream text-3xl font-display font-bold">15+</p>
-            <p className="text-cream/80 text-xs tracking-[0.2em] uppercase font-body">Years of Excellence</p>
+            <p className="text-cream text-3xl font-display font-bold">18</p>
+            <p className="text-cream/80 text-xs tracking-[0.2em] uppercase font-body">Chambres Deluxe</p>
           </div>
         </motion.div>
       </div>
@@ -108,14 +120,14 @@ const AboutPreview = () => (
 );
 
 const rooms = [
-  { name: "La Deluxe", price: "350", size: "30m²", image: roomDeluxe, desc: "Spacious and refined with a relaxing blend of natural tones and rich furnishings" },
-  { name: "La Classique", price: "220", size: "19m²", image: roomClassique, desc: "Warm and cozy with discreet elegance and exceptional design" },
+  { name: "La Deluxe", price: "350", size: "30m²", image: roomDeluxe, desc: "Spacieuse et raffinée avec un mélange relaxant de tons naturels et un mobilier riche" },
+  { name: "La Classique", price: "220", size: "19m²", image: roomClassique, desc: "Chaleureuse et cozy avec une élégance discrète et un design exceptionnel" },
 ];
 
 const RoomsPreview = () => (
-  <section className="section-padding bg-cream-dark">
+  <section className="section-padding section-warm">
     <div className="container-luxury">
-      <SectionHeading subtitle="Accommodations" title="Rooms & Suites" description="Each room is a unique sanctuary, adorned with authentic Moroccan craftsmanship and equipped with every modern amenity." />
+      <SectionHeading subtitle="Chambres" title="Rooms & Suites" description="Chaque chambre est un sanctuaire unique, ornée d'artisanat marocain authentique et équipée de tout le confort moderne." />
       <div className="grid md:grid-cols-2 gap-8">
         {rooms.map((room, i) => (
           <motion.div key={room.name} {...fadeUp} transition={{ duration: 0.7, delay: i * 0.15 }} className="card-luxury group">
@@ -146,14 +158,15 @@ const RoomsPreview = () => (
 );
 
 const experiences = [
-  { icon: Utensils, title: "Restaurant & Bar", desc: "Savor authentic Moroccan cuisine in an exclusive and intimate setting", image: restaurantImg, link: "/restaurant" },
-  { icon: Sparkles, title: "Spa & Hammam", desc: "Rejuvenate body and soul with traditional hammam rituals at the Lotus Spa", image: spaImg, link: "/spa" },
+  { icon: Utensils, title: "Restaurant Zahra", desc: "Cuisine authentique de Fès dans une ambiance exclusive et intimiste", image: restaurantImg, link: "/restaurant" },
+  { icon: Sparkles, title: "Lotus Spa", desc: "Hammam, massages et soins pour chouchouter corps et esprit", image: spaImg, link: "/spa" },
 ];
 
 const ExperiencesSection = () => (
   <section className="section-padding bg-charcoal relative">
-    <div className="container-luxury">
-      <SectionHeading subtitle="Experiences" title="Indulge Your Senses" description="Beyond accommodation, Dar Lys offers a world of curated experiences." light />
+    <div className="absolute inset-0 opacity-5 zellige-pattern" />
+    <div className="container-luxury relative z-10">
+      <SectionHeading subtitle="Expériences" title="Éveillez Vos Sens" description="Au-delà de l'hébergement, Dar Lys offre des expériences uniques." light />
       <div className="grid md:grid-cols-2 gap-8">
         {experiences.map((exp, i) => (
           <motion.div key={exp.title} {...fadeUp} transition={{ duration: 0.7, delay: i * 0.15 }}>
@@ -174,15 +187,15 @@ const ExperiencesSection = () => (
 );
 
 const testimonials = [
-  { name: "Sophie Laurent", location: "Paris, France", text: "An absolutely magical stay. The attention to detail, the warmth of the staff, and the beauty of the riad exceeded all expectations.", rating: 5 },
+  { name: "Sophie Laurent", location: "Paris, France", text: "Un séjour absolument magique. L'attention aux détails, la chaleur du personnel et la beauté du riad ont dépassé toutes nos attentes.", rating: 5 },
   { name: "James Mitchell", location: "London, UK", text: "Dar Lys is a hidden gem in the medina. The rooftop dinner was one of the most memorable meals of our travels.", rating: 5 },
   { name: "Elena Rossi", location: "Milan, Italy", text: "Pure luxury with authentic Moroccan charm. The hammam experience was heavenly. We will definitely return.", rating: 5 },
 ];
 
 const TestimonialsSection = () => (
-  <section className="section-padding bg-cream">
+  <section className="section-padding bg-cream zellige-pattern">
     <div className="container-luxury">
-      <SectionHeading subtitle="Testimonials" title="What Our Guests Say" />
+      <SectionHeading subtitle="Témoignages" title="Ce Que Disent Nos Hôtes" />
       <div className="grid md:grid-cols-3 gap-8">
         {testimonials.map((t, i) => (
           <motion.div key={t.name} {...fadeUp} transition={{ duration: 0.7, delay: i * 0.1 }} className="text-center p-8">
@@ -202,11 +215,11 @@ const TestimonialsSection = () => (
 );
 
 const GalleryPreview = () => (
-  <section className="section-padding bg-cream-dark">
+  <section className="section-padding section-warm">
     <div className="container-luxury">
-      <SectionHeading subtitle="Gallery" title="Glimpses of Dar Lys" />
+      <SectionHeading subtitle="Galerie" title="Moments à Dar Lys" />
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 lg:gap-4">
-        {[heroImage2, roomDeluxe, restaurantImg, spaImg, galleryCourtyard, gallerySalon].map((img, i) => (
+        {[heroImage2, foodTagine, restaurantImg, spaImg, galleryCourtyard, foodTea].map((img, i) => (
           <motion.div key={i} {...fadeUp} transition={{ duration: 0.5, delay: i * 0.08 }} className="overflow-hidden aspect-square group">
             <img src={img} alt={`Dar Lys gallery ${i + 1}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" width={640} height={640} />
           </motion.div>
@@ -222,13 +235,13 @@ const GalleryPreview = () => (
 const CTASection = () => (
   <section className="relative py-24 sm:py-32 overflow-hidden">
     <img src={darlysExterior} alt="Dar Lys exterior" className="absolute inset-0 w-full h-full object-cover" loading="lazy" width={1024} height={1024} />
-    <div className="overlay-dark" />
+    <div className="overlay-warm" />
     <div className="relative z-10 text-center px-4">
       <motion.div {...fadeUp}>
-        <p className="text-gold-light text-sm tracking-[0.3em] uppercase font-body mb-4">Begin Your Journey</p>
+        <p className="text-arabic text-gold-light text-xl mb-4">ابدأ رحلتك</p>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-cream mb-6">Your Moroccan Escape Awaits</h2>
-        <p className="text-cream/70 max-w-lg mx-auto mb-8 font-body">Reserve your stay at Dar Lys and experience the magic of Fès like never before.</p>
-        <Link to="/rooms" className="btn-hero">Reserve Your Stay</Link>
+        <p className="text-cream/70 max-w-lg mx-auto mb-8 font-body">Réservez votre séjour à Dar Lys et vivez la magie de Fès comme jamais auparavant.</p>
+        <Link to="/rooms" className="btn-hero">Réserver Maintenant</Link>
       </motion.div>
     </div>
   </section>
