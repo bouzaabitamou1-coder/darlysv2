@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   BarChart3, CalendarDays, DollarSign, Mail, BedDouble,
-  Users, LogOut, Eye, Check, X, Pencil, Trash2
+  Users, LogOut, Eye, Check, X, Pencil, Trash2, CreditCard, RefreshCw
 } from "lucide-react";
 
 const AdminDashboard = () => {
@@ -16,6 +16,8 @@ const AdminDashboard = () => {
   const [bookings, setBookings] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [rooms, setRooms] = useState<any[]>([]);
+  const [paymentEvents, setPaymentEvents] = useState<any[]>([]);
+  const [syncLogs, setSyncLogs] = useState<any[]>([]);
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
@@ -30,10 +32,12 @@ const AdminDashboard = () => {
   }, [isAdmin]);
 
   const loadData = async () => {
-    const [bookingsRes, messagesRes, roomsRes] = await Promise.all([
+    const [bookingsRes, messagesRes, roomsRes, eventsRes, syncRes] = await Promise.all([
       supabase.from("bookings").select("*, rooms(name)").order("created_at", { ascending: false }),
       supabase.from("contact_messages").select("*").order("created_at", { ascending: false }),
       supabase.from("rooms").select("*").order("name"),
+      supabase.from("payment_events").select("*").order("created_at", { ascending: false }).limit(50),
+      supabase.from("opera_sync_log").select("*").order("created_at", { ascending: false }).limit(50),
     ]);
 
     const b = bookingsRes.data || [];
@@ -43,6 +47,8 @@ const AdminDashboard = () => {
     setBookings(b);
     setMessages(m);
     setRooms(r);
+    setPaymentEvents(eventsRes.data || []);
+    setSyncLogs(syncRes.data || []);
     setStats({
       bookings: b.length,
       revenue: b.filter((x) => x.payment_status === "paid").reduce((s, x) => s + Number(x.total_price), 0),
@@ -75,6 +81,8 @@ const AdminDashboard = () => {
     { id: "bookings", label: "Bookings", icon: CalendarDays },
     { id: "rooms", label: "Rooms", icon: BedDouble },
     { id: "messages", label: "Messages", icon: Mail },
+    { id: "payments", label: "Payments", icon: CreditCard },
+    { id: "opera", label: "Opera PMS", icon: RefreshCw },
   ];
 
   const statCards = [
@@ -254,6 +262,71 @@ const AdminDashboard = () => {
               </div>
             ))}
             {messages.length === 0 && <p className="text-muted-foreground text-sm font-body">No messages yet.</p>}
+          </div>
+        )}
+
+        {activeTab === "payments" && (
+          <div className="bg-cream border border-border overflow-x-auto">
+            <table className="w-full text-sm font-body">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Event ID</th>
+                  <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Type</th>
+                  <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Booking</th>
+                  <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paymentEvents.map((evt) => (
+                  <tr key={evt.id} className="border-b border-border hover:bg-cream-dark transition-colors">
+                    <td className="p-4 text-charcoal font-mono text-xs">{evt.stripe_event_id?.slice(0, 20)}...</td>
+                    <td className="p-4"><span className="text-xs px-2 py-0.5 bg-gold/10 text-gold">{evt.event_type}</span></td>
+                    <td className="p-4 text-muted-foreground">{evt.booking_id?.slice(0, 8) || "—"}</td>
+                    <td className="p-4 text-muted-foreground">{new Date(evt.created_at).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {paymentEvents.length === 0 && <p className="text-center text-muted-foreground text-sm font-body p-8">No payment events recorded yet.</p>}
+          </div>
+        )}
+
+        {activeTab === "opera" && (
+          <div className="space-y-4">
+            <div className="bg-cream p-4 border border-gold/30 mb-4">
+              <p className="text-sm font-body text-muted-foreground">
+                Opera PMS integration is in <span className="text-gold font-semibold">stub mode</span>. Configure OPERA_API_URL and OPERA_API_KEY to enable live synchronization.
+              </p>
+            </div>
+            <div className="bg-cream border border-border overflow-x-auto">
+              <table className="w-full text-sm font-body">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Booking</th>
+                    <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Action</th>
+                    <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Status</th>
+                    <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Date</th>
+                    <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Error</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {syncLogs.map((log) => (
+                    <tr key={log.id} className="border-b border-border hover:bg-cream-dark transition-colors">
+                      <td className="p-4 text-charcoal">{log.booking_id?.slice(0, 8) || "—"}</td>
+                      <td className="p-4"><span className="text-xs px-2 py-0.5 bg-gold/10 text-gold capitalize">{log.action}</span></td>
+                      <td className="p-4">
+                        <span className={`text-xs px-2 py-0.5 capitalize ${log.status === "success" ? "bg-teal/10 text-teal" : log.status === "failed" ? "bg-destructive/10 text-destructive" : "bg-gold/10 text-gold"}`}>
+                          {log.status}
+                        </span>
+                      </td>
+                      <td className="p-4 text-muted-foreground">{new Date(log.created_at).toLocaleString()}</td>
+                      <td className="p-4 text-muted-foreground text-xs max-w-[200px] truncate">{log.error_message || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {syncLogs.length === 0 && <p className="text-center text-muted-foreground text-sm font-body p-8">No Opera PMS sync attempts yet.</p>}
+            </div>
           </div>
         )}
       </main>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Calendar, Users, CreditCard, ChevronRight } from "lucide-react";
+import { Calendar, Users, CreditCard, ChevronRight, AlertCircle } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -31,9 +31,10 @@ const BookingPage = () => {
   });
   const [room, setRoom] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
   const [step, setStep] = useState(1);
 
-  // Load room by UUID or slug (same query param `room`)
   useEffect(() => {
     if (!roomParam) return;
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(roomParam);
@@ -65,6 +66,41 @@ const BookingPage = () => {
     }));
   };
 
+  const checkAvailability = async (): Promise<boolean> => {
+    if (!room || !form.checkIn || !form.checkOut) return false;
+    
+    setCheckingAvailability(true);
+    setAvailabilityError(null);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke("check-availability", {
+        body: { roomId: room.id, checkIn: form.checkIn, checkOut: form.checkOut },
+      });
+      
+      if (error) throw error;
+      
+      if (!data?.available) {
+        setAvailabilityError("This room is not available for the selected dates. Please choose different dates.");
+        return false;
+      }
+      return true;
+    } catch (err: any) {
+      setAvailabilityError("Could not verify availability. Please try again.");
+      return false;
+    } finally {
+      setCheckingAvailability(false);
+    }
+  };
+
+  const handleStep1Continue = async () => {
+    if (!room || !form.checkIn || !form.checkOut) {
+      toast.error("Please select dates and room.");
+      return;
+    }
+    const available = await checkAvailability();
+    if (available) setStep(2);
+  };
+
   const handleSubmit = async () => {
     if (!room || !form.checkIn || !form.checkOut || !form.guestName || !form.guestEmail) {
       toast.error("Please fill in all required fields.");
@@ -90,7 +126,6 @@ const BookingPage = () => {
 
       if (error) throw error;
 
-      // Create Stripe checkout
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke("create-checkout", {
         body: {
           bookingId: booking.id,
@@ -98,11 +133,13 @@ const BookingPage = () => {
           totalPrice,
           nights,
           guestEmail: form.guestEmail,
+          roomId: room.id,
+          checkIn: form.checkIn,
+          checkOut: form.checkOut,
         },
       });
 
       if (checkoutError || !checkoutData?.url) {
-        // Fallback: navigate to confirmation without payment
         toast.success("Booking submitted! We'll contact you for payment.");
         navigate(`/booking-confirmation?id=${booking.id}`);
         return;
@@ -110,7 +147,11 @@ const BookingPage = () => {
 
       window.location.href = checkoutData.url;
     } catch (err: any) {
-      toast.error(err.message || "Failed to create booking.");
+      if (err.message?.includes("no_double_booking")) {
+        toast.error("This room is already booked for the selected dates.");
+      } else {
+        toast.error(err.message || "Failed to create booking.");
+      }
     } finally {
       setLoading(false);
     }
@@ -129,7 +170,6 @@ const BookingPage = () => {
               <div className="moroccan-divider mt-4" />
             </div>
 
-            {/* Progress steps */}
             <div className="flex items-center justify-center gap-4 mb-10">
               {[1, 2, 3].map((s) => (
                 <div key={s} className="flex items-center gap-2">
@@ -163,13 +203,20 @@ const BookingPage = () => {
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs tracking-[0.15em] uppercase font-body text-charcoal-light mb-2">Check-in *</label>
-                      <input type="date" min={today} value={form.checkIn} onChange={(e) => setForm({ ...form, checkIn: e.target.value })} className="w-full bg-cream border border-border px-4 py-3 text-sm font-body text-charcoal focus:outline-none focus:border-gold transition-colors" required />
+                      <input type="date" min={today} value={form.checkIn} onChange={(e) => { setForm({ ...form, checkIn: e.target.value }); setAvailabilityError(null); }} className="w-full bg-cream border border-border px-4 py-3 text-sm font-body text-charcoal focus:outline-none focus:border-gold transition-colors" required />
                     </div>
                     <div>
                       <label className="block text-xs tracking-[0.15em] uppercase font-body text-charcoal-light mb-2">Check-out *</label>
-                      <input type="date" min={form.checkIn || today} value={form.checkOut} onChange={(e) => setForm({ ...form, checkOut: e.target.value })} className="w-full bg-cream border border-border px-4 py-3 text-sm font-body text-charcoal focus:outline-none focus:border-gold transition-colors" required />
+                      <input type="date" min={form.checkIn || today} value={form.checkOut} onChange={(e) => { setForm({ ...form, checkOut: e.target.value }); setAvailabilityError(null); }} className="w-full bg-cream border border-border px-4 py-3 text-sm font-body text-charcoal focus:outline-none focus:border-gold transition-colors" required />
                     </div>
                   </div>
+
+                  {availabilityError && (
+                    <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 text-sm font-body text-destructive">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      {availabilityError}
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-xs tracking-[0.15em] uppercase font-body text-charcoal-light mb-2">Number of Guests</label>
@@ -178,8 +225,8 @@ const BookingPage = () => {
                     </select>
                   </div>
 
-                  <button onClick={() => { if (room && form.checkIn && form.checkOut) setStep(2); else toast.error("Please select dates and room."); }} className="btn-luxury w-full">
-                    Continue
+                  <button onClick={handleStep1Continue} disabled={checkingAvailability} className="btn-luxury w-full disabled:opacity-50">
+                    {checkingAvailability ? "Checking availability..." : "Continue"}
                   </button>
                 </motion.div>
               )}
@@ -295,7 +342,6 @@ const BookingPage = () => {
   );
 };
 
-// Room selector for when no room is pre-selected
 const RoomSelector = ({ onSelect }: { onSelect: (room: any) => void }) => {
   const [rooms, setRooms] = useState<any[]>([]);
   useEffect(() => {
