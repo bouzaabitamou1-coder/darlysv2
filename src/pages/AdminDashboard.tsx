@@ -264,6 +264,71 @@ const AdminDashboard = () => {
             {messages.length === 0 && <p className="text-muted-foreground text-sm font-body">No messages yet.</p>}
           </div>
         )}
+
+        {activeTab === "payments" && (
+          <div className="bg-cream border border-border overflow-x-auto">
+            <table className="w-full text-sm font-body">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Event ID</th>
+                  <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Type</th>
+                  <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Booking</th>
+                  <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paymentEvents.map((evt) => (
+                  <tr key={evt.id} className="border-b border-border hover:bg-cream-dark transition-colors">
+                    <td className="p-4 text-charcoal font-mono text-xs">{evt.stripe_event_id?.slice(0, 20)}...</td>
+                    <td className="p-4"><span className="text-xs px-2 py-0.5 bg-gold/10 text-gold">{evt.event_type}</span></td>
+                    <td className="p-4 text-muted-foreground">{evt.booking_id?.slice(0, 8) || "—"}</td>
+                    <td className="p-4 text-muted-foreground">{new Date(evt.created_at).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {paymentEvents.length === 0 && <p className="text-center text-muted-foreground text-sm font-body p-8">No payment events recorded yet.</p>}
+          </div>
+        )}
+
+        {activeTab === "opera" && (
+          <div className="space-y-4">
+            <div className="bg-cream p-4 border border-gold/30 mb-4">
+              <p className="text-sm font-body text-muted-foreground">
+                Opera PMS integration is in <span className="text-gold font-semibold">stub mode</span>. Configure OPERA_API_URL and OPERA_API_KEY to enable live synchronization.
+              </p>
+            </div>
+            <div className="bg-cream border border-border overflow-x-auto">
+              <table className="w-full text-sm font-body">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Booking</th>
+                    <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Action</th>
+                    <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Status</th>
+                    <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Date</th>
+                    <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Error</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {syncLogs.map((log) => (
+                    <tr key={log.id} className="border-b border-border hover:bg-cream-dark transition-colors">
+                      <td className="p-4 text-charcoal">{log.booking_id?.slice(0, 8) || "—"}</td>
+                      <td className="p-4"><span className="text-xs px-2 py-0.5 bg-gold/10 text-gold capitalize">{log.action}</span></td>
+                      <td className="p-4">
+                        <span className={`text-xs px-2 py-0.5 capitalize ${log.status === "success" ? "bg-teal/10 text-teal" : log.status === "failed" ? "bg-destructive/10 text-destructive" : "bg-gold/10 text-gold"}`}>
+                          {log.status}
+                        </span>
+                      </td>
+                      <td className="p-4 text-muted-foreground">{new Date(log.created_at).toLocaleString()}</td>
+                      <td className="p-4 text-muted-foreground text-xs max-w-[200px] truncate">{log.error_message || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {syncLogs.length === 0 && <p className="text-center text-muted-foreground text-sm font-body p-8">No Opera PMS sync attempts yet.</p>}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
