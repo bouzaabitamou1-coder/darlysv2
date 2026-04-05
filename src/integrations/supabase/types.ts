@@ -25,11 +25,13 @@ export type Database = {
           guest_phone: string | null
           id: string
           num_guests: number
+          opera_confirmation_number: string | null
           payment_intent_id: string | null
           payment_status: string
           room_id: string
           special_requests: string | null
           status: string
+          stripe_checkout_session_id: string | null
           total_price: number
           updated_at: string
           user_id: string | null
@@ -44,11 +46,13 @@ export type Database = {
           guest_phone?: string | null
           id?: string
           num_guests?: number
+          opera_confirmation_number?: string | null
           payment_intent_id?: string | null
           payment_status?: string
           room_id: string
           special_requests?: string | null
           status?: string
+          stripe_checkout_session_id?: string | null
           total_price: number
           updated_at?: string
           user_id?: string | null
@@ -63,11 +67,13 @@ export type Database = {
           guest_phone?: string | null
           id?: string
           num_guests?: number
+          opera_confirmation_number?: string | null
           payment_intent_id?: string | null
           payment_status?: string
           room_id?: string
           special_requests?: string | null
           status?: string
+          stripe_checkout_session_id?: string | null
           total_price?: number
           updated_at?: string
           user_id?: string | null
@@ -111,6 +117,120 @@ export type Database = {
           subject?: string | null
         }
         Relationships: []
+      }
+      opera_sync_log: {
+        Row: {
+          action: string
+          booking_id: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          request_payload: Json | null
+          response_payload: Json | null
+          status: string
+        }
+        Insert: {
+          action: string
+          booking_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          request_payload?: Json | null
+          response_payload?: Json | null
+          status?: string
+        }
+        Update: {
+          action?: string
+          booking_id?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          request_payload?: Json | null
+          response_payload?: Json | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opera_sync_log_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_events: {
+        Row: {
+          booking_id: string | null
+          created_at: string
+          event_type: string
+          id: string
+          payload: Json
+          stripe_event_id: string
+        }
+        Insert: {
+          booking_id?: string | null
+          created_at?: string
+          event_type: string
+          id?: string
+          payload?: Json
+          stripe_event_id: string
+        }
+        Update: {
+          booking_id?: string | null
+          created_at?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          stripe_event_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_events_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reservation_locks: {
+        Row: {
+          check_in: string
+          check_out: string
+          created_at: string
+          expires_at: string
+          id: string
+          room_id: string
+          session_id: string
+        }
+        Insert: {
+          check_in: string
+          check_out: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          room_id: string
+          session_id: string
+        }
+        Update: {
+          check_in?: string
+          check_out?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          room_id?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservation_locks_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rooms: {
         Row: {
@@ -183,6 +303,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_availability: {
+        Args: { _check_in: string; _check_out: string; _room_id: string }
+        Returns: boolean
+      }
+      cleanup_expired_locks: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

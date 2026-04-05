@@ -94,7 +94,7 @@ const bathroomAmenities = [
   "Botanika neroli-based bath products",
 ];
 
-function matchDbRow(rows: { slug: string; name?: string }[], aliases: string[]) {
+function matchDbRow(rows: { slug: string; name?: string; price_per_night: number }[], aliases: string[]) {
   const bySlug = rows.find((r) => aliases.includes(r.slug));
   if (bySlug) return bySlug;
   return undefined;
