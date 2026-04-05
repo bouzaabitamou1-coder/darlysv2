@@ -81,6 +81,8 @@ const AdminDashboard = () => {
     { id: "bookings", label: "Bookings", icon: CalendarDays },
     { id: "rooms", label: "Rooms", icon: BedDouble },
     { id: "messages", label: "Messages", icon: Mail },
+    { id: "payments", label: "Payments", icon: CreditCard },
+    { id: "opera", label: "Opera PMS", icon: RefreshCw },
   ];
 
   const statCards = [
