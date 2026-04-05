@@ -16,7 +16,7 @@ const addOns = [
 
 const BookingPage = () => {
   const [searchParams] = useSearchParams();
-  const roomSlug = searchParams.get("room") || "";
+  const roomParam = searchParams.get("room") || "";
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -33,22 +33,17 @@ const BookingPage = () => {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
 
-  // Load room data
+  // Load room by UUID or slug (same query param `room`)
   useEffect(() => {
-    if (roomSlug) {
-      supabase.from("rooms").select("*").eq("slug", roomSlug).single().then(({ data }) => {
-        if (data) setRoom(data);
-      });
-    } else {
-      // Try loading by ID (from query param)
-      const roomId = searchParams.get("room");
-      if (roomId) {
-        supabase.from("rooms").select("*").eq("id", roomId).single().then(({ data }) => {
-          if (data) setRoom(data);
-        });
-      }
-    }
-  }, [roomSlug]);
+    if (!roomParam) return;
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(roomParam);
+    const q = isUuid
+      ? supabase.from("rooms").select("*").eq("id", roomParam).single()
+      : supabase.from("rooms").select("*").eq("slug", roomParam).single();
+    q.then(({ data }) => {
+      if (data) setRoom(data);
+    });
+  }, [roomParam]);
 
   const nights = form.checkIn && form.checkOut
     ? Math.max(1, Math.ceil((new Date(form.checkOut).getTime() - new Date(form.checkIn).getTime()) / (1000 * 60 * 60 * 24)))
@@ -151,7 +146,7 @@ const BookingPage = () => {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
                   <h2 className="text-xl font-display font-semibold text-charcoal flex items-center gap-2"><Calendar className="w-5 h-5 text-gold" /> Dates & Room</h2>
 
-                  {!roomSlug && (
+                  {!roomParam && (
                     <div>
                       <label className="block text-xs tracking-[0.15em] uppercase font-body text-charcoal-light mb-2">Select Room *</label>
                       <RoomSelector onSelect={(r: any) => setRoom(r)} />

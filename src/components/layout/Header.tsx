@@ -5,10 +5,14 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const navLinks = [
   { label: "Home", path: "/" },
+  { label: "About", path: "/about" },
   { label: "Rooms", path: "/rooms" },
   { label: "Restaurant", path: "/restaurant" },
   { label: "Spa", path: "/spa" },
+  { label: "Offers", path: "/offers" },
+  { label: "Events", path: "/events" },
   { label: "Gallery", path: "/gallery" },
+  { label: "Access", path: "/access" },
   { label: "Contact", path: "/contact" },
 ];
 
@@ -48,12 +52,12 @@ const Header = () => {
             </span>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-8">
+          <nav className="hidden xl:flex items-center gap-5 flex-wrap justify-end max-w-3xl">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-sm tracking-[0.15em] uppercase font-body transition-all duration-300 hover:opacity-100 ${
+                className={`text-[11px] tracking-[0.12em] uppercase font-body transition-all duration-300 hover:opacity-100 ${
                   location.pathname === link.path ? "opacity-100" : "opacity-70"
                 } ${textColor}`}
               >
@@ -62,7 +66,7 @@ const Header = () => {
             ))}
           </nav>
 
-          <div className="hidden lg:flex items-center gap-4">
+          <div className="hidden xl:flex items-center gap-4 shrink-0">
             <a href="tel:+212535555555" className={`flex items-center gap-2 text-sm ${textColor} opacity-70 hover:opacity-100 transition-opacity`}>
               <Phone className="w-4 h-4" />
             </a>
@@ -73,7 +77,7 @@ const Header = () => {
 
           <button
             onClick={() => setIsMobileOpen(!isMobileOpen)}
-            className={`lg:hidden p-2 ${textColor}`}
+            className={`xl:hidden p-2 ${textColor}`}
             aria-label="Toggle menu"
           >
             {isMobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -87,7 +91,7 @@ const Header = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-cream/98 backdrop-blur-md border-t border-border"
+            className="xl:hidden bg-cream/98 backdrop-blur-md border-t border-border max-h-[80vh] overflow-y-auto"
           >
             <div className="px-6 py-8 space-y-4">
               {navLinks.map((link) => (

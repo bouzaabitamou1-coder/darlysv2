@@ -240,6 +240,14 @@
   .star-separator::after {
     background: linear-gradient(90deg, hsl(var(--gold) / 0.5), transparent);
   }
+
+  /* Riad-style ornamental frame (inspired by wooden mashrabiya / doorway trim) */
+  .riad-door-frame {
+    border: 1px solid hsl(var(--cream) / 0.35);
+    outline: 1px solid hsl(var(--gold) / 0.25);
+    outline-offset: 6px;
+    box-shadow: inset 0 0 0 1px hsl(var(--gold) / 0.08);
+  }
 }
 
 @layer utilities {

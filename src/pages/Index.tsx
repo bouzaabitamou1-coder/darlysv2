@@ -3,17 +3,7 @@ import { motion } from "framer-motion";
 import { Star, Utensils, Sparkles, ArrowRight } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
-import heroImage from "@/assets/darlys-hero-1.jpg";
-import heroImage2 from "@/assets/darlys-patio-hero.jpg";
-import roomDeluxe from "@/assets/room-deluxe.jpg";
-import roomClassique from "@/assets/room-classique.jpg";
-import restaurantImg from "@/assets/darlys-restaurant.jpg";
-import spaImg from "@/assets/spa-hammam.jpg";
-import galleryCourtyard from "@/assets/darlys-patio.jpg";
-import darlysExterior from "@/assets/darlys-exterior.jpg";
-import gallerySalon from "@/assets/gallery-salon.jpg";
-import foodTagine from "@/assets/food-tagine.jpg";
-import foodTea from "@/assets/food-tea.jpg";
+import { photo, video } from "@/data/siteMedia";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -24,16 +14,26 @@ const fadeUp = {
 
 const HeroSection = () => (
   <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
-    <img src={heroImage} alt="Dar Lys luxury riad courtyard in Fes" className="absolute inset-0 w-full h-full object-cover" width={1920} height={1080} />
+    <video
+      className="absolute inset-0 w-full h-full object-cover"
+      autoPlay
+      muted
+      loop
+      playsInline
+      poster={photo.heroMain}
+      aria-label="Dar Lys luxury riad in Fès"
+    >
+      <source src={video.homeHero} type="video/mp4" />
+    </video>
     <div className="overlay-warm" />
     <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
       <motion.p
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className="text-arabic text-gold-light text-xl mb-4"
+        className="text-gold-light text-sm tracking-[0.45em] uppercase font-body mb-4"
       >
-        دار اللّيس
+        Riad d’exception — Fès
       </motion.p>
       <motion.h1
         initial={{ opacity: 0, y: 30 }}
@@ -93,7 +93,7 @@ const AboutPreview = () => (
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-charcoal leading-tight mb-2">
             Un Havre de Paix
           </h2>
-          <p className="text-arabic text-muted-foreground text-lg mb-4">واحة سلام في قلب المدينة العتيقة</p>
+          <p className="text-muted-foreground text-sm tracking-[0.2em] uppercase font-body mb-4">Heritage & contemporary comfort</p>
           <div className="moroccan-divider !mx-0 mb-6" />
           <p className="text-muted-foreground leading-relaxed mb-4 font-body">
             Dar Lys est la nouvelle adresse en plein cœur de la médina de Fès. Des murs en tadelakt se marient harmonieusement au zellige et stucs aux motifs de lys ou nids d'abeilles.
@@ -107,11 +107,11 @@ const AboutPreview = () => (
         </motion.div>
         <motion.div {...fadeUp} transition={{ duration: 0.7, delay: 0.2 }} className="relative">
           <div className="moroccan-arch">
-            <img src={galleryCourtyard} alt="Riad courtyard" className="w-full aspect-[4/5] object-cover" loading="lazy" width={1280} height={960} />
+            <img src={photo.courtyard} alt="Riad courtyard" className="w-full aspect-[4/5] object-cover" loading="lazy" width={1280} height={960} />
           </div>
           <div className="absolute -bottom-6 -left-6 bg-gold p-6 hidden lg:block">
             <p className="text-cream text-3xl font-display font-bold">18</p>
-            <p className="text-cream/80 text-xs tracking-[0.2em] uppercase font-body">Chambres Deluxe</p>
+            <p className="text-cream/80 text-xs tracking-[0.2em] uppercase font-body">Rooms & suites</p>
           </div>
         </motion.div>
       </div>
@@ -120,47 +120,87 @@ const AboutPreview = () => (
 );
 
 const rooms = [
-  { name: "La Deluxe", price: "350", size: "30m²", image: roomDeluxe, desc: "Spacieuse et raffinée avec un mélange relaxant de tons naturels et un mobilier riche" },
-  { name: "La Classique", price: "220", size: "19m²", image: roomClassique, desc: "Chaleureuse et cozy avec une élégance discrète et un design exceptionnel" },
+  { name: "La Classique", size: "19 sqm", image: photo.roomClassique, desc: "Warm tones, natural light, and discreet elegance — up to 2 adults and a baby under 2." },
+  { name: "La Deluxe", size: "30 sqm", image: photo.roomDeluxe, desc: "Spacious contemporary comfort, natural palette and rich furnishings — ideal for business or leisure." },
+  { name: "The Superior", size: "36 sqm", image: photo.roomSuperieure, desc: "Art Deco flair, zellige and cedar; balcony with medina views in selected rooms, fireplace in winter." },
+  { name: "La Lys Family", size: "38 sqm", image: photo.roomFamily, desc: "Two bedrooms, two walk-in showers, patio views — up to 5 guests including children and teens." },
 ];
 
 const RoomsPreview = () => (
   <section className="section-padding section-warm">
     <div className="container-luxury">
-      <SectionHeading subtitle="Chambres" title="Rooms & Suites" description="Chaque chambre est un sanctuaire unique, ornée d'artisanat marocain authentique et équipée de tout le confort moderne." />
-      <div className="grid md:grid-cols-2 gap-8">
+      <SectionHeading
+        subtitle="Stay"
+        title="Rooms & Suites"
+        description="Eighteen rooms around the patio, each with Smart TV, safe, minibar, Nespresso, tea tray, and Italian showers with Botanika care products."
+      />
+      <div className="grid sm:grid-cols-2 gap-8">
         {rooms.map((room, i) => (
-          <motion.div key={room.name} {...fadeUp} transition={{ duration: 0.7, delay: i * 0.15 }} className="card-luxury group">
+          <motion.div key={room.name} {...fadeUp} transition={{ duration: 0.7, delay: i * 0.1 }} className="card-luxury group">
             <div className="relative overflow-hidden aspect-[4/3]">
               <img src={room.image} alt={room.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" width={1280} height={960} />
               <div className="absolute top-4 right-4 bg-charcoal/80 backdrop-blur-sm px-4 py-2">
-                <p className="text-gold text-sm font-body">From <span className="text-lg font-semibold">€{room.price}</span>/night</p>
+                <p className="text-gold text-sm font-body">
+                  <span className="text-lg font-semibold">{room.size}</span>
+                </p>
               </div>
             </div>
             <div className="p-6 lg:p-8">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xl font-display font-semibold text-charcoal">{room.name}</h3>
-                <span className="text-xs tracking-wider uppercase text-muted-foreground font-body">{room.size}</span>
-              </div>
+              <h3 className="text-xl font-display font-semibold text-charcoal mb-3">{room.name}</h3>
               <p className="text-sm text-muted-foreground font-body mb-4">{room.desc}</p>
               <Link to="/rooms" className="inline-flex items-center gap-2 text-sm text-gold hover:text-gold-dark transition-colors font-body tracking-wider uppercase">
-                View Details <ArrowRight className="w-4 h-4" />
+                View details <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </motion.div>
         ))}
       </div>
       <div className="text-center mt-10">
-        <Link to="/rooms" className="btn-outline-luxury">View All Rooms</Link>
+        <Link to="/rooms" className="btn-outline-luxury">View all rooms</Link>
       </div>
     </div>
   </section>
 );
 
 const experiences = [
-  { icon: Utensils, title: "Restaurant Zahra", desc: "Cuisine authentique de Fès dans une ambiance exclusive et intimiste", image: restaurantImg, link: "/restaurant" },
-  { icon: Sparkles, title: "Lotus Spa", desc: "Hammam, massages et soins pour chouchouter corps et esprit", image: spaImg, link: "/spa" },
+  { icon: Utensils, title: "Restaurant Zahra", desc: "Cuisine authentique de Fès dans une ambiance exclusive et intimiste", image: photo.restaurantZahra, link: "/restaurant" },
+  { icon: Sparkles, title: "Lotus Spa", desc: "Hammam, massages et soins pour chouchouter corps et esprit", image: photo.spaInterior, link: "/spa" },
 ];
+
+const offersPreview = [
+  { title: "Spa & médina", desc: "Hammam, soins Lotus Spa et séjour au cœur de Fès.", image: photo.spaInterior, link: "/offers" },
+  { title: "Table d’hôte", desc: "Restaurant Zahra — saveurs authentiques et patio.", image: photo.restaurantPatio, link: "/offers" },
+];
+
+const OffersPreviewSection = () => (
+  <section className="section-padding bg-charcoal relative">
+    <div className="absolute inset-0 opacity-5 zellige-pattern" />
+    <div className="container-luxury relative z-10">
+      <SectionHeading
+        subtitle="Offres"
+        title="Profitez de nos séjours signature"
+        description="Meilleur tarif en réservation directe — petit-déjeuner offert, sans frais cachés."
+        light
+      />
+      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        {offersPreview.map((o, i) => (
+          <motion.div key={o.title} {...fadeUp} transition={{ duration: 0.7, delay: i * 0.12 }}>
+            <Link to={o.link} className="group block border border-cream/15 overflow-hidden bg-charcoal-light/20 hover:border-gold/40 transition-colors">
+              <div className="aspect-[16/9] overflow-hidden">
+                <img src={o.image} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy" width={1280} height={720} />
+              </div>
+              <div className="p-6">
+                <h3 className="text-xl font-display font-semibold text-cream mb-2">{o.title}</h3>
+                <p className="text-cream/65 text-sm font-body mb-4">{o.desc}</p>
+                <span className="text-gold text-xs tracking-[0.2em] uppercase font-body">Voir toutes les offres →</span>
+              </div>
+            </Link>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
 
 const ExperiencesSection = () => (
   <section className="section-padding bg-charcoal relative">
@@ -219,7 +259,7 @@ const GalleryPreview = () => (
     <div className="container-luxury">
       <SectionHeading subtitle="Galerie" title="Moments à Dar Lys" />
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 lg:gap-4">
-        {[heroImage2, foodTagine, restaurantImg, spaImg, galleryCourtyard, foodTea].map((img, i) => (
+        {[photo.patioHero, photo.exterior, photo.restaurantZahra, photo.spaInterior, photo.patio, photo.restaurantPatio].map((img, i) => (
           <motion.div key={i} {...fadeUp} transition={{ duration: 0.5, delay: i * 0.08 }} className="overflow-hidden aspect-square group">
             <img src={img} alt={`Dar Lys gallery ${i + 1}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" width={640} height={640} />
           </motion.div>
@@ -232,13 +272,42 @@ const GalleryPreview = () => (
   </section>
 );
 
+const SpaBotanikaSection = () => (
+  <section className="section-padding bg-charcoal relative">
+    <div className="absolute inset-0 opacity-5 zellige-pattern" />
+    <div className="container-luxury relative z-10">
+      <SectionHeading
+        subtitle="Lotus Spa & Botanika"
+        title="Relaxation with a clear conscience"
+        description="Our spa and bathrooms use Botanika refill dispensers — Moroccan, ecological formulas without parabens, aluminum salts, or GMOs, not tested on animals."
+        light
+      />
+      <motion.div {...fadeUp} className="max-w-3xl mx-auto rounded-sm overflow-hidden border border-cream/15 shadow-2xl">
+        <video className="w-full aspect-video object-cover" controls playsInline poster={photo.spaInterior}>
+          <source src={video.spa} type="video/mp4" />
+        </video>
+      </motion.div>
+    </div>
+  </section>
+);
+
 const CTASection = () => (
   <section className="relative py-24 sm:py-32 overflow-hidden">
-    <img src={darlysExterior} alt="Dar Lys exterior" className="absolute inset-0 w-full h-full object-cover" loading="lazy" width={1024} height={1024} />
+    <video
+      className="absolute inset-0 w-full h-full object-cover"
+      autoPlay
+      muted
+      loop
+      playsInline
+      poster={photo.exterior}
+      aria-hidden
+    >
+      <source src={video.ambience} type="video/mp4" />
+    </video>
     <div className="overlay-warm" />
     <div className="relative z-10 text-center px-4">
       <motion.div {...fadeUp}>
-        <p className="text-arabic text-gold-light text-xl mb-4">ابدأ رحلتك</p>
+        <p className="text-gold-light text-sm tracking-[0.35em] uppercase font-body mb-4">Réservez en direct</p>
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-cream mb-6">Your Moroccan Escape Awaits</h2>
         <p className="text-cream/70 max-w-lg mx-auto mb-8 font-body">Réservez votre séjour à Dar Lys et vivez la magie de Fès comme jamais auparavant.</p>
         <Link to="/rooms" className="btn-hero">Réserver Maintenant</Link>
@@ -253,8 +322,10 @@ const Index = () => (
     <AboutPreview />
     <RoomsPreview />
     <ExperiencesSection />
+    <OffersPreviewSection />
     <TestimonialsSection />
     <GalleryPreview />
+    <SpaBotanikaSection />
     <CTASection />
   </Layout>
 );

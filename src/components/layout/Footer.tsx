@@ -7,7 +7,7 @@ const Footer = () => (
     <div className="container-luxury section-padding relative z-10">
       {/* Moroccan ornamental header */}
       <div className="text-center mb-16">
-        <p className="text-arabic text-gold/60 text-2xl mb-2">دار اللّيس</p>
+        <p className="text-gold/70 text-xs tracking-[0.35em] uppercase font-body mb-2">Riad — Médina de Fès</p>
         <h3 className="text-3xl font-display font-bold text-cream">Dar Lys</h3>
         <div className="star-separator mt-4">
           <span className="text-gold text-sm">✦</span>
@@ -36,6 +36,8 @@ const Footer = () => (
               { label: "Chambres", path: "/rooms" },
               { label: "Restaurant & Bar", path: "/restaurant" },
               { label: "Lotus Spa", path: "/spa" },
+              { label: "Offres", path: "/offers" },
+              { label: "Événements", path: "/events" },
               { label: "Galerie", path: "/gallery" },
             ].map((link) => (
               <Link key={link.path} to={link.path} className="block text-sm opacity-70 hover:opacity-100 hover:text-gold transition-all">
@@ -50,6 +52,7 @@ const Footer = () => (
           <div className="space-y-3">
             {[
               { label: "À Propos", path: "/about" },
+              { label: "Accès", path: "/access" },
               { label: "Contact", path: "/contact" },
               { label: "FAQ", path: "/faq" },
             ].map((link) => (

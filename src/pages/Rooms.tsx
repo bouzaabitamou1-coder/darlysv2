@@ -1,15 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Users, Maximize2, Wifi, Wind, Coffee, Bath, Check } from "lucide-react";
+import { Users, Maximize2, Wifi, Bed, Check } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { supabase } from "@/integrations/supabase/client";
-import roomHeroBanner from "@/assets/room-hero-banner.jpg";
-import roomClassique from "@/assets/room-classique.jpg";
-import roomDeluxe from "@/assets/room-deluxe.jpg";
-import roomSuperieure from "@/assets/room-superieure.jpg";
-import roomFamily from "@/assets/room-family.jpg";
+import { photo, roomGallery, video } from "@/data/siteMedia";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -18,58 +14,204 @@ const fadeUp = {
   transition: { duration: 0.7 },
 };
 
-const imageMap: Record<string, string> = {
-  "royal-suite": roomSuperieure,
-  "deluxe-room": roomDeluxe,
-  "standard-room": roomClassique,
-  "la-classique": roomClassique,
-  "la-deluxe": roomDeluxe,
-  "la-superieure": roomSuperieure,
-  "la-lys-family": roomFamily,
+type RoomCategory = "Standard" | "Deluxe" | "Suite";
+
+type StaticRoom = {
+  slug: string;
+  dbAliases: string[];
+  category: RoomCategory;
+  name: string;
+  description: string;
+  extraNote?: string;
+  bed: string;
+  guestsLabel: string;
+  areaLabel: string;
 };
 
-const categories = ["All", "Suite", "Deluxe", "Standard"];
+const staticRooms: StaticRoom[] = [
+  {
+    slug: "la-classique",
+    dbAliases: ["la-classique", "standard-room"],
+    category: "Standard",
+    name: "La Classique",
+    description:
+      "A comfortable room decorated in warm tones, La Classique surrounds you with a special warmth and luxury. The perfect spot to feel pampered in pure magnificence, La Classique offers discreet elegance and a cosy, exceptional design, awash in natural light.",
+    bed: "Queen size bed 160×200 cm",
+    guestsLabel: "Up to 2 adults with 1 baby (maximum 2 years old)",
+    areaLabel: "19 sqm",
+  },
+  {
+    slug: "la-deluxe",
+    dbAliases: ["la-deluxe", "deluxe-room"],
+    category: "Deluxe",
+    name: "La Deluxe",
+    description:
+      "La Deluxe is spacious and offers contemporary and refined comfort. With a relaxing blend of natural tones and rich furnishings, the Deluxe has a pleasant, modern atmosphere. The Deluxe is perfect for both business and leisure travelers.",
+    bed: "Queen size bed 160×200 cm",
+    guestsLabel: "Up to 3 people",
+    areaLabel: "30 sqm",
+  },
+  {
+    slug: "la-superieure",
+    dbAliases: ["la-superieure", "royal-suite"],
+    category: "Suite",
+    name: "The Superior",
+    description:
+      "Spacious and bright, the Superior offers a contemporary style with an Art Deco twist. The pure lines, the art of Zellige and cedar wood contribute to offer you a luxurious stay in a setting where the traditional blends perfectly with the modern. Admire the patio and the rooftops of Fez from your balcony available in some of the Superior rooms. The fireplace invites you to cozy moments in winter…",
+    bed: "King size bed 180×200 cm",
+    guestsLabel: "Up to 3 people",
+    areaLabel: "36 sqm",
+  },
+  {
+    slug: "la-lys-family",
+    dbAliases: ["la-lys-family"],
+    category: "Suite",
+    name: "La Lys Family",
+    description:
+      "Fancy gathering the whole family or friends? Then our spacious Lys Family is perfect! The two-bedroom Lys Family has two private bathrooms with walk-in shower. Overlooking the Riad's patio, the Lys Family is elegant, bright, and lavishly furnished to create a modern atmosphere with an oriental twist.",
+    extraNote:
+      "The Lys Family can accommodate up to 5 people, including children and adolescents aged 0 to 18 years.",
+    bed: "1 queen size bed 160×200 cm · 2 twin beds 100×200 cm",
+    guestsLabel: "Up to 5 people",
+    areaLabel: "38 sqm",
+  },
+];
 
-const amenityIcons: Record<string, typeof Wifi> = {
-  "Free WiFi": Wifi,
-  "Air conditioning": Wind,
-  "Breakfast included": Coffee,
-  "Marble bathroom": Bath,
-  "En-suite bathroom": Bath,
-  "Private bathroom": Bath,
-};
+const categories: ("All" | RoomCategory)[] = ["All", "Suite", "Deluxe", "Standard"];
+
+const inRoomAmenities = [
+  "Smart TV",
+  "Latest-generation laptop safe",
+  "Minibar",
+  "Nespresso machine",
+  "Tea making facilities",
+];
+
+const bathroomAmenities = [
+  "Italian shower, toilet and bidet",
+  "Hairdryer",
+  "Soft bath sheets and bathrobes",
+  "Botanika neroli-based bath products",
+];
+
+function matchDbRow(rows: { slug: string; name?: string }[], aliases: string[]) {
+  const bySlug = rows.find((r) => aliases.includes(r.slug));
+  if (bySlug) return bySlug;
+  return undefined;
+}
+
+function RoomGallery({ images, altBase }: { images: string[]; altBase: string }) {
+  const [active, setActive] = useState(0);
+  const safe = images.length ? images : [photo.roomDeluxe];
+  const main = safe[Math.min(active, safe.length - 1)];
+
+  return (
+    <div className="space-y-3">
+      <div className="overflow-hidden aspect-[4/3]">
+        <img src={main} alt={`${altBase} — photo ${active + 1}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" width={1280} height={960} />
+      </div>
+      {safe.length > 1 && (
+        <div className="flex flex-wrap gap-2">
+          {safe.map((src, i) => (
+            <button
+              key={src}
+              type="button"
+              onClick={() => setActive(i)}
+              className={`relative h-14 w-20 sm:h-16 sm:w-24 overflow-hidden border-2 transition-colors ${active === i ? "border-gold" : "border-transparent opacity-80 hover:opacity-100"}`}
+              aria-label={`Show photo ${i + 1}`}
+            >
+              <img src={src} alt="" className="w-full h-full object-cover" loading="lazy" width={160} height={112} />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const Rooms = () => {
-  const [filter, setFilter] = useState("All");
-  const [rooms, setRooms] = useState<any[]>([]);
+  const [filter, setFilter] = useState<"All" | RoomCategory>("All");
+  const [dbRooms, setDbRooms] = useState<{ id: string; slug: string; price_per_night: number; name: string }[]>([]);
 
   useEffect(() => {
-    supabase.from("rooms").select("*").eq("is_available", true).order("price_per_night", { ascending: false }).then(({ data }) => {
-      if (data) setRooms(data);
-    });
+    supabase
+      .from("rooms")
+      .select("id, slug, price_per_night, name")
+      .eq("is_available", true)
+      .order("price_per_night", { ascending: false })
+      .then(({ data }) => {
+        if (data) setDbRooms(data as { id: string; slug: string; price_per_night: number; name: string }[]);
+      });
   }, []);
 
-  const filtered = filter === "All" ? rooms : rooms.filter((r) => r.category === filter);
+  const visibleRooms = useMemo(() => {
+    return staticRooms.filter((r) => filter === "All" || r.category === filter);
+  }, [filter]);
 
   return (
     <Layout>
-      <section className="relative h-[50vh] min-h-[350px] flex items-center justify-center overflow-hidden">
-        <img src={roomHeroBanner} alt="Luxury suite" className="absolute inset-0 w-full h-full object-cover" width={1024} height={1024} />
+      <section className="relative h-[55vh] min-h-[380px] flex items-center justify-center overflow-hidden">
+        <video className="absolute inset-0 w-full h-full object-cover" autoPlay muted loop playsInline poster={photo.roomHeroBanner} aria-label="Dar Lys accommodations">
+          <source src={video.homeHero} type="video/mp4" />
+        </video>
         <div className="overlay-dark" />
-        <div className="relative z-10 text-center px-4">
-          <p className="text-gold-light text-sm tracking-[0.4em] uppercase font-body mb-4">Accommodations</p>
+        <div className="relative z-10 text-center px-4 max-w-3xl mx-auto">
+          <p className="text-gold-light text-sm tracking-[0.4em] uppercase font-body mb-4">Accommodation</p>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold text-cream">Rooms & Suites</h1>
+          <p className="text-cream/80 mt-5 font-body text-sm sm:text-base leading-relaxed">
+            Dar Lys has 18 rooms, all decorated with taste and originality. They are equipped with every modern comfort to make your stay in Fez memorable.
+          </p>
         </div>
       </section>
 
-      <section className="section-padding bg-cream">
-        <div className="container-luxury">
-          <SectionHeading subtitle="Your Sanctuary" title="Find Your Perfect Room" description="Each of our rooms has been individually designed, blending traditional Moroccan artistry with modern luxury." />
+      <section className="section-padding bg-cream border-b border-border">
+        <div className="container-luxury max-w-4xl">
+          <motion.div {...fadeUp} className="prose prose-neutral max-w-none font-body text-muted-foreground leading-relaxed space-y-4">
+            <p>
+              Bright and cozy, the rooms open onto the patio and offer exceptional comfort for a soft and pleasant night. Smart TV, latest-generation safety box and minibar, Nespresso coffee machine, tea facilities — everything has been designed to give you a true home away from home.
+            </p>
+            <p>Our bathrooms feature an Italian shower, toilet and bidet, and a hairdryer.</p>
+            <p>
+              Soft bath sheets and bathrobes complement Botanika&apos;s neroli-based beauty products for a moment of relaxation and well-being.
+            </p>
+            <p>
+              Dar Lys cares about its impact on the environment and local communities. We have chosen suppliers and partners in line with our values. Our bathrooms and spa use refill dispensers with Botanika products — a Moroccan brand offering ecological formulas: no parabens, no aluminum salts, no GMOs, and not tested on animals.
+            </p>
+          </motion.div>
+          <div className="grid sm:grid-cols-2 gap-8 mt-10">
+            <motion.div {...fadeUp} transition={{ delay: 0.05, duration: 0.7 }}>
+              <h3 className="text-xs tracking-[0.2em] uppercase font-body text-gold mb-3">In your room</h3>
+              <ul className="space-y-2 text-sm text-charcoal-light font-body">
+                {inRoomAmenities.map((a) => (
+                  <li key={a} className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-gold shrink-0 mt-0.5" /> {a}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+            <motion.div {...fadeUp} transition={{ delay: 0.1, duration: 0.7 }}>
+              <h3 className="text-xs tracking-[0.2em] uppercase font-body text-gold mb-3">Bath & care</h3>
+              <ul className="space-y-2 text-sm text-charcoal-light font-body">
+                {bathroomAmenities.map((a) => (
+                  <li key={a} className="flex items-start gap-2">
+                    <Check className="w-4 h-4 text-gold shrink-0 mt-0.5" /> {a}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          </div>
+        </div>
+      </section>
 
-          <div className="flex justify-center gap-3 mb-12">
+      <section className="section-padding bg-cream-dark/30">
+        <div className="container-luxury">
+          <SectionHeading subtitle="Your stay" title="Choose your room" description="Four room categories, each with its own character — all opening onto the life of the riad." />
+
+          <div className="flex justify-center gap-3 mb-12 flex-wrap">
             {categories.map((cat) => (
               <button
                 key={cat}
+                type="button"
                 onClick={() => setFilter(cat)}
                 className={`px-5 py-2 text-xs tracking-[0.15em] uppercase font-body transition-all duration-300 ${
                   filter === cat ? "bg-gold text-cream" : "bg-transparent text-charcoal border border-border hover:border-gold hover:text-gold"
@@ -80,41 +222,58 @@ const Rooms = () => {
             ))}
           </div>
 
-          <div className="space-y-16">
-            {filtered.map((room, i) => (
-              <motion.div key={room.id} {...fadeUp} transition={{ delay: i * 0.1, duration: 0.7 }} className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-                <div className={`overflow-hidden aspect-[4/3] ${i % 2 === 1 ? "lg:order-2" : ""}`}>
-                  <img src={imageMap[room.slug] || roomDeluxe} alt={room.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" width={1280} height={960} />
-                </div>
-                <div>
-                  <h3 className="text-2xl sm:text-3xl font-display font-bold text-charcoal mb-2">{room.name}</h3>
-                  <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground font-body">
-                    <span className="flex items-center gap-1"><Maximize2 className="w-4 h-4" /> {room.size}</span>
-                    <span className="flex items-center gap-1"><Users className="w-4 h-4" /> {room.max_guests} Guests</span>
+          <div className="space-y-20 lg:space-y-24">
+            {visibleRooms.map((room, i) => {
+              const db = matchDbRow(dbRooms, room.dbAliases);
+              const images = roomGallery[room.slug] ?? [photo.roomDeluxe];
+              const bookingParam = db?.slug ?? room.slug;
+
+              return (
+                <motion.article key={room.slug} {...fadeUp} transition={{ delay: i * 0.06, duration: 0.7 }} className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+                  <div className={i % 2 === 1 ? "lg:order-2" : ""}>
+                    <RoomGallery images={images} altBase={room.name} />
                   </div>
-                  <div className="moroccan-divider !mx-0 mb-4" />
-                  <p className="text-muted-foreground font-body leading-relaxed mb-6">{room.description}</p>
-                  <div className="grid grid-cols-2 gap-2 mb-6">
-                    {(room.amenities || []).map((a: string) => {
-                      const Icon = amenityIcons[a] || Check;
-                      return (
-                        <div key={a} className="flex items-center gap-2 text-sm text-charcoal-light font-body">
-                          <Icon className="w-4 h-4 text-gold shrink-0" /> {a}
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-sm text-muted-foreground font-body">From </span>
-                      <span className="text-2xl font-display font-bold text-gold">€{room.price_per_night}</span>
-                      <span className="text-sm text-muted-foreground font-body"> / night</span>
+                  <div>
+                    <p className="text-xs tracking-[0.25em] uppercase font-body text-gold mb-2">{room.category}</p>
+                    <h2 className="text-2xl sm:text-3xl font-display font-bold text-charcoal mb-4">{room.name}</h2>
+                    <div className="flex flex-wrap gap-x-6 gap-y-2 mb-4 text-sm text-muted-foreground font-body">
+                      <span className="flex items-center gap-1.5">
+                        <Maximize2 className="w-4 h-4 text-gold shrink-0" /> {room.areaLabel}
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Users className="w-4 h-4 text-gold shrink-0" /> {room.guestsLabel}
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Wifi className="w-4 h-4 text-gold shrink-0" /> WiFi
+                      </span>
                     </div>
-                    <Link to={`/booking?room=${room.id}`} className="btn-luxury text-xs">Book Now</Link>
+                    <div className="flex items-start gap-2 text-sm text-charcoal-light font-body mb-4">
+                      <Bed className="w-4 h-4 text-gold shrink-0 mt-0.5" />
+                      <span>{room.bed}</span>
+                    </div>
+                    <div className="moroccan-divider !mx-0 mb-4" />
+                    <p className="text-muted-foreground font-body leading-relaxed mb-3">{room.description}</p>
+                    {room.extraNote && <p className="text-muted-foreground font-body leading-relaxed mb-6">{room.extraNote}</p>}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-2 border-t border-border">
+                      <div>
+                        {db ? (
+                          <>
+                            <span className="text-sm text-muted-foreground font-body">From </span>
+                            <span className="text-2xl font-display font-bold text-gold">€{Number(db.price_per_night)}</span>
+                            <span className="text-sm text-muted-foreground font-body"> / night</span>
+                          </>
+                        ) : (
+                          <p className="text-sm text-muted-foreground font-body">Rates on request — we&apos;ll confirm availability for your dates.</p>
+                        )}
+                      </div>
+                      <Link to={`/booking?room=${encodeURIComponent(bookingParam)}`} className="btn-luxury text-xs text-center sm:text-left">
+                        Book now
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.article>
+              );
+            })}
           </div>
         </div>
       </section>

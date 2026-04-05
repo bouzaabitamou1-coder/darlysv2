@@ -2,10 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
-import darlysDetail from "@/assets/darlys-detail.jpg";
-import darlysExterior from "@/assets/darlys-exterior.jpg";
-import darlysPatioHero from "@/assets/darlys-patio-hero.jpg";
-import darlysHero from "@/assets/darlys-hero-1.jpg";
+import { photo } from "@/data/siteMedia";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -24,7 +21,7 @@ const values = [
 const About = () => (
   <Layout>
     <section className="relative h-[60vh] min-h-[400px] flex items-center justify-center overflow-hidden">
-      <img src={darlysPatioHero} alt="Dar Lys patio" className="absolute inset-0 w-full h-full object-cover" width={1920} height={1080} />
+      <img src={photo.patioHero} alt="Dar Lys patio" className="absolute inset-0 w-full h-full object-cover" width={1920} height={1080} />
       <div className="overlay-dark" />
       <div className="relative z-10 text-center px-4">
         <p className="text-gold-light text-sm tracking-[0.4em] uppercase font-body mb-4">Our Story</p>
@@ -50,7 +47,7 @@ const About = () => (
             </p>
           </motion.div>
           <motion.div {...fadeUp} transition={{ delay: 0.2, duration: 0.7 }}>
-            <img src={darlysDetail} alt="Architectural detail" className="w-full aspect-[4/5] object-cover" loading="lazy" width={1280} height={960} />
+            <img src={photo.courtyard} alt="Cour intérieure du riad" className="w-full aspect-[4/5] object-cover" loading="lazy" width={1280} height={960} />
           </motion.div>
         </div>
       </div>
@@ -71,7 +68,7 @@ const About = () => (
     </section>
 
     <section className="relative py-24 overflow-hidden">
-      <img src={darlysExterior} alt="Dar Lys exterior" className="absolute inset-0 w-full h-full object-cover" loading="lazy" width={1920} height={1080} />
+      <img src={photo.exterior} alt="Dar Lys exterior" className="absolute inset-0 w-full h-full object-cover" loading="lazy" width={1920} height={1080} />
       <div className="overlay-dark" />
       <div className="relative z-10 text-center px-4">
         <motion.div {...fadeUp}>

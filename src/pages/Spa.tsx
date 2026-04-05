@@ -3,10 +3,7 @@ import { Link } from "react-router-dom";
 import { Clock, Droplets, Flower2, Leaf } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
-import spaHeroBanner from "@/assets/spa-hero-banner.jpg";
-import spaHammam from "@/assets/spa-hammam.jpg";
-import spaBeauty from "@/assets/spa-beauty.jpg";
-import spaGallery1 from "@/assets/spa-gallery-1.jpg";
+import { photo, video } from "@/data/siteMedia";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -30,7 +27,17 @@ const packages = [
 const Spa = () => (
   <Layout>
     <section className="relative h-[50vh] min-h-[350px] flex items-center justify-center overflow-hidden">
-      <img src={spaHeroBanner} alt="Lotus Spa at Dar Lys" className="absolute inset-0 w-full h-full object-cover" width={1024} height={1024} />
+      <video
+        className="absolute inset-0 w-full h-full object-cover"
+        autoPlay
+        muted
+        loop
+        playsInline
+        poster={photo.spaInterior}
+        aria-label="Lotus Spa at Dar Lys"
+      >
+        <source src={video.spa} type="video/mp4" />
+      </video>
       <div className="overlay-dark" />
       <div className="relative z-10 text-center px-4">
         <p className="text-gold-light text-sm tracking-[0.4em] uppercase font-body mb-4">Wellness</p>
@@ -56,7 +63,7 @@ const Spa = () => (
             </p>
           </motion.div>
           <motion.div {...fadeUp} transition={{ delay: 0.2, duration: 0.7 }}>
-            <img src={spaGallery1} alt="Spa interior" className="w-full aspect-[4/5] object-cover" loading="lazy" width={1280} height={960} />
+            <img src={photo.spaInterior} alt="Spa interior" className="w-full aspect-[4/5] object-cover" loading="lazy" width={1280} height={960} />
           </motion.div>
         </div>
 
@@ -82,7 +89,7 @@ const Spa = () => (
       <div className="container-luxury">
         <SectionHeading subtitle="Gallery" title="The Lotus Spa" />
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 lg:gap-4">
-          {[spaHammam, spaGallery1, spaBeauty].map((img, i) => (
+          {[photo.spaInterior, photo.patioHero, photo.salon].map((img, i) => (
             <motion.div key={i} {...fadeUp} transition={{ delay: i * 0.08, duration: 0.5 }} className="overflow-hidden aspect-square group">
               <img src={img} alt={`Spa gallery ${i + 1}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" width={640} height={640} />
             </motion.div>

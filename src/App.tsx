@@ -11,6 +11,9 @@ import Spa from "./pages/Spa";
 import Gallery from "./pages/Gallery";
 import Contact from "./pages/Contact";
 import FAQ from "./pages/FAQ";
+import Offers from "./pages/Offers";
+import Events from "./pages/Events";
+import Access from "./pages/Access";
 import BookingPage from "./pages/BookingPage";
 import BookingConfirmation from "./pages/BookingConfirmation";
 import AdminLogin from "./pages/AdminLogin";
@@ -34,6 +37,9 @@ const App = () => (
             <Route path="/gallery" element={<Gallery />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/faq" element={<FAQ />} />
+            <Route path="/offers" element={<Offers />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/access" element={<Access />} />
             <Route path="/booking" element={<BookingPage />} />
             <Route path="/booking-confirmation" element={<BookingConfirmation />} />
             <Route path="/admin/login" element={<AdminLogin />} />

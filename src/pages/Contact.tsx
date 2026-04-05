@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import SectionHeading from "@/components/ui/SectionHeading";
-import heroImage from "@/assets/hero-riad.jpg";
+import { photo } from "@/data/siteMedia";
 import { toast } from "sonner";
 
 const fadeUp = {
@@ -14,9 +15,22 @@ const fadeUp = {
   transition: { duration: 0.7 },
 };
 
+type ContactLocationState = { subject?: string; body?: string };
+
 const Contact = () => {
+  const location = useLocation();
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    const s = location.state as ContactLocationState | null | undefined;
+    if (!s?.subject && !s?.body) return;
+    setForm((f) => ({
+      ...f,
+      ...(s.subject ? { subject: s.subject } : {}),
+      ...(s.body ? { message: s.body } : {}),
+    }));
+  }, [location.state]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +57,7 @@ const Contact = () => {
   return (
     <Layout>
       <section className="relative h-[50vh] min-h-[350px] flex items-center justify-center overflow-hidden">
-        <img src={heroImage} alt="Dar Lys" className="absolute inset-0 w-full h-full object-cover" width={1920} height={1080} />
+        <img src={photo.heroMain} alt="Dar Lys" className="absolute inset-0 w-full h-full object-cover" width={1920} height={1080} />
         <div className="overlay-dark" />
         <div className="relative z-10 text-center px-4">
           <p className="text-gold-light text-sm tracking-[0.4em] uppercase font-body mb-4">Get in Touch</p>
