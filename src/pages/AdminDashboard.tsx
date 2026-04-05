@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   BarChart3, CalendarDays, DollarSign, Mail, BedDouble,
-  Users, LogOut, Eye, Check, X, Pencil, Trash2
+  Users, LogOut, Eye, Check, X, Pencil, Trash2, CreditCard, RefreshCw
 } from "lucide-react";
 
 const AdminDashboard = () => {
