@@ -16,6 +16,8 @@ const AdminDashboard = () => {
   const [bookings, setBookings] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [rooms, setRooms] = useState<any[]>([]);
+  const [paymentEvents, setPaymentEvents] = useState<any[]>([]);
+  const [syncLogs, setSyncLogs] = useState<any[]>([]);
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
