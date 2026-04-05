@@ -32,10 +32,12 @@ const AdminDashboard = () => {
   }, [isAdmin]);
 
   const loadData = async () => {
-    const [bookingsRes, messagesRes, roomsRes] = await Promise.all([
+    const [bookingsRes, messagesRes, roomsRes, eventsRes, syncRes] = await Promise.all([
       supabase.from("bookings").select("*, rooms(name)").order("created_at", { ascending: false }),
       supabase.from("contact_messages").select("*").order("created_at", { ascending: false }),
       supabase.from("rooms").select("*").order("name"),
+      supabase.from("payment_events").select("*").order("created_at", { ascending: false }).limit(50),
+      supabase.from("opera_sync_log").select("*").order("created_at", { ascending: false }).limit(50),
     ]);
 
     const b = bookingsRes.data || [];
@@ -45,6 +47,8 @@ const AdminDashboard = () => {
     setBookings(b);
     setMessages(m);
     setRooms(r);
+    setPaymentEvents(eventsRes.data || []);
+    setSyncLogs(syncRes.data || []);
     setStats({
       bookings: b.length,
       revenue: b.filter((x) => x.payment_status === "paid").reduce((s, x) => s + Number(x.total_price), 0),
