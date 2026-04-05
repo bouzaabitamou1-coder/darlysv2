@@ -13,11 +13,43 @@ serve(async (req) => {
   }
 
   try {
-    const { bookingId, roomName, totalPrice, nights, guestEmail } = await req.json();
+    const { bookingId, roomName, totalPrice, nights, guestEmail, roomId, checkIn, checkOut } = await req.json();
 
     if (!bookingId || !totalPrice || !guestEmail) {
       throw new Error("Missing required fields");
     }
+
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    // Check availability if room/dates provided
+    if (roomId && checkIn && checkOut) {
+      const { data: available } = await supabaseAdmin.rpc("check_availability", {
+        _room_id: roomId,
+        _check_in: checkIn,
+        _check_out: checkOut,
+      });
+
+      if (!available) {
+        return new Response(
+          JSON.stringify({ error: "Room is not available for the selected dates" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 409 }
+        );
+      }
+
+      // Create reservation lock
+      await supabaseAdmin.from("reservation_locks").insert({
+        room_id: roomId,
+        check_in: checkIn,
+        check_out: checkOut,
+        session_id: bookingId,
+      });
+    }
+
+    // Clean up expired locks
+    await supabaseAdmin.rpc("cleanup_expired_locks");
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -65,9 +97,8 @@ serve(async (req) => {
     await supabaseAdmin
       .from("bookings")
       .update({
+        stripe_checkout_session_id: session.id,
         payment_intent_id: session.payment_intent as string,
-        payment_status: "paid",
-        status: "confirmed",
       })
       .eq("id", bookingId);
 
