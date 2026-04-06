@@ -5,8 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   BarChart3, CalendarDays, DollarSign, Mail, BedDouble,
-  Users, LogOut, Eye, Check, X, Pencil, Trash2, CreditCard, RefreshCw
+  Users, LogOut, Eye, Check, X, Pencil, Trash2, CreditCard, RefreshCw, Printer
 } from "lucide-react";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { printInvoice } from "@/lib/printInvoice";
+import { Button } from "@/components/ui/button";
 
 const AdminDashboard = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
