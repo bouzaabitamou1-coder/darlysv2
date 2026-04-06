@@ -5,8 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   BarChart3, CalendarDays, DollarSign, Mail, BedDouble,
-  Users, LogOut, Eye, Check, X, Pencil, Trash2, CreditCard, RefreshCw
+  Users, LogOut, Eye, Check, X, Pencil, Trash2, CreditCard, RefreshCw, Printer
 } from "lucide-react";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { printInvoice } from "@/lib/printInvoice";
+import { Button } from "@/components/ui/button";
 
 const AdminDashboard = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -205,12 +208,14 @@ const AdminDashboard = () => {
                         {b.status === "pending" && (
                           <>
                             <button onClick={() => updateBookingStatus(b.id, "confirmed")} className="p-1 text-teal hover:bg-teal/10 rounded" title="Confirm"><Check className="w-4 h-4" /></button>
+                            <button onClick={() => updateBookingStatus(b.id, "approved")} className="p-1 text-blue-600 hover:bg-blue-50 rounded" title="Approve"><Check className="w-4 h-4" /></button>
                             <button onClick={() => updateBookingStatus(b.id, "cancelled")} className="p-1 text-destructive hover:bg-destructive/10 rounded" title="Cancel"><X className="w-4 h-4" /></button>
                           </>
                         )}
                         {b.status === "confirmed" && (
                           <button onClick={() => updateBookingStatus(b.id, "completed")} className="p-1 text-olive hover:bg-olive/10 rounded" title="Complete"><Check className="w-4 h-4" /></button>
                         )}
+                        <button onClick={() => printInvoice(b)} className="p-1 text-muted-foreground hover:text-foreground rounded" title="Print Invoice"><Printer className="w-4 h-4" /></button>
                       </div>
                     </td>
                   </tr>
@@ -332,16 +337,6 @@ const AdminDashboard = () => {
       </main>
     </div>
   );
-};
-
-const StatusBadge = ({ status }: { status: string }) => {
-  const colors: Record<string, string> = {
-    pending: "bg-gold/10 text-gold",
-    confirmed: "bg-teal/10 text-teal",
-    cancelled: "bg-destructive/10 text-destructive",
-    completed: "bg-olive/10 text-olive",
-  };
-  return <span className={`text-xs font-body px-2 py-0.5 capitalize ${colors[status] || "bg-muted text-muted-foreground"}`}>{status}</span>;
 };
 
 export default AdminDashboard;
