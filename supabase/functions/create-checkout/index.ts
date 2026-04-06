@@ -89,10 +89,6 @@ serve(async (req) => {
     });
 
     // Update booking with payment intent
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
 
     await supabaseAdmin
       .from("bookings")
