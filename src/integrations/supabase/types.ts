@@ -194,6 +194,36 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          phone: string | null
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          phone?: string | null
+          role?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          phone?: string | null
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       reservation_locks: {
         Row: {
           check_in: string
@@ -238,8 +268,11 @@ export type Database = {
           category: string
           created_at: string
           description: string | null
+          group_discount_percent: number
+          group_discount_threshold: number
           id: string
           images: string[] | null
+          inventory_count: number
           is_available: boolean
           max_guests: number
           name: string
@@ -253,8 +286,11 @@ export type Database = {
           category: string
           created_at?: string
           description?: string | null
+          group_discount_percent?: number
+          group_discount_threshold?: number
           id?: string
           images?: string[] | null
+          inventory_count?: number
           is_available?: boolean
           max_guests?: number
           name: string
@@ -268,8 +304,11 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          group_discount_percent?: number
+          group_discount_threshold?: number
           id?: string
           images?: string[] | null
+          inventory_count?: number
           is_available?: boolean
           max_guests?: number
           name?: string
@@ -306,6 +345,10 @@ export type Database = {
       check_availability: {
         Args: { _check_in: string; _check_out: string; _room_id: string }
         Returns: boolean
+      }
+      check_room_inventory: {
+        Args: { _check_in: string; _check_out: string; _room_id: string }
+        Returns: number
       }
       cleanup_expired_locks: { Args: never; Returns: undefined }
       has_role: {
