@@ -208,12 +208,14 @@ const AdminDashboard = () => {
                         {b.status === "pending" && (
                           <>
                             <button onClick={() => updateBookingStatus(b.id, "confirmed")} className="p-1 text-teal hover:bg-teal/10 rounded" title="Confirm"><Check className="w-4 h-4" /></button>
+                            <button onClick={() => updateBookingStatus(b.id, "approved")} className="p-1 text-blue-600 hover:bg-blue-50 rounded" title="Approve"><Check className="w-4 h-4" /></button>
                             <button onClick={() => updateBookingStatus(b.id, "cancelled")} className="p-1 text-destructive hover:bg-destructive/10 rounded" title="Cancel"><X className="w-4 h-4" /></button>
                           </>
                         )}
                         {b.status === "confirmed" && (
                           <button onClick={() => updateBookingStatus(b.id, "completed")} className="p-1 text-olive hover:bg-olive/10 rounded" title="Complete"><Check className="w-4 h-4" /></button>
                         )}
+                        <button onClick={() => printInvoice(b)} className="p-1 text-muted-foreground hover:text-foreground rounded" title="Print Invoice"><Printer className="w-4 h-4" /></button>
                       </div>
                     </td>
                   </tr>
