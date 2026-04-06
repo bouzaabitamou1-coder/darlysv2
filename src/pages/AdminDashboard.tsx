@@ -339,14 +339,4 @@ const AdminDashboard = () => {
   );
 };
 
-const StatusBadge = ({ status }: { status: string }) => {
-  const colors: Record<string, string> = {
-    pending: "bg-gold/10 text-gold",
-    confirmed: "bg-teal/10 text-teal",
-    cancelled: "bg-destructive/10 text-destructive",
-    completed: "bg-olive/10 text-olive",
-  };
-  return <span className={`text-xs font-body px-2 py-0.5 capitalize ${colors[status] || "bg-muted text-muted-foreground"}`}>{status}</span>;
-};
-
 export default AdminDashboard;
