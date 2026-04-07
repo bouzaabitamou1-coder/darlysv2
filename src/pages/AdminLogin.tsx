@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Layout from "@/components/layout/Layout";
@@ -9,8 +9,22 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const [justSignedIn, setJustSignedIn] = useState(false);
+  const { signIn, isAdmin, user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (justSignedIn && isAdmin) {
+      navigate("/admin");
+    }
+  }, [justSignedIn, isAdmin, navigate]);
+
+  // If already logged in as admin, redirect
+  useEffect(() => {
+    if (user && isAdmin) {
+      navigate("/admin");
+    }
+  }, [user, isAdmin, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +36,7 @@ const AdminLogin = () => {
       toast.error("Invalid credentials. Please try again.");
     } else {
       toast.success("Welcome back!");
-      navigate("/admin");
+      setJustSignedIn(true);
     }
   };
 
