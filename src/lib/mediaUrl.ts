@@ -1,4 +1,4 @@
-/** Resolve a file in `public/media/` for use in `src` / `poster` (handles spaces & Unicode). */
+/** Resolve a file in `public/media/` for use in `src` / `poster`. */
 export function mediaUrl(filename: string): string {
-  return `/media/${encodeURIComponent(filename)}`;
+  return `/media/${filename}`;
 }

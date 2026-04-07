@@ -1,41 +1,41 @@
 import { mediaUrl } from "@/lib/mediaUrl";
 
-/** Filenames in `public/media/` (keep in sync with files on disk). */
+/** Filenames in `public/media/` — hyphens instead of spaces. */
 const f = {
-  birdRiad: "bird riad.jpg",
-  chairsRiad: "chairs riad.jpg",
-  guestsRiad: "guests at riad.jpg",
-  guestsRiad2: "guests at riad 2.jpg",
-  riadFountain: "riad fountain.jpg",
-  riadLobby: "riad lobby.jpg",
-  riadLobby2: "riad lobby 2.jpg",
-  riadLobby3: "riad lobby3.jpg",
-  riadRestaurant: "riad restaurant.jpg",
-  riadView: "riad view.jpg",
-  riadView2: "riad view2.jpg",
+  birdRiad: "bird-riad.jpg",
+  chairsRiad: "chairs-riad.jpg",
+  guestsRiad: "guests-at-riad.jpg",
+  guestsRiad2: "guests-at-riad-2.jpg",
+  riadFountain: "riad-fountain.jpg",
+  riadLobby: "riad-lobby.jpg",
+  riadLobby2: "riad-lobby-2.jpg",
+  riadLobby3: "riad-lobby3.jpg",
+  riadRestaurant: "riad-restaurant.jpg",
+  riadView: "riad-view.jpg",
+  riadView2: "riad-view2.jpg",
   restaurant2: "restaurant2.jpg",
   table: "table.jpg",
-  tableRestaurant: "table restaurant.jpg",
-  terraceRiad: "terrace riad.jpg",
-  laClassique1: "la classique1.jpg",
-  laClassique2: "la classique 2.jpg",
-  laClassique3: "la classique 3.jpg",
-  laDeluxe1: "la deluxe 1.jpg",
-  laDeluxe2: "la deluxe 2.jpg",
-  laDeluxe3: "la deluxe 3.jpg",
-  laDeluxe4: "la deluxe 4.jpg",
-  laDeluxe5: "la deluxe 5.jpg",
-  laLysFamily1: "la lys family 1.jpg",
-  laLysFamily2: "la lys family 2.jpg",
-  laLysFamily3: "la lys family 3.jpg",
-  laLysFamily4: "la lys family 4.jpg",
-  laLysFamily5: "la lys family 5.jpg",
-  superior1: "the superior 1.jpg",
-  superior2: "the superior 2.jpg",
-  superior3: "the superior 3.jpg",
-  superior4: "the superior 4.jpg",
-  superior5: "the superior 5.jpg",
-  superior6: "the superior 6.jpg",
+  tableRestaurant: "table-restaurant.jpg",
+  terraceRiad: "terrace-riad.jpg",
+  laClassique1: "la-classique1.jpg",
+  laClassique2: "la-classique-2.jpg",
+  laClassique3: "la-classique-3.jpg",
+  laDeluxe1: "la-deluxe-1.jpg",
+  laDeluxe2: "la-deluxe-2.jpg",
+  laDeluxe3: "la-deluxe-3.jpg",
+  laDeluxe4: "la-deluxe-4.jpg",
+  laDeluxe5: "la-deluxe-5.jpg",
+  laLysFamily1: "la-lys-family-1.jpg",
+  laLysFamily2: "la-lys-family-2.jpg",
+  laLysFamily3: "la-lys-family-3.jpg",
+  laLysFamily4: "la-lys-family-4.jpg",
+  laLysFamily5: "la-lys-family-5.jpg",
+  superior1: "the-superior-1.jpg",
+  superior2: "the-superior-2.jpg",
+  superior3: "the-superior-3.jpg",
+  superior4: "the-superior-4.jpg",
+  superior5: "the-superior-5.jpg",
+  superior6: "the-superior-6.jpg",
 } as const;
 
 const u = (key: keyof typeof f) => mediaUrl(f[key]);
@@ -83,16 +83,12 @@ export const menuPhoto = {
 } as const;
 
 export const video = {
-  /** Riad atmosphere — events & property */
   homeHero: mediaUrl("event.mp4"),
-  /** Restaurant & warm interiors */
   ambience: mediaUrl("restaurant1.mp4"),
-  /** Culinary mood */
-  riadWalkthrough: mediaUrl("food video.mp4"),
+  riadWalkthrough: mediaUrl("food-video.mp4"),
   reelRiad: mediaUrl("event.mp4"),
-  reelExperience: mediaUrl("food video.mp4"),
-  /** Lotus Spa */
-  spa: mediaUrl("spa video.mp4"),
+  reelExperience: mediaUrl("food-video.mp4"),
+  spa: mediaUrl("spa-video.mp4"),
 } as const;
 
 export type GalleryItem =
