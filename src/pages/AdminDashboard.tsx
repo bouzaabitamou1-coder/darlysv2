@@ -66,6 +66,27 @@ const AdminDashboard = () => {
     loadData();
   };
 
+  const [refundingId, setRefundingId] = useState<string | null>(null);
+  const [expandedSyncLog, setExpandedSyncLog] = useState<string | null>(null);
+
+  const processRefund = async (booking: any) => {
+    if (!confirm(`Refund €${Number(booking.total_price).toFixed(2)} for ${booking.guest_name}?`)) return;
+    setRefundingId(booking.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("process-refund", {
+        body: { bookingId: booking.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`Refund of €${data.amount} processed (${data.refundId})`);
+      loadData();
+    } catch (err: any) {
+      toast.error(`Refund failed: ${err.message}`);
+    } finally {
+      setRefundingId(null);
+    }
+  };
+
   const markMessageRead = async (id: string) => {
     await supabase.from("contact_messages").update({ is_read: true }).eq("id", id);
     loadData();
