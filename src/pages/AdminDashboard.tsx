@@ -68,8 +68,7 @@ const AdminDashboard = () => {
     loadData();
   };
 
-  const [refundingId, setRefundingId] = useState<string | null>(null);
-  const [expandedSyncLog, setExpandedSyncLog] = useState<string | null>(null);
+
 
   const processRefund = async (booking: any) => {
     if (!confirm(`Refund €${Number(booking.total_price).toFixed(2)} for ${booking.guest_name}?`)) return;
