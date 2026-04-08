@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Clock } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
-import { menuPhoto, photo, video } from "@/data/siteMedia";
+import { photo, video } from "@/data/siteMedia";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -16,26 +16,26 @@ const menuSections = [
   {
     title: "Entrées",
     items: [
-      { name: "Briouats Marocains", desc: "Croustillants à base de feuille de brick farcis d'agneau épicé et herbes fraîches", price: "120 MAD", image: menuPhoto.briouats },
-      { name: "Salade Zaalouk", desc: "Salade d'aubergines fumées et tomates au cumin et huile d'olive", price: "90 MAD", image: menuPhoto.zaalouk },
-      { name: "Harira", desc: "Soupe traditionnelle de lentilles et pois chiches au safran et coriandre", price: "80 MAD", image: menuPhoto.harira },
+      { name: "Briouats Marocains", desc: "Croustillants à base de feuille de brick farcis d'agneau épicé et herbes fraîches", price: "120 MAD" },
+      { name: "Salade Zaalouk", desc: "Salade d'aubergines fumées et tomates au cumin et huile d'olive", price: "90 MAD" },
+      { name: "Harira", desc: "Soupe traditionnelle de lentilles et pois chiches au safran et coriandre", price: "80 MAD" },
     ],
   },
   {
     title: "Plats Principaux",
     items: [
-      { name: "Tagine d'Agneau", desc: "Agneau mijoté lentement avec pruneaux, amandes et Ras el Hanout", price: "220 MAD", image: menuPhoto.tagine },
-      { name: "Pastilla au Poulet", desc: "Tourte sucrée-salée au poulet effiloché, amandes et cannelle", price: "180 MAD", image: menuPhoto.pastilla },
-      { name: "Couscous Royal", desc: "Couscous aux sept légumes avec agneau tendre et merguez", price: "200 MAD", image: menuPhoto.couscous },
-      { name: "Bar Grillé", desc: "Poisson frais en marinade chermoula avec légumes rôtis", price: "240 MAD", image: menuPhoto.fish },
+      { name: "Tagine d'Agneau", desc: "Agneau mijoté lentement avec pruneaux, amandes et Ras el Hanout", price: "220 MAD" },
+      { name: "Pastilla au Poulet", desc: "Tourte sucrée-salée au poulet effiloché, amandes et cannelle", price: "180 MAD" },
+      { name: "Couscous Royal", desc: "Couscous aux sept légumes avec agneau tendre et merguez", price: "200 MAD" },
+      { name: "Bar Grillé", desc: "Poisson frais en marinade chermoula avec légumes rôtis", price: "240 MAD" },
     ],
   },
   {
     title: "Desserts & Thé",
     items: [
-      { name: "Pastilla au Lait", desc: "Pastilla au lait à la crème de fleur d'oranger et amandes grillées", price: "100 MAD", image: menuPhoto.pastillaLait },
-      { name: "Thé à la Menthe", desc: "Thé vert à la poudre de canon avec menthe verte fraîche", price: "50 MAD", image: menuPhoto.tea },
-      { name: "Cornes de Gazelle", desc: "Pâtisseries en forme de croissant fourrées aux amandes et eau de fleur d'oranger", price: "80 MAD", image: menuPhoto.cornes },
+      { name: "Pastilla au Lait", desc: "Pastilla au lait à la crème de fleur d'oranger et amandes grillées", price: "100 MAD" },
+      { name: "Thé à la Menthe", desc: "Thé vert à la poudre de canon avec menthe verte fraîche", price: "50 MAD" },
+      { name: "Cornes de Gazelle", desc: "Pâtisseries en forme de croissant fourrées aux amandes et eau de fleur d'oranger", price: "80 MAD" },
     ],
   },
 ];
@@ -152,18 +152,16 @@ const Restaurant = () => (
               <div className="text-center mb-8">
                 <h3 className="text-2xl font-display font-semibold text-gold">{section.title}</h3>
               </div>
-              <div className="arabesque-border py-8 space-y-8">
+              <div className="arabesque-border py-8 space-y-6">
                 {section.items.map((item) => (
-                  <div key={item.name} className="flex gap-6 items-start flex-col sm:flex-row">
-                    <div className="w-full sm:w-36 h-28 sm:h-28 shrink-0 overflow-hidden rounded-sm border border-cream/10">
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" loading="lazy" width={800} height={600} />
-                    </div>
-                    <div className="flex-1 flex justify-between items-start gap-4">
-                      <div>
+                  <div key={item.name} className="flex justify-between items-baseline gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-baseline gap-3">
                         <h4 className="font-display font-semibold text-cream text-lg">{item.name}</h4>
-                        <p className="text-sm text-cream/50 font-body mt-1">{item.desc}</p>
+                        <span className="flex-1 border-b border-dotted border-cream/20 min-w-[2rem] translate-y-[-4px]" />
+                        <span className="text-gold font-display font-semibold text-lg shrink-0 whitespace-nowrap">{item.price}</span>
                       </div>
-                      <span className="text-gold font-display font-semibold text-lg shrink-0 whitespace-nowrap">{item.price}</span>
+                      <p className="text-sm text-cream/50 font-body mt-1">{item.desc}</p>
                     </div>
                   </div>
                 ))}
