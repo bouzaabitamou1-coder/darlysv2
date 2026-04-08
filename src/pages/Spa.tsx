@@ -39,7 +39,7 @@ const Spa = () => (
         muted
         loop
         playsInline
-        poster={photo.spaInterior}
+        poster={spaHero}
         aria-label="Lotus Spa at Dar Lys"
       >
         <source src={video.spa} type="video/mp4" />
