@@ -3,7 +3,13 @@ import { Link } from "react-router-dom";
 import { Clock, Droplets, Flower2, Leaf } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
-import { photo, video } from "@/data/siteMedia";
+import { video } from "@/data/siteMedia";
+import spaHero from "@/assets/spa-hero-banner.jpg";
+import spaHammam from "@/assets/spa-hammam.jpg";
+import spaGallery1 from "@/assets/spa-gallery-1.jpg";
+import spaGallery2 from "@/assets/spa-gallery-2.jpg";
+import spaDetail from "@/assets/spa-detail.jpg";
+import spaBeauty from "@/assets/spa-beauty.jpg";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -33,7 +39,7 @@ const Spa = () => (
         muted
         loop
         playsInline
-        poster={photo.spaInterior}
+        poster={spaHero}
         aria-label="Lotus Spa at Dar Lys"
       >
         <source src={video.spa} type="video/mp4" />
@@ -63,7 +69,7 @@ const Spa = () => (
             </p>
           </motion.div>
           <motion.div {...fadeUp} transition={{ delay: 0.2, duration: 0.7 }}>
-            <img src={photo.spaInterior} alt="Spa interior" className="w-full aspect-[4/5] object-cover" loading="lazy" width={1280} height={960} />
+            <img src={spaHammam} alt="Spa hammam" className="w-full aspect-[4/5] object-cover" loading="lazy" width={1280} height={960} />
           </motion.div>
         </div>
 
@@ -89,7 +95,7 @@ const Spa = () => (
       <div className="container-luxury">
         <SectionHeading subtitle="Gallery" title="The Lotus Spa" />
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 lg:gap-4">
-          {[photo.spaInterior, photo.patioHero, photo.salon].map((img, i) => (
+          {[spaGallery1, spaGallery2, spaDetail, spaBeauty, spaHero, spaHammam].map((img, i) => (
             <motion.div key={i} {...fadeUp} transition={{ delay: i * 0.08, duration: 0.5 }} className="overflow-hidden aspect-square group">
               <img src={img} alt={`Spa gallery ${i + 1}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" width={640} height={640} />
             </motion.div>
