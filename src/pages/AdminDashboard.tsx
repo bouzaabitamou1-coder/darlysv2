@@ -237,6 +237,16 @@ const AdminDashboard = () => {
                         {b.status === "confirmed" && (
                           <button onClick={() => updateBookingStatus(b.id, "completed")} className="p-1 text-olive hover:bg-olive/10 rounded" title="Complete"><Check className="w-4 h-4" /></button>
                         )}
+                        {b.payment_status === "paid" && b.status !== "cancelled" && (
+                          <button
+                            onClick={() => processRefund(b)}
+                            disabled={refundingId === b.id}
+                            className="p-1 text-destructive hover:bg-destructive/10 rounded disabled:opacity-50"
+                            title="Refund"
+                          >
+                            <Undo2 className="w-4 h-4" />
+                          </button>
+                        )}
                         <button onClick={() => printInvoice(b)} className="p-1 text-muted-foreground hover:text-foreground rounded" title="Print Invoice"><Printer className="w-4 h-4" /></button>
                       </div>
                     </td>
