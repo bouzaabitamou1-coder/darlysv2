@@ -3,7 +3,13 @@ import { Link } from "react-router-dom";
 import { Clock, Droplets, Flower2, Leaf } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
-import { photo, video } from "@/data/siteMedia";
+import { video } from "@/data/siteMedia";
+import spaHero from "@/assets/spa-hero-banner.jpg";
+import spaHammam from "@/assets/spa-hammam.jpg";
+import spaGallery1 from "@/assets/spa-gallery-1.jpg";
+import spaGallery2 from "@/assets/spa-gallery-2.jpg";
+import spaDetail from "@/assets/spa-detail.jpg";
+import spaBeauty from "@/assets/spa-beauty.jpg";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
