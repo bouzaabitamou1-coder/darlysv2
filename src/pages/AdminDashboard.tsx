@@ -21,6 +21,8 @@ const AdminDashboard = () => {
   const [rooms, setRooms] = useState<any[]>([]);
   const [paymentEvents, setPaymentEvents] = useState<any[]>([]);
   const [syncLogs, setSyncLogs] = useState<any[]>([]);
+  const [refundingId, setRefundingId] = useState<string | null>(null);
+  const [expandedSyncLog, setExpandedSyncLog] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
