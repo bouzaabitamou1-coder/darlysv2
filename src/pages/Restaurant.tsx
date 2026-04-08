@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Clock } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
-import { menuPhoto, photo, video } from "@/data/siteMedia";
+import { photo, video } from "@/data/siteMedia";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
