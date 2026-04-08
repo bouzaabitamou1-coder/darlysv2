@@ -343,26 +343,58 @@ const AdminDashboard = () => {
                     <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Action</th>
                     <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Status</th>
                     <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Date</th>
-                    <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Error</th>
+                    <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Details</th>
                   </tr>
                 </thead>
                 <tbody>
                   {syncLogs.map((log) => (
-                    <tr key={log.id} className="border-b border-border hover:bg-cream-dark transition-colors">
-                      <td className="p-4 text-charcoal">{log.booking_id?.slice(0, 8) || "—"}</td>
-                      <td className="p-4"><span className="text-xs px-2 py-0.5 bg-gold/10 text-gold capitalize">{log.action}</span></td>
-                      <td className="p-4">
-                        <span className={`text-xs px-2 py-0.5 capitalize ${log.status === "success" ? "bg-teal/10 text-teal" : log.status === "failed" ? "bg-destructive/10 text-destructive" : "bg-gold/10 text-gold"}`}>
-                          {log.status}
-                        </span>
-                      </td>
-                      <td className="p-4 text-muted-foreground">{new Date(log.created_at).toLocaleString()}</td>
-                      <td className="p-4 text-muted-foreground text-xs max-w-[200px] truncate">{log.error_message || "—"}</td>
-                    </tr>
+                    <>
+                      <tr key={log.id} className="border-b border-border hover:bg-cream-dark transition-colors cursor-pointer" onClick={() => setExpandedSyncLog(expandedSyncLog === log.id ? null : log.id)}>
+                        <td className="p-4 text-charcoal font-mono text-xs">{log.booking_id?.slice(0, 8) || "—"}</td>
+                        <td className="p-4"><span className="text-xs px-2 py-0.5 bg-gold/10 text-gold capitalize">{log.action}</span></td>
+                        <td className="p-4">
+                          <span className={`text-xs px-2 py-0.5 capitalize ${log.status === "success" ? "bg-teal/10 text-teal" : log.status === "failed" ? "bg-destructive/10 text-destructive" : "bg-gold/10 text-gold"}`}>
+                            {log.status}
+                          </span>
+                        </td>
+                        <td className="p-4 text-muted-foreground">{new Date(log.created_at).toLocaleString()}</td>
+                        <td className="p-4">
+                          <button className="text-muted-foreground hover:text-foreground">
+                            {expandedSyncLog === log.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                          </button>
+                        </td>
+                      </tr>
+                      {expandedSyncLog === log.id && (
+                        <tr key={`${log.id}-detail`} className="border-b border-border">
+                          <td colSpan={5} className="p-4 bg-cream-dark">
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-xs tracking-wider uppercase text-muted-foreground mb-2 font-body">Request Payload (OHIP Format)</p>
+                                <pre className="text-xs font-mono bg-charcoal text-cream p-3 rounded overflow-auto max-h-60">
+                                  {JSON.stringify(log.request_payload, null, 2)}
+                                </pre>
+                              </div>
+                              <div>
+                                <p className="text-xs tracking-wider uppercase text-muted-foreground mb-2 font-body">Response / Error</p>
+                                <pre className="text-xs font-mono bg-charcoal text-cream p-3 rounded overflow-auto max-h-60">
+                                  {JSON.stringify(log.response_payload, null, 2)}
+                                </pre>
+                                {log.error_message && (
+                                  <p className="mt-2 text-xs text-destructive font-body">{log.error_message}</p>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
                   ))}
                 </tbody>
               </table>
               {syncLogs.length === 0 && <p className="text-center text-muted-foreground text-sm font-body p-8">No Opera PMS sync attempts yet.</p>}
+            </div>
+          </div>
+        )}
             </div>
           </div>
         )}
