@@ -69,7 +69,7 @@ const Spa = () => (
             </p>
           </motion.div>
           <motion.div {...fadeUp} transition={{ delay: 0.2, duration: 0.7 }}>
-            <img src={photo.spaInterior} alt="Spa interior" className="w-full aspect-[4/5] object-cover" loading="lazy" width={1280} height={960} />
+            <img src={spaHammam} alt="Spa hammam" className="w-full aspect-[4/5] object-cover" loading="lazy" width={1280} height={960} />
           </motion.div>
         </div>
 
