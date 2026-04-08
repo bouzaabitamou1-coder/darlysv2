@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   BarChart3, CalendarDays, DollarSign, Mail, BedDouble,
-  Users, LogOut, Eye, Check, X, Pencil, Trash2, CreditCard, RefreshCw, Printer
+  Users, LogOut, Eye, Check, X, Pencil, Trash2, CreditCard, RefreshCw, Printer, Undo2, ChevronDown, ChevronUp
 } from "lucide-react";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { printInvoice } from "@/lib/printInvoice";
@@ -21,6 +21,8 @@ const AdminDashboard = () => {
   const [rooms, setRooms] = useState<any[]>([]);
   const [paymentEvents, setPaymentEvents] = useState<any[]>([]);
   const [syncLogs, setSyncLogs] = useState<any[]>([]);
+  const [refundingId, setRefundingId] = useState<string | null>(null);
+  const [expandedSyncLog, setExpandedSyncLog] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
@@ -64,6 +66,26 @@ const AdminDashboard = () => {
     await supabase.from("bookings").update({ status }).eq("id", id);
     toast.success(`Booking ${status}`);
     loadData();
+  };
+
+
+
+  const processRefund = async (booking: any) => {
+    if (!confirm(`Refund €${Number(booking.total_price).toFixed(2)} for ${booking.guest_name}?`)) return;
+    setRefundingId(booking.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("process-refund", {
+        body: { bookingId: booking.id },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`Refund of €${data.amount} processed (${data.refundId})`);
+      loadData();
+    } catch (err: any) {
+      toast.error(`Refund failed: ${err.message}`);
+    } finally {
+      setRefundingId(null);
+    }
   };
 
   const markMessageRead = async (id: string) => {
@@ -215,6 +237,16 @@ const AdminDashboard = () => {
                         {b.status === "confirmed" && (
                           <button onClick={() => updateBookingStatus(b.id, "completed")} className="p-1 text-olive hover:bg-olive/10 rounded" title="Complete"><Check className="w-4 h-4" /></button>
                         )}
+                        {b.payment_status === "paid" && b.status !== "cancelled" && (
+                          <button
+                            onClick={() => processRefund(b)}
+                            disabled={refundingId === b.id}
+                            className="p-1 text-destructive hover:bg-destructive/10 rounded disabled:opacity-50"
+                            title="Refund"
+                          >
+                            <Undo2 className="w-4 h-4" />
+                          </button>
+                        )}
                         <button onClick={() => printInvoice(b)} className="p-1 text-muted-foreground hover:text-foreground rounded" title="Print Invoice"><Printer className="w-4 h-4" /></button>
                       </div>
                     </td>
@@ -311,22 +343,51 @@ const AdminDashboard = () => {
                     <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Action</th>
                     <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Status</th>
                     <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Date</th>
-                    <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Error</th>
+                    <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Details</th>
                   </tr>
                 </thead>
                 <tbody>
                   {syncLogs.map((log) => (
-                    <tr key={log.id} className="border-b border-border hover:bg-cream-dark transition-colors">
-                      <td className="p-4 text-charcoal">{log.booking_id?.slice(0, 8) || "—"}</td>
-                      <td className="p-4"><span className="text-xs px-2 py-0.5 bg-gold/10 text-gold capitalize">{log.action}</span></td>
-                      <td className="p-4">
-                        <span className={`text-xs px-2 py-0.5 capitalize ${log.status === "success" ? "bg-teal/10 text-teal" : log.status === "failed" ? "bg-destructive/10 text-destructive" : "bg-gold/10 text-gold"}`}>
-                          {log.status}
-                        </span>
-                      </td>
-                      <td className="p-4 text-muted-foreground">{new Date(log.created_at).toLocaleString()}</td>
-                      <td className="p-4 text-muted-foreground text-xs max-w-[200px] truncate">{log.error_message || "—"}</td>
-                    </tr>
+                    <>
+                      <tr key={log.id} className="border-b border-border hover:bg-cream-dark transition-colors cursor-pointer" onClick={() => setExpandedSyncLog(expandedSyncLog === log.id ? null : log.id)}>
+                        <td className="p-4 text-charcoal font-mono text-xs">{log.booking_id?.slice(0, 8) || "—"}</td>
+                        <td className="p-4"><span className="text-xs px-2 py-0.5 bg-gold/10 text-gold capitalize">{log.action}</span></td>
+                        <td className="p-4">
+                          <span className={`text-xs px-2 py-0.5 capitalize ${log.status === "success" ? "bg-teal/10 text-teal" : log.status === "failed" ? "bg-destructive/10 text-destructive" : "bg-gold/10 text-gold"}`}>
+                            {log.status}
+                          </span>
+                        </td>
+                        <td className="p-4 text-muted-foreground">{new Date(log.created_at).toLocaleString()}</td>
+                        <td className="p-4">
+                          <button className="text-muted-foreground hover:text-foreground">
+                            {expandedSyncLog === log.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                          </button>
+                        </td>
+                      </tr>
+                      {expandedSyncLog === log.id && (
+                        <tr key={`${log.id}-detail`} className="border-b border-border">
+                          <td colSpan={5} className="p-4 bg-cream-dark">
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-xs tracking-wider uppercase text-muted-foreground mb-2 font-body">Request Payload (OHIP Format)</p>
+                                <pre className="text-xs font-mono bg-charcoal text-cream p-3 rounded overflow-auto max-h-60">
+                                  {JSON.stringify(log.request_payload, null, 2)}
+                                </pre>
+                              </div>
+                              <div>
+                                <p className="text-xs tracking-wider uppercase text-muted-foreground mb-2 font-body">Response / Error</p>
+                                <pre className="text-xs font-mono bg-charcoal text-cream p-3 rounded overflow-auto max-h-60">
+                                  {JSON.stringify(log.response_payload, null, 2)}
+                                </pre>
+                                {log.error_message && (
+                                  <p className="mt-2 text-xs text-destructive font-body">{log.error_message}</p>
+                                )}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </>
                   ))}
                 </tbody>
               </table>
@@ -334,6 +395,7 @@ const AdminDashboard = () => {
             </div>
           </div>
         )}
+
       </main>
     </div>
   );
