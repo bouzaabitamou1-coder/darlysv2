@@ -16,26 +16,26 @@ const menuSections = [
   {
     title: "Entrées",
     items: [
-      { name: "Briouats Marocains", desc: "Croustillants à base de feuille de brick farcis d'agneau épicé et herbes fraîches", price: "120 MAD", image: menuPhoto.briouats },
-      { name: "Salade Zaalouk", desc: "Salade d'aubergines fumées et tomates au cumin et huile d'olive", price: "90 MAD", image: menuPhoto.zaalouk },
-      { name: "Harira", desc: "Soupe traditionnelle de lentilles et pois chiches au safran et coriandre", price: "80 MAD", image: menuPhoto.harira },
+      { name: "Briouats Marocains", desc: "Croustillants à base de feuille de brick farcis d'agneau épicé et herbes fraîches", price: "120 MAD" },
+      { name: "Salade Zaalouk", desc: "Salade d'aubergines fumées et tomates au cumin et huile d'olive", price: "90 MAD" },
+      { name: "Harira", desc: "Soupe traditionnelle de lentilles et pois chiches au safran et coriandre", price: "80 MAD" },
     ],
   },
   {
     title: "Plats Principaux",
     items: [
-      { name: "Tagine d'Agneau", desc: "Agneau mijoté lentement avec pruneaux, amandes et Ras el Hanout", price: "220 MAD", image: menuPhoto.tagine },
-      { name: "Pastilla au Poulet", desc: "Tourte sucrée-salée au poulet effiloché, amandes et cannelle", price: "180 MAD", image: menuPhoto.pastilla },
-      { name: "Couscous Royal", desc: "Couscous aux sept légumes avec agneau tendre et merguez", price: "200 MAD", image: menuPhoto.couscous },
-      { name: "Bar Grillé", desc: "Poisson frais en marinade chermoula avec légumes rôtis", price: "240 MAD", image: menuPhoto.fish },
+      { name: "Tagine d'Agneau", desc: "Agneau mijoté lentement avec pruneaux, amandes et Ras el Hanout", price: "220 MAD" },
+      { name: "Pastilla au Poulet", desc: "Tourte sucrée-salée au poulet effiloché, amandes et cannelle", price: "180 MAD" },
+      { name: "Couscous Royal", desc: "Couscous aux sept légumes avec agneau tendre et merguez", price: "200 MAD" },
+      { name: "Bar Grillé", desc: "Poisson frais en marinade chermoula avec légumes rôtis", price: "240 MAD" },
     ],
   },
   {
     title: "Desserts & Thé",
     items: [
-      { name: "Pastilla au Lait", desc: "Pastilla au lait à la crème de fleur d'oranger et amandes grillées", price: "100 MAD", image: menuPhoto.pastillaLait },
-      { name: "Thé à la Menthe", desc: "Thé vert à la poudre de canon avec menthe verte fraîche", price: "50 MAD", image: menuPhoto.tea },
-      { name: "Cornes de Gazelle", desc: "Pâtisseries en forme de croissant fourrées aux amandes et eau de fleur d'oranger", price: "80 MAD", image: menuPhoto.cornes },
+      { name: "Pastilla au Lait", desc: "Pastilla au lait à la crème de fleur d'oranger et amandes grillées", price: "100 MAD" },
+      { name: "Thé à la Menthe", desc: "Thé vert à la poudre de canon avec menthe verte fraîche", price: "50 MAD" },
+      { name: "Cornes de Gazelle", desc: "Pâtisseries en forme de croissant fourrées aux amandes et eau de fleur d'oranger", price: "80 MAD" },
     ],
   },
 ];
