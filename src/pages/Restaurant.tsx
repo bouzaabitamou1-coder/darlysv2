@@ -152,18 +152,16 @@ const Restaurant = () => (
               <div className="text-center mb-8">
                 <h3 className="text-2xl font-display font-semibold text-gold">{section.title}</h3>
               </div>
-              <div className="arabesque-border py-8 space-y-8">
+              <div className="arabesque-border py-8 space-y-6">
                 {section.items.map((item) => (
-                  <div key={item.name} className="flex gap-6 items-start flex-col sm:flex-row">
-                    <div className="w-full sm:w-36 h-28 sm:h-28 shrink-0 overflow-hidden rounded-sm border border-cream/10">
-                      <img src={item.image} alt={item.name} className="w-full h-full object-cover" loading="lazy" width={800} height={600} />
-                    </div>
-                    <div className="flex-1 flex justify-between items-start gap-4">
-                      <div>
+                  <div key={item.name} className="flex justify-between items-baseline gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-baseline gap-3">
                         <h4 className="font-display font-semibold text-cream text-lg">{item.name}</h4>
-                        <p className="text-sm text-cream/50 font-body mt-1">{item.desc}</p>
+                        <span className="flex-1 border-b border-dotted border-cream/20 min-w-[2rem] translate-y-[-4px]" />
+                        <span className="text-gold font-display font-semibold text-lg shrink-0 whitespace-nowrap">{item.price}</span>
                       </div>
-                      <span className="text-gold font-display font-semibold text-lg shrink-0 whitespace-nowrap">{item.price}</span>
+                      <p className="text-sm text-cream/50 font-body mt-1">{item.desc}</p>
                     </div>
                   </div>
                 ))}
