@@ -165,7 +165,7 @@ const RoomsPreview = () => (
 
 const experiences = [
   { icon: Utensils, title: "Restaurant Zahra", desc: "Cuisine authentique de Fès dans une ambiance exclusive et intimiste", image: photo.restaurantZahra, link: "/restaurant" },
-  { icon: Sparkles, title: "Lotus Spa", desc: "Hammam, massages et soins pour chouchouter corps et esprit", image: photo.spaInterior, link: "/spa" },
+  { icon: Sparkles, title: "Lotus Spa", desc: "Hammam, massages et soins pour chouchouter corps et esprit", image: spaExperience, link: "/spa" },
 ];
 
 const offersPreview = [
