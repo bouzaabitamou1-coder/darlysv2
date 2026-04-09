@@ -4,6 +4,7 @@ import { Star, Utensils, Sparkles, ArrowRight } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { photo, video } from "@/data/siteMedia";
+import spaExperience from "@/assets/spa-experience.jpg";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -164,7 +165,7 @@ const RoomsPreview = () => (
 
 const experiences = [
   { icon: Utensils, title: "Restaurant Zahra", desc: "Cuisine authentique de Fès dans une ambiance exclusive et intimiste", image: photo.restaurantZahra, link: "/restaurant" },
-  { icon: Sparkles, title: "Lotus Spa", desc: "Hammam, massages et soins pour chouchouter corps et esprit", image: photo.spaInterior, link: "/spa" },
+  { icon: Sparkles, title: "Lotus Spa", desc: "Hammam, massages et soins pour chouchouter corps et esprit", image: spaExperience, link: "/spa" },
 ];
 
 const offersPreview = [
