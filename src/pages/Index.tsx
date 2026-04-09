@@ -4,6 +4,7 @@ import { Star, Utensils, Sparkles, ArrowRight } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { photo, video } from "@/data/siteMedia";
+import spaExperience from "@/assets/spa-experience.jpg";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
