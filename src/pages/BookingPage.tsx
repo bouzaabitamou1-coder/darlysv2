@@ -119,27 +119,44 @@ const BookingPage = () => {
     }
     setLoading(true);
     try {
-      const { data: booking, error } = await supabase.from("bookings").insert({
-        room_id: room.id, guest_name: form.guestName, guest_email: form.guestEmail,
-        guest_phone: form.guestPhone || null, check_in: form.checkIn, check_out: form.checkOut,
-        num_guests: form.numGuests, special_requests: form.specialRequests || null,
-        total_price: totalPrice, add_ons: form.selectedAddOns,
-        status: "pending", payment_status: "unpaid",
-      }).select().single();
+      const bookingId = crypto.randomUUID();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      const { error } = await supabase.from("bookings").insert({
+        id: bookingId,
+        room_id: room.id,
+        user_id: session?.user?.id ?? null,
+        guest_name: form.guestName,
+        guest_email: form.guestEmail,
+        guest_phone: form.guestPhone || null,
+        check_in: form.checkIn,
+        check_out: form.checkOut,
+        num_guests: form.numGuests,
+        special_requests: form.specialRequests || null,
+        total_price: totalPrice,
+        add_ons: form.selectedAddOns,
+        status: "pending",
+        payment_status: "unpaid",
+      });
 
       if (error) throw error;
       toast.success("Booking created successfully!");
 
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke("create-checkout", {
         body: {
-          bookingId: booking.id, roomName: room.name, totalPrice, nights,
+          bookingId,
+          roomName: room.name,
+          totalPrice,
+          nights,
           guestEmail: form.guestEmail, roomId: room.id, checkIn: form.checkIn, checkOut: form.checkOut,
         },
       });
 
       if (checkoutError || !checkoutData?.url) {
         toast.info("We'll contact you for payment.");
-        navigate(`/booking-confirmation?id=${booking.id}`);
+        navigate(`/booking-confirmation?id=${bookingId}`);
         return;
       }
       window.location.href = checkoutData.url;
