@@ -8,7 +8,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { QuickOrder } from "@/components/booking/QuickOrder";
+
+// EUR -> MAD conversion rate (approximate)
+const EUR_TO_MAD = 10.8;
+const dh = (eur: number) => `${(eur * EUR_TO_MAD).toFixed(0)} DH`;
 
 const addOns = [
   { id: "breakfast", label: "Extra Breakfast", price: 15 },
@@ -194,7 +197,7 @@ const BookingPage = () => {
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="font-display font-semibold text-foreground">{room.name}</p>
-                            <p className="text-sm text-muted-foreground font-body">{room.category} · {room.size} · €{room.price_per_night}/night</p>
+                            <p className="text-sm text-muted-foreground font-body">{room.category} · {room.size} · €{room.price_per_night} ({dh(Number(room.price_per_night))})/night</p>
                           </div>
                           {room.inventory_count !== undefined && (
                             <Badge variant={room.inventory_count > 0 ? "secondary" : "destructive"} className="text-xs">
@@ -228,7 +231,7 @@ const BookingPage = () => {
                     {bulkDiscountApplied && (
                       <div className="flex items-center gap-2 p-3 bg-primary/5 border border-primary/20 rounded-md text-sm font-body text-primary">
                         <Tag className="w-4 h-4 shrink-0" />
-                        Bulk discount applied! {discountPercent}% off for {nights} nights. You save €{discountAmount.toFixed(2)}
+                        Bulk discount applied! {discountPercent}% off for {nights} nights. You save €{discountAmount.toFixed(2)} ({dh(discountAmount)})
                       </div>
                     )}
 
@@ -293,7 +296,7 @@ const BookingPage = () => {
                               <input type="checkbox" checked={form.selectedAddOns.includes(addon.id)} onChange={() => toggleAddOn(addon.id)} className="accent-primary w-4 h-4" />
                               <span className="text-sm font-body text-foreground">{addon.label}</span>
                             </div>
-                            <span className="text-sm font-body text-primary font-medium">+€{addon.price}</span>
+                            <span className="text-sm font-body text-primary font-medium">+€{addon.price} ({dh(addon.price)})</span>
                           </label>
                         ))}
                       </div>
@@ -333,12 +336,12 @@ const BookingPage = () => {
                         <div className="space-y-1 text-sm font-body">
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Room ({nights} night{nights > 1 ? "s" : ""} × €{room?.price_per_night})</span>
-                            <span className="text-foreground">€{baseRoomPrice.toFixed(2)}</span>
+                            <span className="text-foreground">€{baseRoomPrice.toFixed(2)} <span className="text-muted-foreground">({dh(baseRoomPrice)})</span></span>
                           </div>
                           {bulkDiscountApplied && (
                             <div className="flex justify-between text-primary">
                               <span>Bulk discount ({discountPercent}%)</span>
-                              <span>-€{discountAmount.toFixed(2)}</span>
+                              <span>-€{discountAmount.toFixed(2)} ({dh(discountAmount)})</span>
                             </div>
                           )}
                           {form.selectedAddOns.map((id) => {
@@ -346,13 +349,13 @@ const BookingPage = () => {
                             return addon ? (
                               <div key={id} className="flex justify-between">
                                 <span className="text-muted-foreground">{addon.label}</span>
-                                <span className="text-foreground">€{addon.price.toFixed(2)}</span>
+                                <span className="text-foreground">€{addon.price.toFixed(2)} <span className="text-muted-foreground">({dh(addon.price)})</span></span>
                               </div>
                             ) : null;
                           })}
                           <div className="border-t border-border pt-2 mt-2 flex justify-between font-semibold">
                             <span className="text-foreground">Total</span>
-                            <span className="text-primary text-lg">€{totalPrice.toFixed(2)}</span>
+                            <span className="text-primary text-lg">€{totalPrice.toFixed(2)} <span className="text-sm text-muted-foreground">({dh(totalPrice)})</span></span>
                           </div>
                         </div>
                       </div>
@@ -365,18 +368,13 @@ const BookingPage = () => {
                     <div className="flex gap-4">
                       <Button variant="outline" onClick={() => setStep(2)} className="flex-1">Back</Button>
                       <Button onClick={handleSubmit} disabled={loading} className="flex-1" size="lg">
-                        {loading ? "Processing..." : `Pay €${totalPrice.toFixed(2)}`}
+                        {loading ? "Processing..." : `Pay €${totalPrice.toFixed(2)} (${dh(totalPrice)})`}
                       </Button>
                     </div>
                   </motion.div>
                 )}
               </CardContent>
             </Card>
-
-            {/* Quick Order section */}
-            <div className="mt-10">
-              <QuickOrder />
-            </div>
           </div>
         </div>
       </section>
@@ -405,7 +403,7 @@ const RoomSelector = ({ onSelect }: { onSelect: (room: any) => void }) => {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-display font-semibold text-foreground">{room.name}</p>
-              <p className="text-sm text-muted-foreground font-body">{room.category} · {room.size} · €{room.price_per_night}/night</p>
+              <p className="text-sm text-muted-foreground font-body">{room.category} · {room.size} · €{room.price_per_night} ({dh(Number(room.price_per_night))})/night</p>
             </div>
             {room.inventory_count !== undefined && (
               <Badge variant={room.inventory_count > 0 ? "secondary" : "destructive"} className="text-xs">
