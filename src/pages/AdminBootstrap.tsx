@@ -9,7 +9,6 @@ const AdminBootstrap = () => {
   const [email, setEmail] = useState("admin@darlys.ma");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [bootstrapSecret, setBootstrapSecret] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -19,7 +18,7 @@ const AdminBootstrap = () => {
     if (password !== confirm) return toast.error("Passwords don't match.");
     setLoading(true);
     const { data, error } = await supabase.functions.invoke("admin-bootstrap", {
-      body: { email, password, bootstrapSecret, displayName: "Admin" },
+      body: { email, password, displayName: "Admin" },
     });
     setLoading(false);
     if (error || (data as any)?.error) {
@@ -49,7 +48,6 @@ const AdminBootstrap = () => {
               <Field label="Admin Email" type="email" value={email} onChange={setEmail} />
               <Field label="New Password" type="password" value={password} onChange={setPassword} />
               <Field label="Confirm Password" type="password" value={confirm} onChange={setConfirm} />
-              <Field label="Bootstrap Secret" type="password" value={bootstrapSecret} onChange={setBootstrapSecret} />
               <button type="submit" disabled={loading} className="btn-luxury w-full disabled:opacity-50">
                 {loading ? "Working..." : "Create / Reset Admin"}
               </button>

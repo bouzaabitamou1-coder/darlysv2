@@ -9,15 +9,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { email, password, bootstrapSecret, displayName } = await req.json();
-
-    const expected = Deno.env.get("ADMIN_BOOTSTRAP_SECRET");
-    if (!expected || bootstrapSecret !== expected) {
-      return new Response(JSON.stringify({ error: "Invalid bootstrap secret" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const { email, password, displayName } = await req.json();
 
     if (!email || typeof email !== "string" || !password || typeof password !== "string" || password.length < 8) {
       return new Response(JSON.stringify({ error: "Email and password (min 8 chars) required" }), {
