@@ -26,20 +26,27 @@ serve(async (req) => {
 
     // Check availability if room/dates provided
     if (roomId && checkIn && checkOut) {
-      const { data: available } = await supabaseAdmin.rpc("check_availability", {
-        _room_id: roomId,
-        _check_in: checkIn,
-        _check_out: checkOut,
-      });
+      // Check for conflicting bookings, excluding the current one
+      const { data: conflicts, error: conflictErr } = await supabaseAdmin
+        .from("bookings")
+        .select("id")
+        .eq("room_id", roomId)
+        .in("status", ["pending", "confirmed"])
+        .neq("id", bookingId)
+        .lt("check_in", checkOut)
+        .gt("check_out", checkIn);
 
-      if (!available) {
+      if (conflictErr) throw conflictErr;
+
+      if (conflicts && conflicts.length > 0) {
         return new Response(
           JSON.stringify({ error: "Room is not available for the selected dates" }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 409 }
         );
       }
 
-      // Create reservation lock
+      // Create or refresh reservation lock for this booking
+      await supabaseAdmin.from("reservation_locks").delete().eq("session_id", bookingId);
       await supabaseAdmin.from("reservation_locks").insert({
         room_id: roomId,
         check_in: checkIn,
