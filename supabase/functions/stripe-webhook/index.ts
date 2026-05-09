@@ -70,6 +70,56 @@ serve(async (req) => {
 
         console.log(`✅ Booking ${bookingId} confirmed and paid`);
 
+        // Send Telegram notification (best-effort)
+        try {
+          const { data: booking } = await supabaseAdmin
+            .from("bookings")
+            .select("guest_name, guest_email, guest_phone, check_in, check_out, num_guests, total_price, rooms(name)")
+            .eq("id", bookingId)
+            .single();
+
+          const TELEGRAM_API_KEY = Deno.env.get("TELEGRAM_API_KEY");
+          const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+          const TELEGRAM_CHAT_ID = Deno.env.get("TELEGRAM_CHAT_ID");
+
+          if (booking && TELEGRAM_API_KEY && LOVABLE_API_KEY && TELEGRAM_CHAT_ID) {
+            const roomName = (booking as any).rooms?.name ?? "Room";
+            const nights = Math.max(1, Math.round(
+              (new Date(booking.check_out).getTime() - new Date(booking.check_in).getTime()) / 86400000
+            ));
+            const text =
+              `🔔 <b>New booking at Dar Lys</b>\n\n` +
+              `👤 ${booking.guest_name}\n` +
+              `✉️ ${booking.guest_email}\n` +
+              (booking.guest_phone ? `📞 ${booking.guest_phone}\n` : "") +
+              `🛏 ${roomName}\n` +
+              `📅 ${booking.check_in} → ${booking.check_out} (${nights} night${nights > 1 ? "s" : ""})\n` +
+              `👥 ${booking.num_guests} guest(s)\n` +
+              `💶 ${booking.total_price} MAD`;
+
+            const tgRes = await fetch("https://connector-gateway.lovable.dev/telegram/sendMessage", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+                "X-Connection-Api-Key": TELEGRAM_API_KEY,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                chat_id: TELEGRAM_CHAT_ID,
+                text,
+                parse_mode: "HTML",
+              }),
+            });
+            if (!tgRes.ok) {
+              console.error("Telegram send failed:", tgRes.status, await tgRes.text());
+            }
+          } else {
+            console.warn("Telegram notification skipped — missing env or booking");
+          }
+        } catch (tgErr) {
+          console.error("Telegram notify failed (non-blocking):", tgErr);
+        }
+
         // Trigger Opera PMS sync (best-effort)
         try {
           const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
