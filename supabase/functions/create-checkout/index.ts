@@ -105,6 +105,49 @@ serve(async (req) => {
       })
       .eq("id", bookingId);
 
+    // Send Telegram notification immediately when the booking is submitted.
+    // The Stripe webhook can still update payment status later, but this ensures
+    // Dar Lys receives the reservation alert even if the webhook is not configured.
+    try {
+      const TELEGRAM_API_KEY = Deno.env.get("TELEGRAM_API_KEY");
+      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+      const TELEGRAM_CHAT_ID = Deno.env.get("TELEGRAM_CHAT_ID");
+
+      if (TELEGRAM_API_KEY && LOVABLE_API_KEY && TELEGRAM_CHAT_ID) {
+        const text =
+          `🔔 <b>New booking request at Dar Lys</b>\n\n` +
+          `👤 ${guestEmail}\n` +
+          `🛏 ${roomName}\n` +
+          `📅 ${checkIn ?? "Selected dates"} → ${checkOut ?? ""} (${nights} night${nights > 1 ? "s" : ""})\n` +
+          `💶 ${Number(totalPrice).toFixed(2)} EUR\n` +
+          `🔗 Payment checkout created`;
+
+        const tgRes = await fetch("https://connector-gateway.lovable.dev/telegram/sendMessage", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+            "X-Connection-Api-Key": TELEGRAM_API_KEY,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            chat_id: TELEGRAM_CHAT_ID,
+            text,
+            parse_mode: "HTML",
+          }),
+        });
+
+        if (!tgRes.ok) {
+          console.error("Telegram booking notification failed:", tgRes.status, await tgRes.text());
+        } else {
+          console.log(`Telegram booking notification sent for ${bookingId}`);
+        }
+      } else {
+        console.warn("Telegram booking notification skipped — missing env");
+      }
+    } catch (tgErr) {
+      console.error("Telegram booking notification failed (non-blocking):", tgErr);
+    }
+
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
