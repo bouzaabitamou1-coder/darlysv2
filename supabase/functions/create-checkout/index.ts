@@ -7,13 +7,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const escapeHtml = (value: unknown) =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { bookingId, roomName, totalPrice, nights, guestEmail, roomId, checkIn, checkOut } = await req.json();
+    const { bookingId, roomName, totalPrice, nights, guestEmail, guestName, guestPhone, roomId, checkIn, checkOut } = await req.json();
 
     if (!bookingId || !totalPrice || !guestEmail) {
       throw new Error("Missing required fields");
@@ -116,9 +122,11 @@ serve(async (req) => {
       if (TELEGRAM_API_KEY && LOVABLE_API_KEY && TELEGRAM_CHAT_ID) {
         const text =
           `🔔 <b>New booking request at Dar Lys</b>\n\n` +
-          `👤 ${guestEmail}\n` +
-          `🛏 ${roomName}\n` +
-          `📅 ${checkIn ?? "Selected dates"} → ${checkOut ?? ""} (${nights} night${nights > 1 ? "s" : ""})\n` +
+          `👤 ${escapeHtml(guestName || guestEmail)}\n` +
+          `✉️ ${escapeHtml(guestEmail)}\n` +
+          (guestPhone ? `📞 ${escapeHtml(guestPhone)}\n` : "") +
+          `🛏 ${escapeHtml(roomName)}\n` +
+          `📅 ${escapeHtml(checkIn ?? "Selected dates")} → ${escapeHtml(checkOut ?? "")} (${nights} night${nights > 1 ? "s" : ""})\n` +
           `💶 ${Number(totalPrice).toFixed(2)} EUR\n` +
           `🔗 Payment checkout created`;
 
