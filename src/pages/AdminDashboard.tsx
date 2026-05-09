@@ -209,6 +209,7 @@ const AdminDashboard = () => {
                   <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Guest</th>
                   <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Room</th>
                   <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Dates</th>
+                  <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Booked At</th>
                   <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Total</th>
                   <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Status</th>
                   <th className="p-4 text-left text-xs tracking-wider uppercase text-muted-foreground">Actions</th>
@@ -223,6 +224,7 @@ const AdminDashboard = () => {
                     </td>
                     <td className="p-4 text-charcoal">{b.rooms?.name}</td>
                     <td className="p-4 text-muted-foreground">{b.check_in} → {b.check_out}</td>
+                    <td className="p-4 text-muted-foreground text-xs">{new Date(b.created_at).toLocaleString()}</td>
                     <td className="p-4 text-gold font-semibold">€{b.total_price}</td>
                     <td className="p-4"><StatusBadge status={b.status} /></td>
                     <td className="p-4">
