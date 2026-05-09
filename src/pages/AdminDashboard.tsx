@@ -188,6 +188,7 @@ const AdminDashboard = () => {
                     <div>
                       <p className="text-charcoal font-medium">{b.guest_name}</p>
                       <p className="text-muted-foreground text-xs">{b.rooms?.name} · {b.check_in} to {b.check_out}</p>
+                      <p className="text-muted-foreground text-xs">Booked {new Date(b.created_at).toLocaleString()}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-gold font-semibold">€{b.total_price}</p>
