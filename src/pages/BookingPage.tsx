@@ -150,7 +150,12 @@ const BookingPage = () => {
           roomName: room.name,
           totalPrice,
           nights,
-          guestEmail: form.guestEmail, roomId: room.id, checkIn: form.checkIn, checkOut: form.checkOut,
+          guestEmail: form.guestEmail,
+          guestName: form.guestName,
+          guestPhone: form.guestPhone,
+          roomId: room.id,
+          checkIn: form.checkIn,
+          checkOut: form.checkOut,
         },
       });
 
