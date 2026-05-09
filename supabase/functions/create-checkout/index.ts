@@ -7,13 +7,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const escapeHtml = (value: unknown) =>
+  String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { bookingId, roomName, totalPrice, nights, guestEmail, roomId, checkIn, checkOut } = await req.json();
+    const { bookingId, roomName, totalPrice, nights, guestEmail, guestName, guestPhone, roomId, checkIn, checkOut } = await req.json();
 
     if (!bookingId || !totalPrice || !guestEmail) {
       throw new Error("Missing required fields");
@@ -104,6 +110,51 @@ serve(async (req) => {
         payment_intent_id: session.payment_intent as string,
       })
       .eq("id", bookingId);
+
+    // Send Telegram notification immediately when the booking is submitted.
+    // The Stripe webhook can still update payment status later, but this ensures
+    // Dar Lys receives the reservation alert even if the webhook is not configured.
+    try {
+      const TELEGRAM_API_KEY = Deno.env.get("TELEGRAM_API_KEY");
+      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+      const TELEGRAM_CHAT_ID = Deno.env.get("TELEGRAM_CHAT_ID");
+
+      if (TELEGRAM_API_KEY && LOVABLE_API_KEY && TELEGRAM_CHAT_ID) {
+        const text =
+          `🔔 <b>New booking request at Dar Lys</b>\n\n` +
+          `👤 ${escapeHtml(guestName || guestEmail)}\n` +
+          `✉️ ${escapeHtml(guestEmail)}\n` +
+          (guestPhone ? `📞 ${escapeHtml(guestPhone)}\n` : "") +
+          `🛏 ${escapeHtml(roomName)}\n` +
+          `📅 ${escapeHtml(checkIn ?? "Selected dates")} → ${escapeHtml(checkOut ?? "")} (${nights} night${nights > 1 ? "s" : ""})\n` +
+          `💶 ${Number(totalPrice).toFixed(2)} EUR\n` +
+          `🔗 Payment checkout created`;
+
+        const tgRes = await fetch("https://connector-gateway.lovable.dev/telegram/sendMessage", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+            "X-Connection-Api-Key": TELEGRAM_API_KEY,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            chat_id: TELEGRAM_CHAT_ID,
+            text,
+            parse_mode: "HTML",
+          }),
+        });
+
+        if (!tgRes.ok) {
+          console.error("Telegram booking notification failed:", tgRes.status, await tgRes.text());
+        } else {
+          console.log(`Telegram booking notification sent for ${bookingId}`);
+        }
+      } else {
+        console.warn("Telegram booking notification skipped — missing env");
+      }
+    } catch (tgErr) {
+      console.error("Telegram booking notification failed (non-blocking):", tgErr);
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
