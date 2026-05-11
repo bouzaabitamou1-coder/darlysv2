@@ -68,6 +68,17 @@ const AdminDashboard = () => {
     loadData();
   };
 
+  const deleteBooking = async (booking: any) => {
+    if (!confirm(`Permanently delete reservation for ${booking.guest_name}? This cannot be undone.`)) return;
+    const { error } = await supabase.from("bookings").delete().eq("id", booking.id);
+    if (error) {
+      toast.error(`Failed to delete: ${error.message}`);
+      return;
+    }
+    toast.success("Reservation deleted");
+    loadData();
+  };
+
 
 
   const processRefund = async (booking: any) => {
@@ -251,6 +262,13 @@ const AdminDashboard = () => {
                           </button>
                         )}
                         <button onClick={() => printInvoice(b)} className="p-1 text-muted-foreground hover:text-foreground rounded" title="Print Invoice"><Printer className="w-4 h-4" /></button>
+                        <button
+                          onClick={() => deleteBooking(b)}
+                          className="p-1 text-destructive hover:bg-destructive/10 rounded"
+                          title="Delete reservation"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>

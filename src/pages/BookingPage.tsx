@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Calendar, Users, CreditCard, ChevronRight, AlertCircle, Tag, AlertTriangle } from "lucide-react";
+import { Calendar, Users, CreditCard, ChevronRight, AlertCircle, Tag, AlertTriangle, CheckCircle2 } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -35,6 +35,7 @@ const BookingPage = () => {
   const [loading, setLoading] = useState(false);
   const [checkingAvailability, setCheckingAvailability] = useState(false);
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
+  const [isAvailable, setIsAvailable] = useState(false);
   const [inventoryWarning, setInventoryWarning] = useState<string | null>(null);
   const [step, setStep] = useState(1);
 
@@ -79,6 +80,7 @@ const BookingPage = () => {
     setCheckingAvailability(true);
     setAvailabilityError(null);
     setInventoryWarning(null);
+    setIsAvailable(false);
     try {
       const { data, error } = await supabase.functions.invoke("check-availability", {
         body: { roomId: room.id, checkIn: form.checkIn, checkOut: form.checkOut },
@@ -94,6 +96,7 @@ const BookingPage = () => {
         setInventoryWarning("This room type is currently out of stock.");
         return false;
       }
+      setIsAvailable(true);
       return true;
     } catch {
       setAvailabilityError("Could not verify availability. Please try again.");
@@ -102,6 +105,17 @@ const BookingPage = () => {
       setCheckingAvailability(false);
     }
   };
+
+  // Auto-check availability when room and both dates are selected
+  useEffect(() => {
+    if (room && form.checkIn && form.checkOut && nights > 0) {
+      checkAvailability();
+    } else {
+      setIsAvailable(false);
+      setAvailabilityError(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [room?.id, form.checkIn, form.checkOut]);
 
   const handleStep1Continue = async () => {
     if (!room || !form.checkIn || !form.checkOut) {
@@ -239,13 +253,13 @@ const BookingPage = () => {
                       <div>
                         <label className={labelClass}>Check-in *</label>
                         <input type="date" min={today} value={form.checkIn}
-                          onChange={(e) => { setForm({ ...form, checkIn: e.target.value }); setAvailabilityError(null); }}
+                          onChange={(e) => { setForm({ ...form, checkIn: e.target.value }); setAvailabilityError(null); setIsAvailable(false); }}
                           className={inputClass} required />
                       </div>
                       <div>
                         <label className={labelClass}>Check-out *</label>
                         <input type="date" min={form.checkIn || today} value={form.checkOut}
-                          onChange={(e) => { setForm({ ...form, checkOut: e.target.value }); setAvailabilityError(null); }}
+                          onChange={(e) => { setForm({ ...form, checkOut: e.target.value }); setAvailabilityError(null); setIsAvailable(false); }}
                           className={inputClass} required />
                       </div>
                     </div>
@@ -260,6 +274,13 @@ const BookingPage = () => {
                     {availabilityError && (
                       <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md text-sm font-body text-destructive">
                         <AlertCircle className="w-4 h-4 shrink-0" /> {availabilityError}
+                      </div>
+                    )}
+
+                    {isAvailable && !availabilityError && !inventoryWarning && (
+                      <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md text-sm font-body text-green-700">
+                        <CheckCircle2 className="w-4 h-4 shrink-0" />
+                        Great news — this room is available for your selected dates. You can proceed with your reservation.
                       </div>
                     )}
 
