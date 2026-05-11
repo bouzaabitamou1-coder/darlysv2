@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Calendar, Users, CreditCard, ChevronRight, AlertCircle, Tag, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Calendar, Users, CreditCard, ChevronRight, AlertCircle, Tag, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -39,6 +39,10 @@ const BookingPage = () => {
   const [inventoryWarning, setInventoryWarning] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const [unavailableRanges, setUnavailableRanges] = useState<{ start: string; end: string }[]>([]);
+  const [lockSessionId, setLockSessionId] = useState<string | null>(null);
+  const [lockExpiresAt, setLockExpiresAt] = useState<number | null>(null);
+  const [secondsLeft, setSecondsLeft] = useState<number>(0);
+  const releasingLockRef = useRef(false);
 
   useEffect(() => {
     if (!roomParam) return;
@@ -179,7 +183,65 @@ const BookingPage = () => {
       return;
     }
     const available = await checkAvailability();
-    if (available) setStep(2);
+    if (!available) return;
+
+    // Create a 15-minute reservation hold so no other client can book the same dates
+    try {
+      const sessionId = lockSessionId ?? crypto.randomUUID();
+      // Refresh / extend any previous lock for this session
+      await supabase.from("reservation_locks").delete().eq("session_id", sessionId);
+      const { error: lockErr } = await supabase.from("reservation_locks").insert({
+        room_id: room.id,
+        check_in: form.checkIn,
+        check_out: form.checkOut,
+        session_id: sessionId,
+      });
+      if (lockErr) throw lockErr;
+      setLockSessionId(sessionId);
+      setLockExpiresAt(Date.now() + 15 * 60 * 1000);
+      setStep(2);
+    } catch (e: any) {
+      toast.error("Could not hold these dates. Please try again.");
+    }
+  };
+
+  // Countdown timer for the 15-minute reservation hold
+  useEffect(() => {
+    if (!lockExpiresAt) { setSecondsLeft(0); return; }
+    const tick = () => {
+      const s = Math.max(0, Math.floor((lockExpiresAt - Date.now()) / 1000));
+      setSecondsLeft(s);
+      if (s === 0) {
+        // Hold expired — release and send the user back to step 1
+        if (lockSessionId) {
+          supabase.from("reservation_locks").delete().eq("session_id", lockSessionId);
+        }
+        setLockSessionId(null);
+        setLockExpiresAt(null);
+        setStep(1);
+        setIsAvailable(false);
+        toast.error("Your 15-minute reservation hold expired. Please choose your dates again.");
+      }
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [lockExpiresAt, lockSessionId]);
+
+  // Release the hold when leaving the page (unless we're heading to Stripe checkout)
+  useEffect(() => {
+    return () => {
+      if (lockSessionId && !releasingLockRef.current) {
+        supabase.from("reservation_locks").delete().eq("session_id", lockSessionId);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const formatTimer = (s: number) => {
+    const m = Math.floor(s / 60).toString().padStart(2, "0");
+    const ss = (s % 60).toString().padStart(2, "0");
+    return `${m}:${ss}`;
   };
 
   const handleSubmit = async () => {
@@ -213,6 +275,13 @@ const BookingPage = () => {
 
       if (error) throw error;
       toast.success("Booking created successfully!");
+
+      // The booking is now created — keep the lock alive through Stripe via the edge
+      // function (which creates its own lock keyed by bookingId). Release our hold.
+      if (lockSessionId) {
+        releasingLockRef.current = true;
+        await supabase.from("reservation_locks").delete().eq("session_id", lockSessionId);
+      }
 
       const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke("create-checkout", {
         body: {
@@ -276,6 +345,17 @@ const BookingPage = () => {
 
             <Card className="border-border">
               <CardContent className="p-6 lg:p-10">
+                {step > 1 && lockExpiresAt && (
+                  <div className="mb-6 flex items-center justify-between gap-3 p-3 bg-primary/5 border border-primary/20 rounded-md text-sm font-body">
+                    <div className="flex items-center gap-2 text-primary">
+                      <Clock className="w-4 h-4 shrink-0" />
+                      <span>Your dates are held. Complete your reservation in:</span>
+                    </div>
+                    <span className="font-mono font-semibold text-primary tabular-nums">
+                      {formatTimer(secondsLeft)}
+                    </span>
+                  </div>
+                )}
                 {step === 1 && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
                     <h2 className="text-xl font-display font-semibold text-foreground flex items-center gap-2">
