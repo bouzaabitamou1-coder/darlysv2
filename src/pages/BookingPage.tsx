@@ -345,6 +345,17 @@ const BookingPage = () => {
 
             <Card className="border-border">
               <CardContent className="p-6 lg:p-10">
+                {step > 1 && lockExpiresAt && (
+                  <div className="mb-6 flex items-center justify-between gap-3 p-3 bg-primary/5 border border-primary/20 rounded-md text-sm font-body">
+                    <div className="flex items-center gap-2 text-primary">
+                      <Clock className="w-4 h-4 shrink-0" />
+                      <span>Your dates are held. Complete your reservation in:</span>
+                    </div>
+                    <span className="font-mono font-semibold text-primary tabular-nums">
+                      {formatTimer(secondsLeft)}
+                    </span>
+                  </div>
+                )}
                 {step === 1 && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
                     <h2 className="text-xl font-display font-semibold text-foreground flex items-center gap-2">
