@@ -84,7 +84,7 @@ const Footer = () => (
 
       <div className="mt-16 pt-8 arabesque-border flex flex-col sm:flex-row justify-between items-center gap-4">
         <p className="text-xs opacity-50">© {new Date().getFullYear()} Dar Lys. Tous droits réservés.</p>
-        <p className="text-xs opacity-50">Créé avec passion au cœur de Fès</p>
+        <p className="text-xs opacity-50">Créé avec passion au cœur de Fès — Made by Bouzaabita Mohammed</p>
       </div>
     </div>
   </footer>
