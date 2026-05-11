@@ -38,6 +38,7 @@ const BookingPage = () => {
   const [isAvailable, setIsAvailable] = useState(false);
   const [inventoryWarning, setInventoryWarning] = useState<string | null>(null);
   const [step, setStep] = useState(1);
+  const [unavailableRanges, setUnavailableRanges] = useState<{ start: string; end: string }[]>([]);
 
   useEffect(() => {
     if (!roomParam) return;
@@ -47,6 +48,61 @@ const BookingPage = () => {
       : supabase.from("rooms").select("*").eq("slug", roomParam).single();
     q.then(({ data }) => { if (data) setRoom(data); });
   }, [roomParam]);
+
+  // Fetch unavailable date ranges (existing bookings + active locks) for the selected room
+  useEffect(() => {
+    if (!room?.id) { setUnavailableRanges([]); return; }
+    const today = new Date().toISOString().split("T")[0];
+    (async () => {
+      const [{ data: bookings }, { data: locks }] = await Promise.all([
+        supabase
+          .from("bookings")
+          .select("check_in, check_out")
+          .eq("room_id", room.id)
+          .in("status", ["pending", "confirmed"])
+          .gte("check_out", today),
+        supabase
+          .from("reservation_locks")
+          .select("check_in, check_out, expires_at")
+          .eq("room_id", room.id)
+          .gt("expires_at", new Date().toISOString()),
+      ]);
+      const ranges = [
+        ...(bookings ?? []).map((b: any) => ({ start: b.check_in, end: b.check_out })),
+        ...(locks ?? []).map((l: any) => ({ start: l.check_in, end: l.check_out })),
+      ];
+      setUnavailableRanges(ranges);
+    })();
+  }, [room?.id]);
+
+  // Returns true if [ci, co) overlaps any unavailable range [s, e)
+  const overlapsUnavailable = (ci: string, co: string) =>
+    unavailableRanges.some((r) => ci < r.end && co > r.start);
+
+  const dateInUnavailable = (d: string) =>
+    unavailableRanges.some((r) => d >= r.start && d < r.end);
+
+  const handleDateChange = (field: "checkIn" | "checkOut", value: string) => {
+    const next = { ...form, [field]: value };
+    setAvailabilityError(null);
+    setIsAvailable(false);
+
+    // Validate the date itself
+    if (value && dateInUnavailable(value)) {
+      toast.error("That date is already booked. Please pick another.");
+      setForm({ ...form, [field]: "" });
+      return;
+    }
+    // Validate the full range when both dates set
+    if (next.checkIn && next.checkOut && next.checkIn < next.checkOut) {
+      if (overlapsUnavailable(next.checkIn, next.checkOut)) {
+        toast.error("Your selected dates overlap an existing reservation.");
+        setForm({ ...form, [field]: "" });
+        return;
+      }
+    }
+    setForm(next);
+  };
 
   const nights = form.checkIn && form.checkOut
     ? Math.max(1, Math.ceil((new Date(form.checkOut).getTime() - new Date(form.checkIn).getTime()) / 86400000))
@@ -253,16 +309,32 @@ const BookingPage = () => {
                       <div>
                         <label className={labelClass}>Check-in *</label>
                         <input type="date" min={today} value={form.checkIn}
-                          onChange={(e) => { setForm({ ...form, checkIn: e.target.value }); setAvailabilityError(null); setIsAvailable(false); }}
+                          onChange={(e) => handleDateChange("checkIn", e.target.value)}
                           className={inputClass} required />
                       </div>
                       <div>
                         <label className={labelClass}>Check-out *</label>
                         <input type="date" min={form.checkIn || today} value={form.checkOut}
-                          onChange={(e) => { setForm({ ...form, checkOut: e.target.value }); setAvailabilityError(null); setIsAvailable(false); }}
+                          onChange={(e) => handleDateChange("checkOut", e.target.value)}
                           className={inputClass} required />
                       </div>
                     </div>
+
+                    {room && unavailableRanges.length > 0 && (
+                      <div className="p-3 bg-muted/40 border border-border rounded-md text-xs font-body text-muted-foreground">
+                        <p className="uppercase tracking-[0.15em] mb-2 text-foreground/80">Unavailable dates for this room</p>
+                        <ul className="space-y-1">
+                          {unavailableRanges
+                            .slice()
+                            .sort((a, b) => a.start.localeCompare(b.start))
+                            .map((r, i) => (
+                              <li key={i}>
+                                {r.start} → {r.end} <span className="opacity-60">(check-out day free)</span>
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    )}
 
                     {bulkDiscountApplied && (
                       <div className="flex items-center gap-2 p-3 bg-primary/5 border border-primary/20 rounded-md text-sm font-body text-primary">
