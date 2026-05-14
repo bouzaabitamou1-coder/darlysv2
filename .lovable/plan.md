@@ -1,84 +1,74 @@
-# Rewrite Dar Lys: React frontend + Laravel backend
 
-Goal: keep the existing React UI, replace the entire Supabase backend (database, auth, edge functions) with a Laravel 11 API + PostgreSQL managed in pgAdmin. Nothing Supabase remains in the final codebase.
+# Plan — React (Lovable) + Laravel + PostgreSQL, no Supabase
 
-## What stays
-
-- All React pages, components, hooks, Tailwind/shadcn UI, routes, i18n, assets.
-- All business logic shapes (rooms, bookings, contact, opera logs, refunds).
-- Stripe + Telegram + Opera PMS integrations (ported to Laravel).
-
-## What changes
-
-| Layer | Before | After |
-|---|---|---|
-| DB | Supabase Postgres + RLS | Self-hosted PostgreSQL (Railway/Neon), managed in pgAdmin, auth enforced in Laravel controllers |
-| Auth | `supabase.auth` (JWT, localStorage) | Laravel Sanctum, session cookies, `/api/auth/*` |
-| API | `supabase.from(...)` direct queries | `fetch('/api/...')` via `src/lib/api.ts` |
-| Edge functions | 5 Deno functions in `supabase/functions/` | 5 Laravel controllers in `darlys-api/` |
-| Storage | Supabase Storage (none used) | n/a |
-| Realtime | none used | n/a |
-
-## Architecture after rewrite
+Yes, this is fully possible. Lovable only hosts the **React frontend** — it does not care what backend you call. So we keep your site deployed exactly as it is now (`darlys.site` via Lovable), and just change *who the React app talks to*: instead of Supabase, it will call your own Laravel API on a separate host.
 
 ```text
- Browser (React SPA, darlys.site)
-   │  fetch(credentials:'include')
-   ▼
- Laravel 11 API (api.darlys.site)
-   │  Eloquent
-   ▼
- PostgreSQL (Railway, viewed in pgAdmin)
-   │
-   ├── Stripe webhook  →  POST /api/stripe/webhook
-   ├── Telegram        →  outbound from Laravel
-   └── Opera PMS stub  →  POST /api/admin/opera-sync
+ Browser  →  React SPA on Lovable (darlys.site)        ← unchanged hosting
+                    │  fetch('https://api.darlys.site/api/...')
+                    ▼
+              Laravel 11 API  (Railway / Render / VPS)
+                    │
+                    ▼
+              PostgreSQL  (Railway / Neon / your VPS)   ← browse with pgAdmin
 ```
 
-## Work breakdown
+## What stays the same
+- React + Vite + Tailwind + shadcn codebase.
+- Lovable hosting, publish button, custom domain `darlys.site`, SSL.
+- All pages, i18n, Stripe checkout flow, Telegram alerts, Opera PMS sync logic.
 
-### 1. Backend — finish Laravel scaffold (`darlys-api/`)
-The skeleton already exists (controllers, models, routes). Complete it:
-- Wrap in a real Laravel 11 install (`composer create-project laravel/laravel`), merge our `app/` and `routes/` over it.
-- Add `laravel/sanctum`, `stripe/stripe-php`, `guzzlehttp/guzzle`.
-- Configure `config/cors.php` (allow `darlys.site`, credentials), `config/sanctum.php` (stateful domain), `config/session.php` (`SAME_SITE=none`, `SECURE=true`, domain `.darlys.site`).
-- Migrations matching current Supabase schema: `rooms`, `bookings`, `contact_messages`, `payment_events`, `opera_sync_log`, `reservation_locks`, `profiles`, `user_roles`, `users` (Laravel default + `password` column for Sanctum login).
-- Seed: import `darlys_full_db_dump.sql` minus `auth.*` and Supabase-only objects, OR run fresh migrations + seeders.
-- Authorization: replace RLS with controller-level `Admin::check()` gate (already stubbed) and `auth:sanctum` middleware (already wired in `routes/api.php`).
-- Port edge function logic 1:1:
-  - `create-checkout` → `CheckoutController@create` (Stripe Checkout + Telegram alert + reservation lock)
-  - `stripe-webhook` → `StripeWebhookController@handle` (signature verify, mark booking paid, Opera sync, Telegram)
-  - `check-availability` → `AvailabilityController@check`
-  - `process-refund` → `RefundController@process`
-  - `opera-sync` → `OperaController@sync` (stub mode + JSON log)
-  - `admin-bootstrap` → `AdminBootstrapController@run` (header secret)
+## What changes
+| Layer | Today | After |
+|---|---|---|
+| Database | Supabase Postgres | Your own PostgreSQL on Railway/Neon, viewed in pgAdmin |
+| Auth | `supabase.auth` | Laravel Sanctum (cookie session) |
+| API | `supabase.from(...)` direct queries | `fetch()` via `src/lib/api.ts` |
+| Edge functions | 5 Deno functions | 5 Laravel controllers |
+| Hosting (frontend) | Lovable | **Lovable (unchanged)** |
+| Hosting (backend) | Supabase managed | Railway (or Render/Fly/VPS) |
 
-### 2. Database — Postgres on Railway, browsed in pgAdmin
-- Provision Postgres on Railway (or Neon).
-- Connect pgAdmin to the public connection string for inspection.
-- Run `php artisan migrate --seed` against it.
+---
 
-### 3. Frontend — strip Supabase, route everything through `src/lib/api.ts`
-Files to rewrite (all stay in React, only their data layer changes):
-- `src/hooks/useAuth.tsx` — replace `supabase.auth` with `apiClient.login/logout/me`, store nothing in localStorage (cookie-based).
-- `src/pages/Rooms.tsx`, `BookingPage.tsx`, `BookingConfirmation.tsx`, `Contact.tsx`, `AdminLogin.tsx`, `AdminBootstrap.tsx`, `AdminDashboard.tsx` — swap every `supabase.from(...)` and `supabase.functions.invoke(...)` for the matching `apiClient.*` call.
-- Remove `@supabase/supabase-js` dependency; delete `src/integrations/supabase/` entirely.
-- Delete `supabase/` (config + edge functions + migrations).
-- Add `VITE_API_URL=https://api.darlys.site` to env.
+## Step-by-step plan
 
-### 4. Deployment
-- Push `darlys-api/` to a new GitHub repo, deploy on Railway with env vars from `.env.example` (`APP_KEY`, `DB_*`, `SESSION_*`, `SANCTUM_STATEFUL_DOMAINS`, `STRIPE_SECRET`, `STRIPE_WEBHOOK_SECRET`, `TELEGRAM_*`, `ADMIN_BOOTSTRAP_SECRET`).
-- Map custom domain `api.darlys.site`.
-- Repoint Stripe webhook to `https://api.darlys.site/api/stripe/webhook`.
-- Republish the React app (which keeps deploying via Lovable).
+### Phase 1 — Backend (already 80% scaffolded in `darlys-api/`)
+1. On your machine, run `composer create-project laravel/laravel darlys-api-final` to get a clean Laravel 11 skeleton.
+2. Copy our `darlys-api/app/`, `routes/`, `database/`, `.env.example` over the skeleton.
+3. Install packages: `composer require laravel/sanctum stripe/stripe-php guzzlehttp/guzzle`.
+4. Configure CORS + Sanctum stateful domain = `darlys.site` so cookies work cross-origin.
+5. Push to a new GitHub repo.
 
-### 5. QA checklist
-- Sign-in/out as admin via session cookie.
-- Public room list + room detail.
-- Full booking flow → Stripe Checkout → webhook marks paid → Telegram alert fires → Opera log row appears.
-- Refund from admin dashboard.
-- Contact form submit + admin read/mark.
+### Phase 2 — PostgreSQL database
+1. Create a Postgres instance (Railway one-click, or Neon free tier).
+2. Open pgAdmin → register server with the public connection string → you can now browse tables visually.
+3. Run `php artisan migrate --seed` against it to create `rooms`, `bookings`, `users`, `user_roles`, `profiles`, `contact_messages`, `payment_events`, `opera_sync_log`, `reservation_locks`.
 
-## What I need from you to start coding
+### Phase 3 — Deploy Laravel
+1. Deploy the GitHub repo on Railway (or Render). Set env vars from `.env.example` (`APP_KEY`, `DB_*`, `STRIPE_*`, `TELEGRAM_*`, `SANCTUM_STATEFUL_DOMAINS=darlys.site`).
+2. Map a subdomain `api.darlys.site` to the Laravel app and enable SSL.
+3. Update Stripe webhook endpoint to `https://api.darlys.site/api/stripe/webhook`.
 
-I cannot provision Railway, push to GitHub, or point DNS — those need your accounts. But everything inside the repo I can do. Confirm the two questions below and I'll begin the rewrite.
+### Phase 4 — Switch the React frontend (no downtime)
+This is the only part **I do for you, here in Lovable**:
+1. Add `VITE_API_URL=https://api.darlys.site` to env.
+2. Rewire every page/hook to use `apiClient` from `src/lib/api.ts`:
+   - `useAuth.tsx` → `apiClient.login/logout/me`
+   - `Rooms.tsx`, `BookingPage.tsx`, `BookingConfirmation.tsx`, `Contact.tsx`, `AdminLogin.tsx`, `AdminBootstrap.tsx`, `AdminDashboard.tsx`
+3. Delete `src/integrations/supabase/`, the `supabase/` folder, and `@supabase/supabase-js` from `package.json`.
+4. Click **Publish** in Lovable → site is live, now talking to your Laravel API.
+
+### Phase 5 — QA
+Sign in as admin · book a room · pay via Stripe · check webhook marks paid · Telegram alert · refund · contact form · pgAdmin shows the rows.
+
+---
+
+## Hosting answer (the thing you asked about)
+- **Frontend stays on Lovable forever.** `darlys.site` keeps pointing at Lovable. You keep using the Publish button.
+- **Backend lives elsewhere** (Railway/Render/your VPS) under `api.darlys.site`. Lovable does not host PHP/Laravel — that's why this part needs an external provider. Railway free tier is enough to start.
+- **Database** = a normal PostgreSQL on the same provider as Laravel, browsable from pgAdmin.
+
+## What I need from you to start
+1. Pick the backend host: **Railway** (recommended, easiest) / Render / your own VPS?
+2. Confirm subdomain: `api.darlys.site` for the Laravel API — OK?
+3. Once Laravel is deployed and you tell me **"VITE_API_URL is live at https://api.darlys.site"**, I'll do Phase 4 (rewire React + delete Supabase) in one shot. Until then, your live site keeps working on Supabase — zero downtime.
