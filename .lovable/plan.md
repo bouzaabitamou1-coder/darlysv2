@@ -1,74 +1,70 @@
 
-# Plan — React (Lovable) + Laravel + PostgreSQL, no Supabase
 
-Yes, this is fully possible. Lovable only hosts the **React frontend** — it does not care what backend you call. So we keep your site deployed exactly as it is now (`darlys.site` via Lovable), and just change *who the React app talks to*: instead of Supabase, it will call your own Laravel API on a separate host.
+# Fix Build Errors + PostgreSQL Backend Enhancements
 
-```text
- Browser  →  React SPA on Lovable (darlys.site)        ← unchanged hosting
-                    │  fetch('https://api.darlys.site/api/...')
-                    ▼
-              Laravel 11 API  (Railway / Render / VPS)
-                    │
-                    ▼
-              PostgreSQL  (Railway / Neon / your VPS)   ← browse with pgAdmin
-```
+## Clarification
 
-## What stays the same
-- React + Vite + Tailwind + shadcn codebase.
-- Lovable hosting, publish button, custom domain `darlys.site`, SSL.
-- All pages, i18n, Stripe checkout flow, Telegram alerts, Opera PMS sync logic.
+Your project **already uses PostgreSQL**. Lovable Cloud = managed PostgreSQL + Auth + Edge Functions. All SQL is standard PostgreSQL — no proprietary syntax. The `btree_gist`, `daterange`, exclusion constraints, triggers — all native PostgreSQL features.
 
-## What changes
-| Layer | Today | After |
-|---|---|---|
-| Database | Supabase Postgres | Your own PostgreSQL on Railway/Neon, viewed in pgAdmin |
-| Auth | `supabase.auth` | Laravel Sanctum (cookie session) |
-| API | `supabase.from(...)` direct queries | `fetch()` via `src/lib/api.ts` |
-| Edge functions | 5 Deno functions | 5 Laravel controllers |
-| Hosting (frontend) | Lovable | **Lovable (unchanged)** |
-| Hosting (backend) | Supabase managed | Railway (or Render/Fly/VPS) |
+## Step 1 — Fix 3 Build Errors
 
----
+**File: `supabase/functions/create-checkout/index.ts`** (line 3)
+- Change `npm:@supabase/supabase-js@2.57.2` → `https://esm.sh/@supabase/supabase-js@2`
 
-## Step-by-step plan
+**File: `src/pages/Rooms.tsx`** (line 262)
+- Fix `dbRooms` state type to include `price_per_night` field
 
-### Phase 1 — Backend (already 80% scaffolded in `darlys-api/`)
-1. On your machine, run `composer create-project laravel/laravel darlys-api-final` to get a clean Laravel 11 skeleton.
-2. Copy our `darlys-api/app/`, `routes/`, `database/`, `.env.example` over the skeleton.
-3. Install packages: `composer require laravel/sanctum stripe/stripe-php guzzlehttp/guzzle`.
-4. Configure CORS + Sanctum stateful domain = `darlys.site` so cookies work cross-origin.
-5. Push to a new GitHub repo.
+**File: `src/test/setup.ts`** (line 3)
+- Add `scrollMargin` property to `IntersectionObserverMock`
 
-### Phase 2 — PostgreSQL database
-1. Create a Postgres instance (Railway one-click, or Neon free tier).
-2. Open pgAdmin → register server with the public connection string → you can now browse tables visually.
-3. Run `php artisan migrate --seed` against it to create `rooms`, `bookings`, `users`, `user_roles`, `profiles`, `contact_messages`, `payment_events`, `opera_sync_log`, `reservation_locks`.
+## Step 2 — PostgreSQL Migration: Double-Booking Prevention + New Tables
 
-### Phase 3 — Deploy Laravel
-1. Deploy the GitHub repo on Railway (or Render). Set env vars from `.env.example` (`APP_KEY`, `DB_*`, `STRIPE_*`, `TELEGRAM_*`, `SANCTUM_STATEFUL_DOMAINS=darlys.site`).
-2. Map a subdomain `api.darlys.site` to the Laravel app and enable SSL.
-3. Update Stripe webhook endpoint to `https://api.darlys.site/api/stripe/webhook`.
+Single migration with pure PostgreSQL SQL:
 
-### Phase 4 — Switch the React frontend (no downtime)
-This is the only part **I do for you, here in Lovable**:
-1. Add `VITE_API_URL=https://api.darlys.site` to env.
-2. Rewire every page/hook to use `apiClient` from `src/lib/api.ts`:
-   - `useAuth.tsx` → `apiClient.login/logout/me`
-   - `Rooms.tsx`, `BookingPage.tsx`, `BookingConfirmation.tsx`, `Contact.tsx`, `AdminLogin.tsx`, `AdminBootstrap.tsx`, `AdminDashboard.tsx`
-3. Delete `src/integrations/supabase/`, the `supabase/` folder, and `@supabase/supabase-js` from `package.json`.
-4. Click **Publish** in Lovable → site is live, now talking to your Laravel API.
+1. **`btree_gist` extension** — enables exclusion constraints on ranges
+2. **Exclusion constraint** on `bookings` — prevents overlapping date ranges per room
+3. **`reservation_locks` table** — 15-min temporary holds during checkout
+4. **`payment_events` table** — Stripe webhook audit log
+5. **`opera_sync_log` table** — Opera PMS integration tracking
+6. **New columns** on `bookings`: `stripe_checkout_session_id`, `opera_confirmation_number`
+7. **`check_availability()` function** — PostgreSQL function checking date conflicts
+8. **`cleanup_expired_locks()` function** — removes stale locks
+9. **RLS policies** on all new tables
 
-### Phase 5 — QA
-Sign in as admin · book a room · pay via Stripe · check webhook marks paid · Telegram alert · refund · contact form · pgAdmin shows the rows.
+## Step 3 — Fix `create-checkout` Edge Function
 
----
+- Fix import
+- Keep booking as "pending" until Stripe webhook confirms (not "paid" prematurely)
+- Store `stripe_checkout_session_id`
+- Check availability before creating session
 
-## Hosting answer (the thing you asked about)
-- **Frontend stays on Lovable forever.** `darlys.site` keeps pointing at Lovable. You keep using the Publish button.
-- **Backend lives elsewhere** (Railway/Render/your VPS) under `api.darlys.site`. Lovable does not host PHP/Laravel — that's why this part needs an external provider. Railway free tier is enough to start.
-- **Database** = a normal PostgreSQL on the same provider as Laravel, browsable from pgAdmin.
+## Step 4 — New Edge Functions
 
-## What I need from you to start
-1. Pick the backend host: **Railway** (recommended, easiest) / Render / your own VPS?
-2. Confirm subdomain: `api.darlys.site` for the Laravel API — OK?
-3. Once Laravel is deployed and you tell me **"VITE_API_URL is live at https://api.darlys.site"**, I'll do Phase 4 (rewire React + delete Supabase) in one shot. Until then, your live site keeps working on Supabase — zero downtime.
+| Function | Purpose |
+|----------|---------|
+| `stripe-webhook` | Verify Stripe signature, update booking to confirmed/paid, log to `payment_events` |
+| `check-availability` | Query PostgreSQL `check_availability()` function, return boolean |
+| `opera-sync` | Stub for Oracle Opera PMS — logs to `opera_sync_log`, ready for API credentials |
+
+## Step 5 — Frontend Updates
+
+- **BookingPage.tsx**: Call availability check before payment
+- **BookingConfirmation.tsx**: Poll booking status until webhook confirms
+- **AdminDashboard.tsx**: Add payment events + Opera sync tabs
+- **Rooms.tsx**: Fix type error
+
+## Files to Create/Edit
+
+| File | Action |
+|------|--------|
+| PostgreSQL migration | New tables + constraints + functions |
+| `supabase/functions/create-checkout/index.ts` | Fix import + logic |
+| `supabase/functions/stripe-webhook/index.ts` | New |
+| `supabase/functions/check-availability/index.ts` | New |
+| `supabase/functions/opera-sync/index.ts` | New |
+| `src/pages/Rooms.tsx` | Fix type error |
+| `src/pages/BookingPage.tsx` | Add availability check |
+| `src/pages/BookingConfirmation.tsx` | Add payment polling |
+| `src/pages/AdminDashboard.tsx` | Add new tabs |
+| `src/test/setup.ts` | Fix mock |
+
