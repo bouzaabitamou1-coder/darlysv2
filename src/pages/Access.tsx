@@ -1,8 +1,12 @@
 import { motion } from "framer-motion";
-import { MapPin, Plane, Train, Car, Navigation } from "lucide-react";
+import { MapPin, Plane, Train, Car, Navigation, Crosshair, Loader2 } from "lucide-react";
+import { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { photo } from "@/data/siteMedia";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -22,6 +26,167 @@ const transport = [
   { icon: Train, title: "Gare ONCF", text: "Connexions depuis Casablanca, Rabat, Tanger. Compléter en taxi vers la médina." },
   { icon: Car, title: "Parking", text: "La médina est piétonne ; stationnement en périphérie puis accès à pied ou en petite voiture avec votre accompagnateur." },
 ];
+
+// Dar Lys (Fès Médina) approximate coordinates
+const DAR_LYS_LAT = 34.0625;
+const DAR_LYS_LNG = -4.9745;
+const RATE_PER_KM = 10; // DH per km
+
+const haversineKm = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const R = 6371;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+};
+
+const DriverPickupCalculator = () => {
+  const { locale } = useLanguage();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<{ km: number; dh: number; label?: string } | null>(null);
+  const [manual, setManual] = useState("");
+
+  const reverseGeocode = async (lat: number, lng: number) => {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=12`,
+      );
+      const data = await res.json();
+      return data?.display_name as string | undefined;
+    } catch {
+      return undefined;
+    }
+  };
+
+  const useMyLocation = () => {
+    setError(null);
+    setResult(null);
+    if (!navigator.geolocation) {
+      setError("Geolocation is not supported by this browser.");
+      return;
+    }
+    setLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const km = haversineKm(latitude, longitude, DAR_LYS_LAT, DAR_LYS_LNG);
+        const label = await reverseGeocode(latitude, longitude);
+        setResult({ km, dh: km * RATE_PER_KM, label });
+        setLoading(false);
+      },
+      (err) => {
+        setError(err.message || "Unable to retrieve your location.");
+        setLoading(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
+
+  const lookupAddress = async () => {
+    if (!manual.trim()) return;
+    setError(null);
+    setResult(null);
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(manual)}`,
+      );
+      const data = await res.json();
+      if (!data?.length) {
+        setError("Address not found. Try a more specific search.");
+      } else {
+        const lat = parseFloat(data[0].lat);
+        const lng = parseFloat(data[0].lon);
+        const km = haversineKm(lat, lng, DAR_LYS_LAT, DAR_LYS_LNG);
+        setResult({ km, dh: km * RATE_PER_KM, label: data[0].display_name });
+      }
+    } catch {
+      setError("Lookup failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fmtKm = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
+  const fmtDh = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
+
+  return (
+    <div className="bg-cream border border-gold/30 p-6 sm:p-8 shadow-card">
+      <div className="flex items-start gap-4 mb-6">
+        <div className="w-12 h-12 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
+          <Car className="w-6 h-6 text-gold" />
+        </div>
+        <div>
+          <h3 className="font-display text-xl text-charcoal font-semibold">Private driver pickup — instant estimate</h3>
+          <p className="text-sm text-muted-foreground font-body mt-1">
+            Share your location or enter an address. We calculate the distance to Dar Lys and apply a flat rate of{" "}
+            <span className="text-gold font-semibold">{RATE_PER_KM} DH / km</span>.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <Button
+          onClick={useMyLocation}
+          disabled={loading}
+          className="bg-gold hover:bg-gold-dark text-cream rounded-none px-6"
+        >
+          {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Crosshair className="w-4 h-4 mr-2" />}
+          Use my location
+        </Button>
+        <div className="flex flex-1 gap-2">
+          <Input
+            placeholder="…or enter address / city (e.g. Fès airport)"
+            value={manual}
+            onChange={(e) => setManual(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && lookupAddress()}
+            className="rounded-none border-border bg-cream"
+          />
+          <Button
+            onClick={lookupAddress}
+            disabled={loading || !manual.trim()}
+            variant="outline"
+            className="rounded-none border-gold text-gold hover:bg-gold hover:text-cream"
+          >
+            Estimate
+          </Button>
+        </div>
+      </div>
+
+      {error && <p className="text-sm text-destructive font-body mb-2">{error}</p>}
+
+      {result && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-4 grid sm:grid-cols-3 gap-4 p-5 bg-charcoal text-cream"
+        >
+          <div>
+            <p className="text-xs tracking-wider uppercase text-gold-light/70 font-body mb-1">Distance</p>
+            <p className="text-2xl font-display font-semibold">{fmtKm.format(result.km)} km</p>
+          </div>
+          <div>
+            <p className="text-xs tracking-wider uppercase text-gold-light/70 font-body mb-1">Pickup fee</p>
+            <p className="text-2xl font-display font-semibold text-gold">{fmtDh.format(result.dh)} DH</p>
+          </div>
+          <div className="sm:col-span-1">
+            <p className="text-xs tracking-wider uppercase text-gold-light/70 font-body mb-1">From</p>
+            <p className="text-xs text-cream/80 font-body leading-relaxed line-clamp-3">
+              {result.label ?? "Your location"}
+            </p>
+          </div>
+          <p className="sm:col-span-3 text-[11px] text-cream/50 font-body">
+            Estimate based on straight-line distance × {RATE_PER_KM} DH/km. Final fare may vary slightly depending on the route. To confirm a pickup, contact the riad.
+          </p>
+        </motion.div>
+      )}
+    </div>
+  );
+};
 
 const Access = () => (
   <Layout>
@@ -105,6 +270,10 @@ const Access = () => (
             </motion.div>
           ))}
         </div>
+
+        <motion.div {...fadeUp} transition={{ delay: 0.3, duration: 0.7 }} className="mt-12">
+          <DriverPickupCalculator />
+        </motion.div>
       </div>
     </section>
   </Layout>
