@@ -5,6 +5,8 @@ import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { photo, video } from "@/data/siteMedia";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useTenant } from "@/contexts/TenantContext";
+import { DEFAULT_TENANT_SLUG } from "@/lib/tenant";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -15,19 +17,30 @@ const fadeUp = {
 
 const HeroSection = () => {
   const { t } = useLanguage();
+  const { tenant, slug } = useTenant();
+  const isCustom = slug !== DEFAULT_TENANT_SLUG;
+  const heroImage = tenant.images?.[0];
   return (
   <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
-    <video
-      className="absolute inset-0 w-full h-full object-cover"
-      autoPlay
-      muted
-      loop
-      playsInline
-      poster={photo.heroMain}
-      aria-label="Dar Lys luxury riad in Fès"
-    >
-      <source src={video.homeHero} type="video/mp4" />
-    </video>
+    {isCustom && heroImage ? (
+      <img
+        src={heroImage}
+        alt={tenant.name ?? "Riad"}
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+    ) : (
+      <video
+        className="absolute inset-0 w-full h-full object-cover"
+        autoPlay
+        muted
+        loop
+        playsInline
+        poster={photo.heroMain}
+        aria-label={`${tenant.name ?? "Dar Lys"} luxury riad in Fès`}
+      >
+        <source src={video.homeHero} type="video/mp4" />
+      </video>
+    )}
     <div className="overlay-warm" />
     <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
       <motion.p
@@ -44,7 +57,7 @@ const HeroSection = () => {
         transition={{ duration: 0.8, delay: 0.4 }}
         className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-display font-bold text-cream leading-[1.1] mb-4"
       >
-        Dar Lys
+        {tenant.name ?? "Dar Lys"}
       </motion.h1>
       <motion.div
         initial={{ opacity: 0 }}
@@ -60,7 +73,7 @@ const HeroSection = () => {
         transition={{ duration: 0.8, delay: 0.6 }}
         className="text-cream/70 text-lg sm:text-xl font-accent italic max-w-xl mx-auto mb-10"
       >
-        {t("hero.tagline")}
+        {isCustom && tenant.description ? tenant.description : t("hero.tagline")}
       </motion.p>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
