@@ -37,6 +37,7 @@ const Stars = ({ value, onChange }: { value: number; onChange: (n: number) => vo
 );
 
 const StaySurvey = () => {
+  const { tenant } = useTenant();
   const [searchParams] = useSearchParams();
   const bookingId = searchParams.get("booking") || null;
 
@@ -93,6 +94,7 @@ const StaySurvey = () => {
         photo_url = pub.publicUrl;
       }
       const { error } = await supabase.from("stay_surveys").insert({
+        tenant_id: tenant.id,
         booking_id: bookingId,
         guest_name: form.guestName || null,
         guest_email: form.guestEmail.trim(),
