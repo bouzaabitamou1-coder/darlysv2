@@ -575,6 +575,72 @@ const BookingPage = () => {
                       </div>
                     </div>
 
+                    {/* Private driver pickup add-on */}
+                    <div className="border border-border rounded-md p-4 space-y-4 bg-background">
+                      <label className="flex items-center justify-between cursor-pointer">
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={transport.enabled}
+                            onChange={(e) => setTransport({ ...transport, enabled: e.target.checked })}
+                            className="accent-primary w-4 h-4"
+                          />
+                          <span className="text-sm font-body text-foreground flex items-center gap-2">
+                            <Car className="w-4 h-4 text-primary" /> Add a private driver pickup
+                          </span>
+                        </div>
+                        <span className="text-xs text-muted-foreground font-body">{RATE_PER_KM} DH / km</span>
+                      </label>
+
+                      {transport.enabled && (
+                        <div className="space-y-3 pl-7">
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <Input
+                              value={transport.address}
+                              onChange={(e) => setTransport({ ...transport, address: e.target.value })}
+                              placeholder="Pickup address (airport, station, hotel…)"
+                              className="rounded-md"
+                            />
+                            <Button type="button" variant="outline" onClick={transportEstimateAddress} disabled={transport.loading || !transport.address.trim()} size="sm">
+                              {transport.loading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Estimate"}
+                            </Button>
+                            <Button type="button" variant="outline" onClick={transportUseMyLocation} disabled={transport.loading} size="sm" title="Use my location">
+                              <Crosshair className="w-3 h-3" />
+                            </Button>
+                          </div>
+                          <div className="grid sm:grid-cols-3 gap-2">
+                            <div>
+                              <label className={labelClass}>Pickup time</label>
+                              <input type="time" value={transport.time} onChange={(e) => setTransport({ ...transport, time: e.target.value })} className={inputClass} />
+                            </div>
+                            <div>
+                              <label className={labelClass}>Passengers</label>
+                              <select value={transport.passengers} onChange={(e) => setTransport({ ...transport, passengers: parseInt(e.target.value) })} className={inputClass}>
+                                {[1,2,3,4,5,6,7,8].map(n => <option key={n} value={n}>{n}</option>)}
+                              </select>
+                            </div>
+                            <div>
+                              <label className={labelClass}>Flight / train</label>
+                              <input type="text" value={transport.flightOrTrainNo} onChange={(e) => setTransport({ ...transport, flightOrTrainNo: e.target.value })} className={inputClass} placeholder="AT201" />
+                            </div>
+                          </div>
+                          {transport.estimate && (
+                            <div className="flex items-center justify-between p-3 bg-primary/5 border border-primary/20 rounded-md text-sm font-body">
+                              <span className="text-foreground">
+                                {transport.estimate.km.toFixed(1)} km → Dar Lys
+                              </span>
+                              <span className="text-primary font-semibold">
+                                {Math.round(transport.estimate.dh)} DH (~€{transportFeeEur.toFixed(2)})
+                              </span>
+                            </div>
+                          )}
+                          <p className="text-[11px] text-muted-foreground font-body">
+                            Pickup will be scheduled for your check-in day at the time above. The concierge will confirm by email.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
                     <div className="flex gap-4">
                       <Button variant="outline" onClick={() => setStep(1)} className="flex-1">Back</Button>
                       <Button onClick={() => { if (form.guestName && form.guestEmail) setStep(3); else toast.error("Please fill in name and email."); }} className="flex-1">Continue</Button>
