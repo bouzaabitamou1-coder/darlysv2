@@ -13,6 +13,8 @@ type Tenant = {
   id: string;
   slug: string;
   name: string;
+  description: string | null;
+  images: string[] | null;
   contact_email: string | null;
   primary_color: string | null;
   accent_color: string | null;
@@ -27,6 +29,8 @@ const SuperAdmin = () => {
   const [form, setForm] = useState({
     slug: "",
     name: "",
+    description: "",
+    images: "",
     contact_email: "",
     primary_color: "#1e3a5f",
     accent_color: "#c9a84c",
@@ -48,7 +52,7 @@ const SuperAdmin = () => {
   const loadTenants = async () => {
     const { data } = await supabase
       .from("tenants")
-      .select("id, slug, name, contact_email, primary_color, accent_color, is_active, allowed_origins")
+      .select("id, slug, name, description, images, contact_email, primary_color, accent_color, is_active, allowed_origins")
       .order("created_at", { ascending: false });
     setTenants((data as Tenant[]) ?? []);
   };
@@ -67,9 +71,13 @@ const SuperAdmin = () => {
     setCreating(true);
     const origins = form.allowed_origins
       .split(",").map((s) => s.trim()).filter(Boolean);
+    const images = form.images
+      .split(/[\n,]/).map((s) => s.trim()).filter(Boolean);
     const { error } = await supabase.from("tenants").insert({
       slug: form.slug.trim().toLowerCase(),
       name: form.name.trim(),
+      description: form.description.trim() || null,
+      images,
       contact_email: form.contact_email || null,
       primary_color: form.primary_color,
       accent_color: form.accent_color,
@@ -78,7 +86,7 @@ const SuperAdmin = () => {
     setCreating(false);
     if (error) { toast.error(error.message); return; }
     toast.success("Tenant created");
-    setForm({ slug: "", name: "", contact_email: "", primary_color: "#1e3a5f", accent_color: "#c9a84c", allowed_origins: "" });
+    setForm({ slug: "", name: "", description: "", images: "", contact_email: "", primary_color: "#1e3a5f", accent_color: "#c9a84c", allowed_origins: "" });
     loadTenants();
   };
 
@@ -115,6 +123,14 @@ const SuperAdmin = () => {
           <div>
             <Label>Allowed origins (comma-separated)</Label>
             <Input value={form.allowed_origins} onChange={(e) => setForm({ ...form, allowed_origins: e.target.value })} placeholder="https://riadzahra.com" />
+          </div>
+          <div className="sm:col-span-2">
+            <Label>Description</Label>
+            <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Short tagline shown on the public site" />
+          </div>
+          <div className="sm:col-span-2">
+            <Label>Image URLs (comma or newline-separated)</Label>
+            <Input value={form.images} onChange={(e) => setForm({ ...form, images: e.target.value })} placeholder="https://…/hero.jpg, https://…/courtyard.jpg" />
           </div>
           <div>
             <Label>Primary color</Label>

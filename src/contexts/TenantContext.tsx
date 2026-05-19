@@ -6,6 +6,8 @@ export type Tenant = {
   id: string;
   slug: string;
   name: string;
+  description: string | null;
+  images: string[];
   contact_email: string | null;
   phone: string | null;
   address: string | null;
@@ -29,6 +31,8 @@ const FALLBACK_TENANT: Tenant = {
   id: DEFAULT_TENANT_ID,
   slug: DEFAULT_TENANT_SLUG,
   name: "Dar Lys",
+  description: null,
+  images: [],
   contact_email: null, phone: null, address: null,
   location_lat: 34.0625, location_lng: -4.9745,
   logo_url: null,
