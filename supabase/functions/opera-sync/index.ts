@@ -12,6 +12,16 @@ serve(async (req) => {
   }
 
   try {
+    // Require service-role bearer (internal calls from stripe-webhook etc.)
+    const authz = req.headers.get("authorization") ?? "";
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    if (!serviceKey || authz !== `Bearer ${serviceKey}`) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { bookingId, action } = await req.json();
 
     if (!bookingId || !action) {
@@ -88,7 +98,6 @@ serve(async (req) => {
       JSON.stringify({
         synced: false,
         message: "Opera PMS integration is in stub mode. Configure API credentials to enable.",
-        payload: operaPayload,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
