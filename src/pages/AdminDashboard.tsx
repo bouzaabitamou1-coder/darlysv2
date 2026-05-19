@@ -452,6 +452,43 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === "payments" && (
+          <></>
+        )}
+
+        {activeTab === "surveys" && (
+          <div className="space-y-4">
+            {surveys.length === 0 && <p className="text-center text-slate-500 text-sm p-8">No guest surveys submitted yet.</p>}
+            {surveys.map((s) => (
+              <div key={s.id} className="bg-slate-900 p-6 border border-slate-800 rounded-lg">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <p className="font-semibold text-slate-100">{s.guest_name || s.guest_email}</p>
+                    <p className="text-xs text-slate-500">{s.guest_email} · {formatDateTime(s.created_at)}</p>
+                  </div>
+                  <div className="flex items-center gap-1 text-amber-400">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className={`w-4 h-4 ${i < (s.overall_rating || 0) ? "fill-amber-400" : "text-slate-700"}`} />
+                    ))}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-3">
+                  {["cleanliness", "service", "comfort", "food"].map((k) => (
+                    <div key={k} className="bg-slate-950/50 border border-slate-800 rounded px-3 py-2">
+                      <p className="text-slate-500 capitalize">{k}</p>
+                      <p className="text-slate-200 font-semibold">{s[k] ?? "—"}/5</p>
+                    </div>
+                  ))}
+                </div>
+                {s.comments && <p className="text-sm text-slate-300 italic border-l-2 border-amber-500/40 pl-3">"{s.comments}"</p>}
+                {s.would_recommend !== null && (
+                  <p className="mt-2 text-xs text-slate-400">Would recommend: <span className={s.would_recommend ? "text-emerald-400" : "text-rose-400"}>{s.would_recommend ? "Yes" : "No"}</span></p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === "payments" && (
           <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
