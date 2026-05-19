@@ -84,6 +84,10 @@ type Ctx = {
   setLang: (l: Lang) => void;
   t: (key: string) => string;
   dir: "ltr" | "rtl";
+  locale: string;
+  formatCurrency: (amount: number, currency?: string) => string;
+  formatDate: (date: string | Date, opts?: Intl.DateTimeFormatOptions) => string;
+  formatDateTime: (date: string | Date) => string;
 };
 
 const LanguageContext = createContext<Ctx | undefined>(undefined);
@@ -96,6 +100,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const dir: "ltr" | "rtl" = lang === "ar" ? "rtl" : "ltr";
+  const locale = lang === "ar" ? "ar-MA" : lang === "fr" ? "fr-FR" : "en-GB";
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -110,8 +115,32 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
   const t = (key: string) => translations[lang][key] ?? translations.en[key] ?? key;
 
+  const formatCurrency = (amount: number, currency = "EUR") => {
+    try {
+      return new Intl.NumberFormat(locale, {
+        style: "currency",
+        currency,
+        maximumFractionDigits: 2,
+      }).format(Number(amount) || 0);
+    } catch {
+      return `${amount} ${currency}`;
+    }
+  };
+
+  const formatDate = (date: string | Date, opts?: Intl.DateTimeFormatOptions) => {
+    try {
+      const d = typeof date === "string" ? new Date(date) : date;
+      return new Intl.DateTimeFormat(locale, opts ?? { year: "numeric", month: "short", day: "numeric" }).format(d);
+    } catch {
+      return String(date);
+    }
+  };
+
+  const formatDateTime = (date: string | Date) =>
+    formatDate(date, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+
   return (
-    <LanguageContext.Provider value={{ lang, setLang, t, dir }}>
+    <LanguageContext.Provider value={{ lang, setLang, t, dir, locale, formatCurrency, formatDate, formatDateTime }}>
       {children}
     </LanguageContext.Provider>
   );
