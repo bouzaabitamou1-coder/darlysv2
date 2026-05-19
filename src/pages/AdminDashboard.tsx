@@ -293,6 +293,73 @@ const AdminDashboard = () => {
           </div>
         )}
 
+        {activeTab === "transport" && (
+          <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-800 bg-slate-900/50">
+                  <th className="p-4 text-left text-[11px] tracking-wider uppercase text-slate-500">Guest</th>
+                  <th className="p-4 text-left text-[11px] tracking-wider uppercase text-slate-500">Pickup</th>
+                  <th className="p-4 text-left text-[11px] tracking-wider uppercase text-slate-500">When</th>
+                  <th className="p-4 text-left text-[11px] tracking-wider uppercase text-slate-500">Distance</th>
+                  <th className="p-4 text-left text-[11px] tracking-wider uppercase text-slate-500">Fee (DH)</th>
+                  <th className="p-4 text-left text-[11px] tracking-wider uppercase text-slate-500">Linked</th>
+                  <th className="p-4 text-left text-[11px] tracking-wider uppercase text-slate-500">Status</th>
+                  <th className="p-4 text-left text-[11px] tracking-wider uppercase text-slate-500">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transportBookings.map((t) => (
+                  <tr key={t.id} className="border-b border-slate-800 hover:bg-slate-800/30 transition-colors align-top">
+                    <td className="p-4">
+                      <p className="text-slate-100 font-medium">{t.guest_name}</p>
+                      <p className="text-slate-500 text-xs">{t.guest_email}</p>
+                      {t.guest_phone && <p className="text-slate-500 text-xs">{t.guest_phone}</p>}
+                    </td>
+                    <td className="p-4 text-slate-300 max-w-xs">
+                      <div className="flex items-start gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-xs line-clamp-2">{t.pickup_address}</p>
+                          {t.flight_or_train_no && <p className="text-[10px] text-slate-500 mt-0.5">{t.flight_or_train_no}</p>}
+                          <p className="text-[10px] text-slate-500">{t.passengers} pax</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-4 text-slate-400 text-xs">{formatDateTime(t.pickup_datetime)}</td>
+                    <td className="p-4 text-slate-300">{Number(t.distance_km).toFixed(1)} km</td>
+                    <td className="p-4 text-amber-400 font-semibold">{Math.round(Number(t.estimated_fee_dh))} DH</td>
+                    <td className="p-4 text-slate-500 font-mono text-xs">{t.booking_id ? t.booking_id.slice(0, 8) : "—"}</td>
+                    <td className="p-4">
+                      <span className={`text-xs px-2 py-0.5 rounded capitalize ${
+                        t.status === "confirmed" ? "bg-emerald-500/10 text-emerald-400"
+                        : t.status === "cancelled" ? "bg-rose-500/10 text-rose-400"
+                        : t.status === "completed" ? "bg-sky-500/10 text-sky-400"
+                        : "bg-amber-500/10 text-amber-400"
+                      }`}>{t.status}</span>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex gap-1">
+                        {t.status === "pending" && (
+                          <>
+                            <button onClick={() => updateTransportStatus(t.id, "confirmed")} className="p-1 text-emerald-400 hover:bg-emerald-500/10 rounded" title="Confirm"><Check className="w-4 h-4" /></button>
+                            <button onClick={() => updateTransportStatus(t.id, "cancelled")} className="p-1 text-rose-400 hover:bg-rose-500/10 rounded" title="Cancel"><X className="w-4 h-4" /></button>
+                          </>
+                        )}
+                        {t.status === "confirmed" && (
+                          <button onClick={() => updateTransportStatus(t.id, "completed")} className="p-1 text-sky-400 hover:bg-sky-500/10 rounded" title="Mark completed"><Check className="w-4 h-4" /></button>
+                        )}
+                        <button onClick={() => deleteTransport(t)} className="p-1 text-rose-400 hover:bg-rose-500/10 rounded" title="Delete"><Trash2 className="w-4 h-4" /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {transportBookings.length === 0 && <p className="text-center text-slate-500 text-sm p-8">No transport requests yet.</p>}
+          </div>
+        )}
+
         {activeTab === "rooms" && (
           <div className="space-y-4">
             {rooms.map((room) => (
