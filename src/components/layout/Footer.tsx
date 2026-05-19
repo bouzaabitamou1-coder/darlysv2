@@ -26,7 +26,7 @@ const Footer = () => {
             <a href="https://www.instagram.com/dar_lys_fes/" target="_blank" rel="noopener noreferrer" className="text-cream/50 hover:text-gold transition-colors" aria-label="Instagram">
               <Instagram className="w-5 h-5" />
             </a>
-            <a href="#" className="text-cream/50 hover:text-gold transition-colors" aria-label="Facebook">
+            <a href="https://www.facebook.com/profile.php?id=61588096623552" target="_blank" rel="noopener noreferrer" className="text-cream/50 hover:text-gold transition-colors" aria-label="Facebook">
               <Facebook className="w-5 h-5" />
             </a>
           </div>
@@ -75,7 +75,7 @@ const Footer = () => {
             </div>
             <div className="flex items-center gap-3">
               <Phone className="w-4 h-4 text-gold shrink-0" />
-              <a href="tel:+212535555555" className="text-sm opacity-70 hover:opacity-100 transition-opacity">+212 5 35 55 55 55</a>
+              <a href="tel:+212535366423" className="text-sm opacity-70 hover:opacity-100 transition-opacity">+212 5 35 36 64 23</a>
             </div>
             <div className="flex items-center gap-3">
               <Mail className="w-4 h-4 text-gold shrink-0" />
