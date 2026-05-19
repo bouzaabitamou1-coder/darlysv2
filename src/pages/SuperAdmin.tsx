@@ -20,6 +20,7 @@ type Tenant = {
   accent_color: string | null;
   is_active: boolean;
   allowed_origins: string[] | null;
+  allow_cross_recommendations: boolean | null;
 };
 
 const SuperAdmin = () => {
@@ -52,9 +53,20 @@ const SuperAdmin = () => {
   const loadTenants = async () => {
     const { data } = await supabase
       .from("tenants")
-      .select("id, slug, name, description, images, contact_email, primary_color, accent_color, is_active, allowed_origins")
+      .select("id, slug, name, description, images, contact_email, primary_color, accent_color, is_active, allowed_origins, allow_cross_recommendations")
       .order("created_at", { ascending: false });
     setTenants((data as Tenant[]) ?? []);
+  };
+
+  const toggleCrossRecs = async (t: Tenant) => {
+    const next = !t.allow_cross_recommendations;
+    const { error } = await supabase
+      .from("tenants")
+      .update({ allow_cross_recommendations: next })
+      .eq("id", t.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(next ? "Cross recommendations ON" : "Cross recommendations OFF");
+    loadTenants();
   };
 
   useEffect(() => { if (isSuper) loadTenants(); }, [isSuper]);
