@@ -539,8 +539,14 @@ const BookingPage = () => {
                       </div>
                     )}
 
-                    {isAvailable && !availabilityError && !inventoryWarning && (
-                      <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md text-sm font-body text-green-700">
+                    {checkingAvailability && (
+                      <div className="flex items-center gap-2 p-3 bg-primary/5 border border-primary/20 rounded-md text-sm font-body text-primary">
+                        <Loader2 className="w-4 h-4 shrink-0 animate-spin" /> Checking these dates now…
+                      </div>
+                    )}
+
+                    {isAvailable && !checkingAvailability && !availabilityError && !inventoryWarning && (
+                      <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/30 rounded-md text-sm font-body text-foreground">
                         <CheckCircle2 className="w-4 h-4 shrink-0" />
                         Great news — this room is available for your selected dates. You can proceed with your reservation.
                       </div>
@@ -675,7 +681,7 @@ const BookingPage = () => {
 
                     <div className="flex gap-4">
                       <Button variant="outline" onClick={() => setStep(1)} className="flex-1">Back</Button>
-                      <Button onClick={() => { if (form.guestName && form.guestEmail) setStep(3); else toast.error("Please fill in name and email."); }} className="flex-1">Continue</Button>
+                      <Button onClick={() => { if (!form.guestName || !form.guestEmail) toast.error("Please fill in name and email."); else if (!isEmail(form.guestEmail)) toast.error("Please enter a valid email address."); else setStep(3); }} className="flex-1">Continue</Button>
                     </div>
                   </motion.div>
                 )}
