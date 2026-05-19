@@ -2,29 +2,79 @@ import { useState, useRef, useEffect } from "react";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
-const QUICK_REPLIES = [
-  "Recommend a room for 2 guests under 1500 MAD",
-  "Do I need a private driver from the airport?",
-  "What's your cancellation policy?",
-  "Is breakfast included?",
-  "Day trip to Chefchaouen — driver cost?",
-];
+const LOCALE = {
+  en: {
+    title: "Lys · AI Concierge",
+    subtitle: "Rooms · Transport · FAQ",
+    welcome:
+      "Hello! I'm Lys, your Dar Lys concierge. Ask me about rooms for your budget, whether you need a private driver, or anything about the riad.",
+    placeholder: "My budget is 1500 MAD for 2 guests…",
+    quickLabel: "Quick questions",
+    thinking: "Lys is thinking…",
+    error: "Sorry, I couldn't reach the concierge right now. Please try again.",
+    quick: [
+      "Recommend a room for 2 guests under 1500 MAD",
+      "Do I need a private driver from the airport?",
+      "What's your cancellation policy?",
+      "Is breakfast included?",
+      "Day trip to Chefchaouen — driver cost?",
+    ],
+  },
+  fr: {
+    title: "Lys · Concierge IA",
+    subtitle: "Chambres · Transport · FAQ",
+    welcome:
+      "Bonjour ! Je suis Lys, votre concierge de Dar Lys. Demandez-moi une chambre selon votre budget, si vous avez besoin d'un chauffeur privé, ou toute question sur le riad.",
+    placeholder: "Mon budget est de 1500 MAD pour 2 personnes…",
+    quickLabel: "Questions rapides",
+    thinking: "Lys réfléchit…",
+    error: "Désolé, le concierge est injoignable. Veuillez réessayer.",
+    quick: [
+      "Recommandez une chambre pour 2 personnes à moins de 1500 MAD",
+      "Ai-je besoin d'un chauffeur privé depuis l'aéroport ?",
+      "Quelle est votre politique d'annulation ?",
+      "Le petit-déjeuner est-il inclus ?",
+      "Excursion à Chefchaouen — coût du chauffeur ?",
+    ],
+  },
+  ar: {
+    title: "ليس · مساعد ذكي",
+    subtitle: "الغرف · النقل · الأسئلة الشائعة",
+    welcome:
+      "مرحباً! أنا ليس، مساعدك في دار ليس. اسألني عن غرفة تناسب ميزانيتك، أو هل تحتاج إلى سائق خاص، أو أي سؤال عن الرياض.",
+    placeholder: "ميزانيتي 1500 درهم لشخصين…",
+    quickLabel: "أسئلة سريعة",
+    thinking: "ليس يفكر…",
+    error: "عذراً، تعذّر الوصول إلى المساعد. حاول مرة أخرى.",
+    quick: [
+      "اقترح غرفة لشخصين بأقل من 1500 درهم",
+      "هل أحتاج إلى سائق خاص من المطار؟",
+      "ما هي سياسة الإلغاء؟",
+      "هل الإفطار مشمول؟",
+      "رحلة إلى شفشاون — كم تكلفة السائق؟",
+    ],
+  },
+};
 
 const ConciergeChat = () => {
+  const { lang } = useLanguage();
+  const L = LOCALE[lang] ?? LOCALE.en;
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [messages, setMessages] = useState<Msg[]>([
-    {
-      role: "assistant",
-      content:
-        "Bonjour! I'm Lys, your Dar Lys concierge. Ask me about rooms for your budget, whether you need a private driver, or anything about the riad.",
-    },
-  ]);
+  const [messages, setMessages] = useState<Msg[]>([{ role: "assistant", content: L.welcome }]);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Reset welcome message when language changes (only if conversation hasn't started)
+  useEffect(() => {
+    setMessages((prev) =>
+      prev.length === 1 && prev[0].role === "assistant" ? [{ role: "assistant", content: L.welcome }] : prev,
+    );
+  }, [lang, L.welcome]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -39,21 +89,22 @@ const ConciergeChat = () => {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("concierge-ai", {
-        body: { messages: next.map((m) => ({ role: m.role, content: m.content })) },
+        body: {
+          messages: next.map((m) => ({ role: m.role, content: m.content })),
+          lang,
+        },
       });
       if (error) throw error;
-      setMessages([...next, { role: "assistant", content: data?.reply ?? "Sorry, I had trouble responding." }]);
+      setMessages([...next, { role: "assistant", content: data?.reply ?? L.error }]);
     } catch (e: any) {
-      setMessages([
-        ...next,
-        { role: "assistant", content: "Sorry, I couldn't reach the concierge right now. Please try again." },
-      ]);
+      setMessages([...next, { role: "assistant", content: L.error }]);
     } finally {
       setLoading(false);
     }
   };
 
   const showQuickReplies = messages.filter((m) => m.role === "user").length === 0;
+  const isRtl = lang === "ar";
 
   return (
     <>
@@ -71,11 +122,12 @@ const ConciergeChat = () => {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            dir={isRtl ? "rtl" : "ltr"}
             className="fixed bottom-24 left-6 z-50 w-[calc(100vw-3rem)] sm:w-96 h-[32rem] bg-cream border border-gold/30 shadow-luxury flex flex-col rounded-sm overflow-hidden"
           >
             <div className="bg-charcoal text-cream px-4 py-3">
-              <div className="font-display text-lg">Lys · AI Concierge</div>
-              <div className="text-xs opacity-70">Rooms · Transport · FAQ</div>
+              <div className="font-display text-lg">{L.title}</div>
+              <div className="text-xs opacity-70">{L.subtitle}</div>
             </div>
 
             <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 bg-cream-dark">
@@ -84,8 +136,8 @@ const ConciergeChat = () => {
                   key={i}
                   className={`max-w-[85%] px-3 py-2 text-sm rounded-sm whitespace-pre-wrap ${
                     m.role === "user"
-                      ? "ml-auto bg-gold text-charcoal"
-                      : "mr-auto bg-cream text-charcoal border border-border"
+                      ? (isRtl ? "mr-auto" : "ml-auto") + " bg-gold text-charcoal"
+                      : (isRtl ? "ml-auto" : "mr-auto") + " bg-cream text-charcoal border border-border"
                   }`}
                 >
                   {m.content}
@@ -93,14 +145,14 @@ const ConciergeChat = () => {
               ))}
               {loading && (
                 <div className="mr-auto flex items-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="w-4 h-4 animate-spin" /> Lys is thinking…
+                  <Loader2 className="w-4 h-4 animate-spin" /> {L.thinking}
                 </div>
               )}
               {showQuickReplies && !loading && (
                 <div className="pt-2 space-y-2">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Quick questions</div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{L.quickLabel}</div>
                   <div className="flex flex-wrap gap-2">
-                    {QUICK_REPLIES.map((q) => (
+                    {L.quick.map((q) => (
                       <button
                         key={q}
                         onClick={() => send(q)}
@@ -124,7 +176,7 @@ const ConciergeChat = () => {
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="My budget is 1500 MAD for 2 guests…"
+                placeholder={L.placeholder}
                 className="flex-1 px-3 py-2 text-sm bg-transparent outline-none"
                 disabled={loading}
               />
