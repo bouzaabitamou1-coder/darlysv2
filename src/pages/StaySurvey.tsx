@@ -215,6 +215,32 @@ const StaySurvey = () => {
                   />
                 </div>
 
+                <div>
+                  <label className="block text-xs tracking-[0.15em] uppercase font-body text-muted-foreground mb-2">
+                    Add a photo (optional)
+                  </label>
+                  {photoPreview ? (
+                    <div className="relative inline-block">
+                      <img src={photoPreview} alt="Preview" className="max-h-56 rounded-md border border-border" />
+                      <button
+                        type="button"
+                        onClick={clearPhoto}
+                        className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-background border border-border shadow flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                        aria-label="Remove photo"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center gap-2 cursor-pointer border-2 border-dashed border-border hover:border-primary rounded-md py-8 px-4 text-muted-foreground hover:text-primary transition-colors">
+                      <ImagePlus className="w-7 h-7" />
+                      <span className="text-sm font-body">Click to upload a photo of your stay</span>
+                      <span className="text-xs opacity-70">JPG / PNG — up to 8MB</span>
+                      <input type="file" accept="image/*" onChange={onPhotoChange} className="hidden" />
+                    </label>
+                  )}
+                </div>
+
                 <Button onClick={submit} disabled={submitting} className="w-full" size="lg">
                   {submitting ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Sending…</> : "Send my feedback"}
                 </Button>
