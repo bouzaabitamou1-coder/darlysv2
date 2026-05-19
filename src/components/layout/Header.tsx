@@ -15,6 +15,7 @@ const navLinks = [
   { key: "nav.events", path: "/events" },
   { key: "nav.gallery", path: "/gallery" },
   { key: "nav.access", path: "/access" },
+  { key: "nav.transport", path: "/transport" },
   { key: "nav.contact", path: "/contact" },
 ];
 

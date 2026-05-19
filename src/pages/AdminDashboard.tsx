@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   BarChart3, CalendarDays, DollarSign, Mail, BedDouble,
-  Users, LogOut, Eye, Check, X, Pencil, Trash2, CreditCard, RefreshCw, Printer, Undo2, ChevronDown, ChevronUp
+  Users, LogOut, Eye, Check, X, Pencil, Trash2, CreditCard, RefreshCw, Printer, Undo2, ChevronDown, ChevronUp, Car, MapPin
 } from "lucide-react";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { printInvoice } from "@/lib/printInvoice";
@@ -23,6 +23,7 @@ const AdminDashboard = () => {
   const [rooms, setRooms] = useState<any[]>([]);
   const [paymentEvents, setPaymentEvents] = useState<any[]>([]);
   const [syncLogs, setSyncLogs] = useState<any[]>([]);
+  const [transportBookings, setTransportBookings] = useState<any[]>([]);
   const [refundingId, setRefundingId] = useState<string | null>(null);
   const [expandedSyncLog, setExpandedSyncLog] = useState<string | null>(null);
 
@@ -39,12 +40,13 @@ const AdminDashboard = () => {
   }, [isAdmin]);
 
   const loadData = async () => {
-    const [bookingsRes, messagesRes, roomsRes, eventsRes, syncRes] = await Promise.all([
+    const [bookingsRes, messagesRes, roomsRes, eventsRes, syncRes, transportRes] = await Promise.all([
       supabase.from("bookings").select("*, rooms(name)").order("created_at", { ascending: false }),
       supabase.from("contact_messages").select("*").order("created_at", { ascending: false }),
       supabase.from("rooms").select("*").order("name"),
       supabase.from("payment_events").select("*").order("created_at", { ascending: false }).limit(50),
       supabase.from("opera_sync_log").select("*").order("created_at", { ascending: false }).limit(50),
+      supabase.from("transport_bookings").select("*").order("created_at", { ascending: false }),
     ]);
 
     const b = bookingsRes.data || [];
@@ -56,12 +58,26 @@ const AdminDashboard = () => {
     setRooms(r);
     setPaymentEvents(eventsRes.data || []);
     setSyncLogs(syncRes.data || []);
+    setTransportBookings(transportRes.data || []);
     setStats({
       bookings: b.length,
       revenue: b.filter((x) => x.payment_status === "paid").reduce((s, x) => s + Number(x.total_price), 0),
       messages: m.filter((x) => !x.is_read).length,
       rooms: r.length,
     });
+  };
+
+  const updateTransportStatus = async (id: string, status: string) => {
+    await supabase.from("transport_bookings").update({ status }).eq("id", id);
+    toast.success(`Transport ${status}`);
+    loadData();
+  };
+
+  const deleteTransport = async (t: any) => {
+    if (!confirm(`Delete transport request for ${t.guest_name}?`)) return;
+    await supabase.from("transport_bookings").delete().eq("id", t.id);
+    toast.success("Transport request deleted");
+    loadData();
   };
 
   const updateBookingStatus = async (id: string, status: string) => {
@@ -117,6 +133,7 @@ const AdminDashboard = () => {
   const tabs = [
     { id: "overview", label: "Overview", icon: BarChart3 },
     { id: "bookings", label: "Bookings", icon: CalendarDays },
+    { id: "transport", label: "Transport", icon: Car },
     { id: "rooms", label: "Rooms", icon: BedDouble },
     { id: "messages", label: "Messages", icon: Mail },
     { id: "payments", label: "Payments", icon: CreditCard },
@@ -126,69 +143,59 @@ const AdminDashboard = () => {
   const statCards = [
     { label: "Total Bookings", value: stats.bookings, icon: CalendarDays, color: "text-gold" },
     { label: "Revenue", value: formatCurrency(stats.revenue), icon: DollarSign, color: "text-teal" },
+    { label: "Transport Requests", value: transportBookings.length, icon: Car, color: "text-amber-400" },
     { label: "Unread Messages", value: stats.messages, icon: Mail, color: "text-terracotta" },
     { label: "Rooms", value: stats.rooms, icon: BedDouble, color: "text-olive" },
   ];
 
   return (
-    <div dir="ltr" className="min-h-screen bg-slate-950 text-slate-100 font-sans" style={{ fontFamily: "Inter, ui-sans-serif, system-ui" }}>
-      {/* Sidebar */}
-      <aside className="fixed left-0 top-0 bottom-0 w-64 bg-slate-900 border-r border-slate-800 text-slate-200 p-6 hidden lg:block">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="w-8 h-8 rounded-md bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-slate-950 font-bold text-sm">D</div>
-          <h2 className="text-lg font-semibold text-amber-400 tracking-tight">Dar Lys</h2>
+    <div dir="ltr" className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100" style={{ fontFamily: "Inter, ui-sans-serif, system-ui" }}>
+      {/* Top brand bar */}
+      <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-amber-500/10">
+        <div className="max-w-[1400px] mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-md bg-gradient-to-br from-amber-300 via-amber-500 to-amber-700 flex items-center justify-center text-slate-950 font-bold shadow-lg shadow-amber-500/20">D</div>
+            <div className="leading-tight">
+              <p className="text-sm font-semibold text-amber-400 tracking-tight">Dar Lys</p>
+              <p className="text-[10px] text-slate-500 tracking-[0.25em] uppercase">Control Center</p>
+            </div>
+          </div>
+          <div className="hidden sm:flex items-center gap-4">
+            <span className="text-xs text-slate-500">Signed in as <span className="text-slate-300">{user?.email}</span></span>
+            <button onClick={() => { signOut(); navigate("/"); }} className="flex items-center gap-2 px-3 py-1.5 text-xs text-slate-300 hover:text-amber-400 border border-slate-800 hover:border-amber-500/40 rounded-md transition-colors">
+              <LogOut className="w-3.5 h-3.5" /> Sign Out
+            </button>
+          </div>
         </div>
-        <p className="text-[10px] text-slate-500 tracking-[0.25em] uppercase mb-8 ml-10">Control Center</p>
-
-        <nav className="space-y-1">
+        {/* Horizontal tab bar */}
+        <div className="max-w-[1400px] mx-auto px-6 lg:px-10 flex gap-1 overflow-x-auto scrollbar-none">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-all rounded-md ${
+              className={`flex items-center gap-2 px-4 py-3 text-xs uppercase tracking-wider transition-all border-b-2 whitespace-nowrap ${
                 activeTab === tab.id
-                  ? "bg-amber-500/10 text-amber-400 border-l-2 border-amber-400"
-                  : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 border-l-2 border-transparent"
+                  ? "text-amber-400 border-amber-400"
+                  : "text-slate-500 border-transparent hover:text-slate-200"
               }`}
             >
-              <tab.icon className="w-4 h-4" /> {tab.label}
-            </button>
-          ))}
-        </nav>
-
-        <div className="absolute bottom-6 left-6 right-6">
-          <button onClick={() => { signOut(); navigate("/"); }} className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-slate-500 hover:text-slate-100 hover:bg-slate-800/60 rounded-md transition-colors">
-            <LogOut className="w-4 h-4" /> Sign Out
-          </button>
-        </div>
-      </aside>
-
-      {/* Mobile nav */}
-      <div className="lg:hidden bg-slate-900 border-b border-slate-800 p-4 flex items-center justify-between sticky top-0 z-30">
-        <h2 className="text-base font-semibold text-amber-400">Dar Lys · Admin</h2>
-        <div className="flex gap-2">
-          {tabs.map((tab) => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`p-2 rounded-md ${activeTab === tab.id ? "text-amber-400 bg-amber-500/10" : "text-slate-500"}`}>
-              <tab.icon className="w-5 h-5" />
+              <tab.icon className="w-3.5 h-3.5" /> {tab.label}
             </button>
           ))}
         </div>
-      </div>
+      </header>
 
-      {/* Main content */}
-      <main className="lg:ml-64 p-6 lg:p-10">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-2xl font-semibold text-slate-100 capitalize tracking-tight">{activeTab}</h1>
-            <p className="text-sm text-slate-400">Welcome back, {user?.email}</p>
-          </div>
+      <main className="max-w-[1400px] mx-auto p-6 lg:p-10">
+        <div className="mb-8">
+          <h1 className="text-3xl font-semibold text-slate-100 capitalize tracking-tight">{activeTab}</h1>
+          <p className="text-sm text-slate-400 mt-1">Manage your riad operations from one elegant cockpit.</p>
         </div>
 
         {activeTab === "overview" && (
           <div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
               {statCards.map((card) => (
-                <div key={card.label} className="bg-slate-900 p-6 border border-slate-800 rounded-lg hover:border-slate-700 transition-colors">
+                <div key={card.label} className="bg-gradient-to-br from-slate-900 to-slate-900/40 p-6 border border-slate-800 rounded-xl hover:border-amber-500/30 hover:-translate-y-0.5 transition-all">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-[11px] tracking-wider uppercase text-slate-500">{card.label}</span>
                     <card.icon className="w-5 h-5 text-amber-400" />
@@ -283,6 +290,73 @@ const AdminDashboard = () => {
               </tbody>
             </table>
             {bookings.length === 0 && <p className="text-center text-slate-500 text-sm p-8">No bookings found.</p>}
+          </div>
+        )}
+
+        {activeTab === "transport" && (
+          <div className="bg-slate-900 border border-slate-800 rounded-lg overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-800 bg-slate-900/50">
+                  <th className="p-4 text-left text-[11px] tracking-wider uppercase text-slate-500">Guest</th>
+                  <th className="p-4 text-left text-[11px] tracking-wider uppercase text-slate-500">Pickup</th>
+                  <th className="p-4 text-left text-[11px] tracking-wider uppercase text-slate-500">When</th>
+                  <th className="p-4 text-left text-[11px] tracking-wider uppercase text-slate-500">Distance</th>
+                  <th className="p-4 text-left text-[11px] tracking-wider uppercase text-slate-500">Fee (DH)</th>
+                  <th className="p-4 text-left text-[11px] tracking-wider uppercase text-slate-500">Linked</th>
+                  <th className="p-4 text-left text-[11px] tracking-wider uppercase text-slate-500">Status</th>
+                  <th className="p-4 text-left text-[11px] tracking-wider uppercase text-slate-500">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transportBookings.map((t) => (
+                  <tr key={t.id} className="border-b border-slate-800 hover:bg-slate-800/30 transition-colors align-top">
+                    <td className="p-4">
+                      <p className="text-slate-100 font-medium">{t.guest_name}</p>
+                      <p className="text-slate-500 text-xs">{t.guest_email}</p>
+                      {t.guest_phone && <p className="text-slate-500 text-xs">{t.guest_phone}</p>}
+                    </td>
+                    <td className="p-4 text-slate-300 max-w-xs">
+                      <div className="flex items-start gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-amber-400 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="text-xs line-clamp-2">{t.pickup_address}</p>
+                          {t.flight_or_train_no && <p className="text-[10px] text-slate-500 mt-0.5">{t.flight_or_train_no}</p>}
+                          <p className="text-[10px] text-slate-500">{t.passengers} pax</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-4 text-slate-400 text-xs">{formatDateTime(t.pickup_datetime)}</td>
+                    <td className="p-4 text-slate-300">{Number(t.distance_km).toFixed(1)} km</td>
+                    <td className="p-4 text-amber-400 font-semibold">{Math.round(Number(t.estimated_fee_dh))} DH</td>
+                    <td className="p-4 text-slate-500 font-mono text-xs">{t.booking_id ? t.booking_id.slice(0, 8) : "—"}</td>
+                    <td className="p-4">
+                      <span className={`text-xs px-2 py-0.5 rounded capitalize ${
+                        t.status === "confirmed" ? "bg-emerald-500/10 text-emerald-400"
+                        : t.status === "cancelled" ? "bg-rose-500/10 text-rose-400"
+                        : t.status === "completed" ? "bg-sky-500/10 text-sky-400"
+                        : "bg-amber-500/10 text-amber-400"
+                      }`}>{t.status}</span>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex gap-1">
+                        {t.status === "pending" && (
+                          <>
+                            <button onClick={() => updateTransportStatus(t.id, "confirmed")} className="p-1 text-emerald-400 hover:bg-emerald-500/10 rounded" title="Confirm"><Check className="w-4 h-4" /></button>
+                            <button onClick={() => updateTransportStatus(t.id, "cancelled")} className="p-1 text-rose-400 hover:bg-rose-500/10 rounded" title="Cancel"><X className="w-4 h-4" /></button>
+                          </>
+                        )}
+                        {t.status === "confirmed" && (
+                          <button onClick={() => updateTransportStatus(t.id, "completed")} className="p-1 text-sky-400 hover:bg-sky-500/10 rounded" title="Mark completed"><Check className="w-4 h-4" /></button>
+                        )}
+                        <button onClick={() => deleteTransport(t)} className="p-1 text-rose-400 hover:bg-rose-500/10 rounded" title="Delete"><Trash2 className="w-4 h-4" /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {transportBookings.length === 0 && <p className="text-center text-slate-500 text-sm p-8">No transport requests yet.</p>}
           </div>
         )}
 

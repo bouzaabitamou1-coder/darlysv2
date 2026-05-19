@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Calendar, Users, CreditCard, ChevronRight, AlertCircle, Tag, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
+import { Calendar, Users, CreditCard, ChevronRight, AlertCircle, Tag, AlertTriangle, CheckCircle2, Clock, Car, Crosshair, Loader2 } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { DAR_LYS_LAT, DAR_LYS_LNG, RATE_PER_KM, haversineKm, geocodeAddress, reverseGeocode } from "@/lib/transport";
 
 // EUR -> MAD conversion rate (approximate)
 const EUR_TO_MAD = 10.8;
@@ -31,6 +33,58 @@ const BookingPage = () => {
     checkIn: "", checkOut: "", numGuests: 1,
     specialRequests: "", selectedAddOns: [] as string[],
   });
+  // Optional private-driver pickup add-on attached to this room booking
+  const [transport, setTransport] = useState({
+    enabled: false,
+    address: "",
+    time: "",
+    passengers: 1,
+    flightOrTrainNo: "",
+    coords: null as { lat: number; lng: number } | null,
+    estimate: null as { km: number; dh: number } | null,
+    loading: false,
+  });
+
+  const transportFeeEur = transport.enabled && transport.estimate
+    ? transport.estimate.dh / EUR_TO_MAD
+    : 0;
+
+  const computeTransport = (lat: number, lng: number, label?: string) => {
+    const km = haversineKm(lat, lng, DAR_LYS_LAT, DAR_LYS_LNG);
+    setTransport((t) => ({
+      ...t,
+      coords: { lat, lng },
+      estimate: { km, dh: km * RATE_PER_KM },
+      address: label ?? t.address,
+    }));
+  };
+
+  const transportUseMyLocation = () => {
+    if (!navigator.geolocation) { toast.error("Geolocation not supported."); return; }
+    setTransport((t) => ({ ...t, loading: true }));
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const label = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+        computeTransport(pos.coords.latitude, pos.coords.longitude, label);
+        setTransport((t) => ({ ...t, loading: false }));
+      },
+      (err) => { toast.error(err.message || "Unable to retrieve location."); setTransport((t) => ({ ...t, loading: false })); },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
+
+  const transportEstimateAddress = async () => {
+    if (!transport.address.trim()) return;
+    setTransport((t) => ({ ...t, loading: true }));
+    try {
+      const r = await geocodeAddress(transport.address);
+      if (!r) { toast.error("Address not found."); return; }
+      computeTransport(r.lat, r.lng, r.label);
+    } finally {
+      setTransport((t) => ({ ...t, loading: false }));
+    }
+  };
+
   const [room, setRoom] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [checkingAvailability, setCheckingAvailability] = useState(false);
@@ -124,7 +178,7 @@ const BookingPage = () => {
     return sum + (addon?.price || 0);
   }, 0);
 
-  const totalPrice = discountedRoomPrice + addOnTotal;
+  const totalPrice = discountedRoomPrice + addOnTotal + transportFeeEur;
 
   const toggleAddOn = (id: string) => {
     setForm((prev) => ({
@@ -274,6 +328,30 @@ const BookingPage = () => {
       });
 
       if (error) throw error;
+
+      // If the guest opted in for a private driver pickup, store it as a
+      // separate transport request linked to this booking. Admin sees both.
+      if (transport.enabled && transport.estimate && transport.address && transport.time) {
+        const pickup = new Date(`${form.checkIn}T${transport.time}`);
+        await supabase.from("transport_bookings").insert({
+          user_id: session?.user?.id ?? null,
+          booking_id: bookingId,
+          guest_name: form.guestName,
+          guest_email: form.guestEmail,
+          guest_phone: form.guestPhone || null,
+          pickup_address: transport.address,
+          pickup_lat: transport.coords?.lat ?? null,
+          pickup_lng: transport.coords?.lng ?? null,
+          pickup_datetime: pickup.toISOString(),
+          distance_km: Number(transport.estimate.km.toFixed(2)),
+          estimated_fee_dh: Math.round(transport.estimate.dh),
+          passengers: transport.passengers,
+          flight_or_train_no: transport.flightOrTrainNo || null,
+          notes: "Booked with room reservation",
+          status: "pending",
+        });
+      }
+
       toast.success("Booking created successfully!");
 
       // The booking is now created — keep the lock alive through Stripe via the edge
@@ -497,6 +575,72 @@ const BookingPage = () => {
                       </div>
                     </div>
 
+                    {/* Private driver pickup add-on */}
+                    <div className="border border-border rounded-md p-4 space-y-4 bg-background">
+                      <label className="flex items-center justify-between cursor-pointer">
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            checked={transport.enabled}
+                            onChange={(e) => setTransport({ ...transport, enabled: e.target.checked })}
+                            className="accent-primary w-4 h-4"
+                          />
+                          <span className="text-sm font-body text-foreground flex items-center gap-2">
+                            <Car className="w-4 h-4 text-primary" /> Add a private driver pickup
+                          </span>
+                        </div>
+                        <span className="text-xs text-muted-foreground font-body">{RATE_PER_KM} DH / km</span>
+                      </label>
+
+                      {transport.enabled && (
+                        <div className="space-y-3 pl-7">
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <Input
+                              value={transport.address}
+                              onChange={(e) => setTransport({ ...transport, address: e.target.value })}
+                              placeholder="Pickup address (airport, station, hotel…)"
+                              className="rounded-md"
+                            />
+                            <Button type="button" variant="outline" onClick={transportEstimateAddress} disabled={transport.loading || !transport.address.trim()} size="sm">
+                              {transport.loading ? <Loader2 className="w-3 h-3 animate-spin" /> : "Estimate"}
+                            </Button>
+                            <Button type="button" variant="outline" onClick={transportUseMyLocation} disabled={transport.loading} size="sm" title="Use my location">
+                              <Crosshair className="w-3 h-3" />
+                            </Button>
+                          </div>
+                          <div className="grid sm:grid-cols-3 gap-2">
+                            <div>
+                              <label className={labelClass}>Pickup time</label>
+                              <input type="time" value={transport.time} onChange={(e) => setTransport({ ...transport, time: e.target.value })} className={inputClass} />
+                            </div>
+                            <div>
+                              <label className={labelClass}>Passengers</label>
+                              <select value={transport.passengers} onChange={(e) => setTransport({ ...transport, passengers: parseInt(e.target.value) })} className={inputClass}>
+                                {[1,2,3,4,5,6,7,8].map(n => <option key={n} value={n}>{n}</option>)}
+                              </select>
+                            </div>
+                            <div>
+                              <label className={labelClass}>Flight / train</label>
+                              <input type="text" value={transport.flightOrTrainNo} onChange={(e) => setTransport({ ...transport, flightOrTrainNo: e.target.value })} className={inputClass} placeholder="AT201" />
+                            </div>
+                          </div>
+                          {transport.estimate && (
+                            <div className="flex items-center justify-between p-3 bg-primary/5 border border-primary/20 rounded-md text-sm font-body">
+                              <span className="text-foreground">
+                                {transport.estimate.km.toFixed(1)} km → Dar Lys
+                              </span>
+                              <span className="text-primary font-semibold">
+                                {Math.round(transport.estimate.dh)} DH (~€{transportFeeEur.toFixed(2)})
+                              </span>
+                            </div>
+                          )}
+                          <p className="text-[11px] text-muted-foreground font-body">
+                            Pickup will be scheduled for your check-in day at the time above. The concierge will confirm by email.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
                     <div className="flex gap-4">
                       <Button variant="outline" onClick={() => setStep(1)} className="flex-1">Back</Button>
                       <Button onClick={() => { if (form.guestName && form.guestEmail) setStep(3); else toast.error("Please fill in name and email."); }} className="flex-1">Continue</Button>
@@ -548,6 +692,12 @@ const BookingPage = () => {
                               </div>
                             ) : null;
                           })}
+                          {transport.enabled && transport.estimate && (
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Private driver pickup ({transport.estimate.km.toFixed(1)} km)</span>
+                              <span className="text-foreground">€{transportFeeEur.toFixed(2)} <span className="text-muted-foreground">({Math.round(transport.estimate.dh)} DH)</span></span>
+                            </div>
+                          )}
                           <div className="border-t border-border pt-2 mt-2 flex justify-between font-semibold">
                             <span className="text-foreground">Total</span>
                             <span className="text-primary text-lg">€{totalPrice.toFixed(2)} <span className="text-sm text-muted-foreground">({dh(totalPrice)})</span></span>

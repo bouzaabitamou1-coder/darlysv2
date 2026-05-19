@@ -319,6 +319,69 @@ export type Database = {
         }
         Relationships: []
       }
+      transport_bookings: {
+        Row: {
+          booking_id: string | null
+          created_at: string
+          distance_km: number
+          estimated_fee_dh: number
+          flight_or_train_no: string | null
+          guest_email: string
+          guest_name: string
+          guest_phone: string | null
+          id: string
+          notes: string | null
+          passengers: number
+          pickup_address: string
+          pickup_datetime: string
+          pickup_lat: number | null
+          pickup_lng: number | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          booking_id?: string | null
+          created_at?: string
+          distance_km?: number
+          estimated_fee_dh?: number
+          flight_or_train_no?: string | null
+          guest_email: string
+          guest_name: string
+          guest_phone?: string | null
+          id?: string
+          notes?: string | null
+          passengers?: number
+          pickup_address: string
+          pickup_datetime: string
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          booking_id?: string | null
+          created_at?: string
+          distance_km?: number
+          estimated_fee_dh?: number
+          flight_or_train_no?: string | null
+          guest_email?: string
+          guest_name?: string
+          guest_phone?: string | null
+          id?: string
+          notes?: string | null
+          passengers?: number
+          pickup_address?: string
+          pickup_datetime?: string
+          pickup_lat?: number | null
+          pickup_lng?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
