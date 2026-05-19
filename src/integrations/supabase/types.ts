@@ -337,6 +337,7 @@ export type Database = {
           guest_name: string | null
           id: string
           overall_rating: number
+          photo_url: string | null
           service: number | null
           would_recommend: boolean | null
         }
@@ -351,6 +352,7 @@ export type Database = {
           guest_name?: string | null
           id?: string
           overall_rating: number
+          photo_url?: string | null
           service?: number | null
           would_recommend?: boolean | null
         }
@@ -365,6 +367,7 @@ export type Database = {
           guest_name?: string | null
           id?: string
           overall_rating?: number
+          photo_url?: string | null
           service?: number | null
           would_recommend?: boolean | null
         }
