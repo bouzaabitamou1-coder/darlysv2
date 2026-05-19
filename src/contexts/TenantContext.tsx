@@ -73,13 +73,13 @@ export const TenantProvider = ({ children }: { children: ReactNode }) => {
     let cancelled = false;
     (async () => {
       const { data } = await supabase
-        .from("tenants")
+        .from("public_tenants")
         .select("*")
         .eq("slug", slug)
         .eq("is_active", true)
         .maybeSingle();
       if (!cancelled) {
-        setTenant((data as Tenant) ?? FALLBACK_TENANT);
+        setTenant(({ ...FALLBACK_TENANT, ...(data ?? {}) } as Tenant));
         setLoading(false);
       }
     })();
