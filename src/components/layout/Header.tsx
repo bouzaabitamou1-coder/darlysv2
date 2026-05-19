@@ -70,7 +70,7 @@ const Header = () => {
             ))}
             <div className="flex items-center gap-3 2xl:gap-4 shrink-0 pl-2 ml-1 border-l border-current/20">
               <LanguageSwitcher textColor={textColor} />
-              <a href="tel:+212535555555" className={`inline-flex h-9 w-9 items-center justify-center ${textColor} opacity-70 hover:opacity-100 transition-opacity`}>
+              <a href="tel:+212535366423" className={`inline-flex h-9 w-9 items-center justify-center ${textColor} opacity-70 hover:opacity-100 transition-opacity`}>
                 <Phone className="w-4 h-4" />
               </a>
               <Link to="/rooms" className="btn-luxury inline-flex items-center justify-center h-9 text-[10px] 2xl:text-xs py-0 px-4 2xl:px-6 whitespace-nowrap leading-none">
