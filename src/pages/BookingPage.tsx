@@ -588,18 +588,30 @@ const BookingPage = () => {
 
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div>
-                        <label className={labelClass}>Full Name *</label>
+                        <label className={labelClass}>First Name *</label>
                         <input type="text" value={form.guestName} onChange={(e) => setForm({ ...form, guestName: e.target.value })} className={inputClass} required maxLength={100} />
                       </div>
+                      <div>
+                        <label className={labelClass}>Family Name *</label>
+                        <input type="text" value={form.familyName} onChange={(e) => setForm({ ...form, familyName: e.target.value })} className={inputClass} required maxLength={100} />
+                      </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-4">
                       <div>
                         <label className={labelClass}>Email *</label>
                         <input type="email" value={form.guestEmail} onChange={(e) => setForm({ ...form, guestEmail: e.target.value })} className={inputClass} required maxLength={255} />
                       </div>
+                      <div>
+                        <label className={labelClass}>Phone *</label>
+                        <input type="tel" value={form.guestPhone} onChange={(e) => setForm({ ...form, guestPhone: e.target.value })} className={inputClass} required maxLength={20} placeholder="+212 ..." />
+                      </div>
                     </div>
 
                     <div>
-                      <label className={labelClass}>Phone</label>
-                      <input type="tel" value={form.guestPhone} onChange={(e) => setForm({ ...form, guestPhone: e.target.value })} className={inputClass} maxLength={20} />
+                      <label className={labelClass}>ID Card or Passport Number *</label>
+                      <input type="text" value={form.idDocument} onChange={(e) => setForm({ ...form, idDocument: e.target.value })} className={inputClass} required maxLength={50} placeholder="Required for check-in" />
+                      <p className="text-[11px] text-muted-foreground mt-1 font-body">Required by Moroccan law for hotel check-in. Stored securely.</p>
                     </div>
 
                     <div>
