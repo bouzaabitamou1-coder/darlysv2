@@ -23,6 +23,26 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
+    // Authorization: either (a) one-time bootstrap when no admin exists yet,
+    // or (b) a caller proving knowledge of the BOOTSTRAP_SECRET header.
+    const providedSecret = req.headers.get("x-bootstrap-secret") ?? "";
+    const expectedSecret = Deno.env.get("BOOTSTRAP_SECRET") ?? "";
+    const secretOk = expectedSecret.length > 0 && providedSecret === expectedSecret;
+
+    if (!secretOk) {
+      const { count, error: countErr } = await admin
+        .from("user_roles")
+        .select("user_id", { count: "exact", head: true })
+        .eq("role", "admin");
+      if (countErr) throw countErr;
+      if ((count ?? 0) > 0) {
+        return new Response(
+          JSON.stringify({ error: "Bootstrap already completed. Provide x-bootstrap-secret to override." }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+
     // Find existing user by email
     let userId: string | null = null;
     const { data: list, error: listErr } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
