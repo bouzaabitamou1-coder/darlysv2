@@ -18,10 +18,11 @@ const dh = (eur: number) => `${(eur * EUR_TO_MAD).toFixed(0)} DH`;
 const addOns = [
   { id: "breakfast", label: "Extra Breakfast", price: 15 },
   { id: "spa", label: "Spa Treatment", price: 70 },
-  { id: "transfer", label: "Airport Transfer", price: 25 },
   { id: "late-checkout", label: "Late Check-out", price: 30 },
   { id: "romantic", label: "Romantic Setup", price: 50 },
 ];
+
+const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
 const BookingPage = () => {
   const [searchParams] = useSearchParams();
@@ -145,6 +146,17 @@ const BookingPage = () => {
     setAvailabilityError(null);
     setIsAvailable(false);
 
+    if (field === "checkIn" && next.checkOut && value >= next.checkOut) {
+      next.checkOut = "";
+      toast.info("Please choose a check-out date after your check-in date.");
+    }
+
+    if (field === "checkOut" && next.checkIn && value <= next.checkIn) {
+      setAvailabilityError("Check-out must be after check-in.");
+      setForm(next);
+      return;
+    }
+
     // Validate the date itself
     if (value && dateInUnavailable(value)) {
       toast.error("That date is already booked. Please pick another.");
@@ -191,6 +203,11 @@ const BookingPage = () => {
 
   const checkAvailability = async (): Promise<boolean> => {
     if (!room || !form.checkIn || !form.checkOut) return false;
+    if (form.checkOut <= form.checkIn) {
+      setAvailabilityError("Check-out must be after check-in.");
+      setIsAvailable(false);
+      return false;
+    }
     setCheckingAvailability(true);
     setAvailabilityError(null);
     setInventoryWarning(null);
