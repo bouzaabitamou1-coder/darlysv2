@@ -214,9 +214,16 @@ const BookingPage = () => {
     setIsAvailable(false);
     try {
       const { data, error } = await supabase.functions.invoke("check-availability", {
-        body: { roomId: room.id, checkIn: form.checkIn, checkOut: form.checkOut },
+        body: { roomId: room.id, checkIn: form.checkIn, checkOut: form.checkOut, sessionId: lockSessionId },
       });
-      if (error) throw error;
+      if (error) {
+        const message = String(error.message || "").toLowerCase();
+        if (message.includes("check-out") || message.includes("400")) {
+          setAvailabilityError("Check-out must be after check-in.");
+          return false;
+        }
+        throw error;
+      }
       if (!data?.available) {
         setAvailabilityError("This room is not available for the selected dates.");
         return false;
