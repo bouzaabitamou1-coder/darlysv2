@@ -24,7 +24,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages } = await req.json();
+    const { messages, lang } = await req.json();
     if (!Array.isArray(messages)) {
       return new Response(JSON.stringify({ error: "messages required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -66,7 +66,7 @@ ${roomsCtx || "(no rooms loaded)"}
 RIAD INFO:
 ${FAQ}
 
-Respond in the user's language (EN/FR/AR). Use light markdown (bold room names, short bullets).`;
+REQUIRED LANGUAGE: ${lang === "fr" ? "French" : lang === "ar" ? "Arabic" : "English"}. ALWAYS reply in this language regardless of the user's input language. Use light markdown (bold room names, short bullets).`;
 
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) {
