@@ -5,6 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
+const QUICK_REPLIES = [
+  "Recommend a room for 2 guests under 1500 MAD",
+  "Do I need a private driver from the airport?",
+  "What's your cancellation policy?",
+  "Is breakfast included?",
+  "Day trip to Chefchaouen — driver cost?",
+];
+
 const ConciergeChat = () => {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -22,8 +30,8 @@ const ConciergeChat = () => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, loading]);
 
-  const send = async () => {
-    const text = input.trim();
+  const send = async (override?: string) => {
+    const text = (override ?? input).trim();
     if (!text || loading) return;
     const next: Msg[] = [...messages, { role: "user", content: text }];
     setMessages(next);
@@ -44,6 +52,8 @@ const ConciergeChat = () => {
       setLoading(false);
     }
   };
+
+  const showQuickReplies = messages.filter((m) => m.role === "user").length === 0;
 
   return (
     <>
@@ -84,6 +94,22 @@ const ConciergeChat = () => {
               {loading && (
                 <div className="mr-auto flex items-center gap-2 text-sm text-muted-foreground">
                   <Loader2 className="w-4 h-4 animate-spin" /> Lys is thinking…
+                </div>
+              )}
+              {showQuickReplies && !loading && (
+                <div className="pt-2 space-y-2">
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Quick questions</div>
+                  <div className="flex flex-wrap gap-2">
+                    {QUICK_REPLIES.map((q) => (
+                      <button
+                        key={q}
+                        onClick={() => send(q)}
+                        className="text-xs px-3 py-1.5 bg-cream border border-gold/40 text-charcoal hover:bg-gold hover:text-charcoal transition-colors rounded-sm"
+                      >
+                        {q}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
