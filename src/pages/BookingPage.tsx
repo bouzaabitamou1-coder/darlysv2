@@ -253,6 +253,11 @@ const BookingPage = () => {
       toast.error("Please select dates and room.");
       return;
     }
+    if (form.checkOut <= form.checkIn) {
+      setAvailabilityError("Check-out must be after check-in.");
+      toast.error("Please choose a check-out date after your check-in date.");
+      return;
+    }
     const available = await checkAvailability();
     if (!available) return;
 
@@ -318,6 +323,16 @@ const BookingPage = () => {
   const handleSubmit = async () => {
     if (!room || !form.checkIn || !form.checkOut || !form.guestName || !form.guestEmail) {
       toast.error("Please fill in all required fields.");
+      return;
+    }
+    if (!isEmail(form.guestEmail)) {
+      toast.error("Please enter a valid email address so Stripe can open payment.");
+      setStep(2);
+      return;
+    }
+    if (transport.enabled && (!transport.address || !transport.time || !transport.estimate)) {
+      toast.error("Please complete the private driver pickup details or turn it off.");
+      setStep(2);
       return;
     }
     setLoading(true);
