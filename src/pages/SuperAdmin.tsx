@@ -85,7 +85,7 @@ const SuperAdmin = () => {
     });
     setCreating(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("Tenant created");
+    toast.success("Property created");
     setForm({ slug: "", name: "", description: "", images: "", contact_email: "", primary_color: "#1e3a5f", accent_color: "#c9a84c", allowed_origins: "" });
     loadTenants();
   };
@@ -101,12 +101,12 @@ const SuperAdmin = () => {
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-8">
       <div>
-        <h1 className="text-3xl font-display">Super Admin · Tenants</h1>
+        <h1 className="text-3xl font-display">Super Admin · Properties</h1>
         <p className="text-sm text-muted-foreground">Manage hotels & riads on the platform.</p>
       </div>
 
       <Card className="p-6 space-y-4">
-        <h2 className="text-xl font-display flex items-center gap-2"><Plus className="w-5 h-5" /> Create tenant</h2>
+        <h2 className="text-xl font-display flex items-center gap-2"><Plus className="w-5 h-5" /> Create property</h2>
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <Label>Slug *</Label>
@@ -141,11 +141,11 @@ const SuperAdmin = () => {
             <Input type="color" value={form.accent_color} onChange={(e) => setForm({ ...form, accent_color: e.target.value })} />
           </div>
         </div>
-        <Button onClick={createTenant} disabled={creating}>Create tenant</Button>
+        <Button onClick={createTenant} disabled={creating}>Create property</Button>
       </Card>
 
       <div className="space-y-4">
-        <h2 className="text-xl font-display">Tenants ({tenants.length})</h2>
+        <h2 className="text-xl font-display">Properties ({tenants.length})</h2>
         {tenants.map((t) => (
           <Card key={t.id} className="p-4 space-y-3">
             <div className="flex items-center justify-between gap-4 flex-wrap">
