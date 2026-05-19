@@ -30,7 +30,7 @@ const BookingPage = () => {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    guestName: "", guestEmail: "", guestPhone: "",
+    guestName: "", familyName: "", guestEmail: "", guestPhone: "", idDocument: "",
     checkIn: "", checkOut: "", numGuests: 1,
     specialRequests: "", selectedAddOns: [] as string[],
   });
@@ -328,8 +328,9 @@ const BookingPage = () => {
   };
 
   const handleSubmit = async () => {
-    if (!room || !form.checkIn || !form.checkOut || !form.guestName || !form.guestEmail) {
-      toast.error("Please fill in all required fields.");
+    if (!room || !form.checkIn || !form.checkOut || !form.guestName || !form.familyName || !form.guestEmail || !form.guestPhone || !form.idDocument) {
+      toast.error("Please fill in all required fields (name, family name, email, phone, ID / passport).");
+      setStep(2);
       return;
     }
     if (!isEmail(form.guestEmail)) {
@@ -353,9 +354,11 @@ const BookingPage = () => {
         id: bookingId,
         room_id: room.id,
         user_id: session?.user?.id ?? null,
-        guest_name: form.guestName,
+        guest_name: `${form.guestName} ${form.familyName}`.trim(),
+        family_name: form.familyName,
         guest_email: form.guestEmail,
-        guest_phone: form.guestPhone || null,
+        guest_phone: form.guestPhone,
+        id_document: form.idDocument,
         check_in: form.checkIn,
         check_out: form.checkOut,
         num_guests: form.numGuests,
@@ -585,18 +588,30 @@ const BookingPage = () => {
 
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div>
-                        <label className={labelClass}>Full Name *</label>
+                        <label className={labelClass}>First Name *</label>
                         <input type="text" value={form.guestName} onChange={(e) => setForm({ ...form, guestName: e.target.value })} className={inputClass} required maxLength={100} />
                       </div>
+                      <div>
+                        <label className={labelClass}>Family Name *</label>
+                        <input type="text" value={form.familyName} onChange={(e) => setForm({ ...form, familyName: e.target.value })} className={inputClass} required maxLength={100} />
+                      </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-4">
                       <div>
                         <label className={labelClass}>Email *</label>
                         <input type="email" value={form.guestEmail} onChange={(e) => setForm({ ...form, guestEmail: e.target.value })} className={inputClass} required maxLength={255} />
                       </div>
+                      <div>
+                        <label className={labelClass}>Phone *</label>
+                        <input type="tel" value={form.guestPhone} onChange={(e) => setForm({ ...form, guestPhone: e.target.value })} className={inputClass} required maxLength={20} placeholder="+212 ..." />
+                      </div>
                     </div>
 
                     <div>
-                      <label className={labelClass}>Phone</label>
-                      <input type="tel" value={form.guestPhone} onChange={(e) => setForm({ ...form, guestPhone: e.target.value })} className={inputClass} maxLength={20} />
+                      <label className={labelClass}>ID Card or Passport Number *</label>
+                      <input type="text" value={form.idDocument} onChange={(e) => setForm({ ...form, idDocument: e.target.value })} className={inputClass} required maxLength={50} placeholder="Required for check-in" />
+                      <p className="text-[11px] text-muted-foreground mt-1 font-body">Required by Moroccan law for hotel check-in. Stored securely.</p>
                     </div>
 
                     <div>
@@ -687,7 +702,14 @@ const BookingPage = () => {
 
                     <div className="flex gap-4">
                       <Button variant="outline" onClick={() => setStep(1)} className="flex-1">Back</Button>
-                      <Button onClick={() => { if (!form.guestName || !form.guestEmail) toast.error("Please fill in name and email."); else if (!isEmail(form.guestEmail)) toast.error("Please enter a valid email address."); else setStep(3); }} className="flex-1">Continue</Button>
+                      <Button onClick={() => {
+                        if (!form.guestName || !form.familyName || !form.guestEmail || !form.guestPhone || !form.idDocument) {
+                          toast.error("Please fill in name, family name, email, phone, and ID / passport.");
+                          return;
+                        }
+                        if (!isEmail(form.guestEmail)) { toast.error("Please enter a valid email address."); return; }
+                        setStep(3);
+                      }} className="flex-1">Continue</Button>
                     </div>
                   </motion.div>
                 )}
@@ -710,8 +732,9 @@ const BookingPage = () => {
                       </div>
 
                       <div className="bg-muted/30 p-4 border border-border rounded-md space-y-2">
-                        <p className="text-sm font-body text-muted-foreground">{form.guestName} · {form.guestEmail}</p>
-                        {form.guestPhone && <p className="text-sm font-body text-muted-foreground">{form.guestPhone}</p>}
+                        <p className="text-sm font-body text-foreground">{form.guestName} {form.familyName}</p>
+                        <p className="text-sm font-body text-muted-foreground">{form.guestEmail} · {form.guestPhone}</p>
+                        <p className="text-sm font-body text-muted-foreground">ID / Passport: <span className="text-foreground font-mono">{form.idDocument}</span></p>
                         {form.specialRequests && <p className="text-sm font-body text-muted-foreground italic">"{form.specialRequests}"</p>}
                       </div>
 

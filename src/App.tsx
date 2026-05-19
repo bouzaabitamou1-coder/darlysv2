@@ -20,6 +20,7 @@ import Access from "./pages/Access";
 import Transport from "./pages/Transport";
 import BookingPage from "./pages/BookingPage";
 import BookingConfirmation from "./pages/BookingConfirmation";
+import StaySurvey from "./pages/StaySurvey";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminBootstrap from "./pages/AdminBootstrap";
@@ -59,6 +60,7 @@ const App = () => (
             <Route path="/transport" element={<Transport />} />
             <Route path="/booking" element={<BookingPage />} />
             <Route path="/booking-confirmation" element={<BookingConfirmation />} />
+            <Route path="/feedback" element={<StaySurvey />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/bootstrap" element={<AdminBootstrap />} />
             <Route path="/admin" element={<AdminDashboard />} />

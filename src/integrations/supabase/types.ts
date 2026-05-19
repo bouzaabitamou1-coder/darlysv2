@@ -20,10 +20,12 @@ export type Database = {
           check_in: string
           check_out: string
           created_at: string
+          family_name: string | null
           guest_email: string
           guest_name: string
           guest_phone: string | null
           id: string
+          id_document: string | null
           num_guests: number
           opera_confirmation_number: string | null
           payment_intent_id: string | null
@@ -41,10 +43,12 @@ export type Database = {
           check_in: string
           check_out: string
           created_at?: string
+          family_name?: string | null
           guest_email: string
           guest_name: string
           guest_phone?: string | null
           id?: string
+          id_document?: string | null
           num_guests?: number
           opera_confirmation_number?: string | null
           payment_intent_id?: string | null
@@ -62,10 +66,12 @@ export type Database = {
           check_in?: string
           check_out?: string
           created_at?: string
+          family_name?: string | null
           guest_email?: string
           guest_name?: string
           guest_phone?: string | null
           id?: string
+          id_document?: string | null
           num_guests?: number
           opera_confirmation_number?: string | null
           payment_intent_id?: string | null
@@ -316,6 +322,51 @@ export type Database = {
           size?: string
           slug?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      stay_surveys: {
+        Row: {
+          booking_id: string | null
+          cleanliness: number | null
+          comfort: number | null
+          comments: string | null
+          created_at: string
+          food: number | null
+          guest_email: string
+          guest_name: string | null
+          id: string
+          overall_rating: number
+          service: number | null
+          would_recommend: boolean | null
+        }
+        Insert: {
+          booking_id?: string | null
+          cleanliness?: number | null
+          comfort?: number | null
+          comments?: string | null
+          created_at?: string
+          food?: number | null
+          guest_email: string
+          guest_name?: string | null
+          id?: string
+          overall_rating: number
+          service?: number | null
+          would_recommend?: boolean | null
+        }
+        Update: {
+          booking_id?: string | null
+          cleanliness?: number | null
+          comfort?: number | null
+          comments?: string | null
+          created_at?: string
+          food?: number | null
+          guest_email?: string
+          guest_name?: string | null
+          id?: string
+          overall_rating?: number
+          service?: number | null
+          would_recommend?: boolean | null
         }
         Relationships: []
       }
