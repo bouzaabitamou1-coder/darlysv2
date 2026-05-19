@@ -40,6 +40,46 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
+    // Server-side price recomputation — never trust client totalPrice.
+    const { data: booking, error: bookingFetchErr } = await supabaseAdmin
+      .from("bookings")
+      .select("id, room_id, check_in, check_out, num_guests, total_price, payment_status, rooms(price_per_night, group_discount_threshold, group_discount_percent)")
+      .eq("id", bookingId)
+      .maybeSingle();
+    if (bookingFetchErr) throw bookingFetchErr;
+    if (!booking) {
+      return new Response(JSON.stringify({ error: "Booking not found" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404,
+      });
+    }
+    if (booking.payment_status === "paid") {
+      return new Response(JSON.stringify({ error: "Booking already paid" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 409,
+      });
+    }
+    const room: any = booking.rooms;
+    if (!room) throw new Error("Room not found for booking");
+    const ci = new Date(booking.check_in as string);
+    const co = new Date(booking.check_out as string);
+    const computedNights = Math.max(1, Math.round((co.getTime() - ci.getTime()) / 86400000));
+    let serverTotal = Number(room.price_per_night) * computedNights;
+    if (
+      room.group_discount_threshold &&
+      booking.num_guests >= room.group_discount_threshold &&
+      room.group_discount_percent
+    ) {
+      serverTotal = serverTotal * (1 - Number(room.group_discount_percent) / 100);
+    }
+    serverTotal = Math.round(serverTotal * 100) / 100;
+
+    // Persist the authoritative price (overrides any client-supplied value)
+    await supabaseAdmin
+      .from("bookings")
+      .update({ total_price: serverTotal })
+      .eq("id", bookingId);
+
+    const authoritativeTotal = serverTotal;
+
     // Check availability if room/dates provided
     if (roomId && checkIn && checkOut) {
       // Check for conflicting bookings, excluding the current one
@@ -98,7 +138,7 @@ serve(async (req) => {
               name: `${roomName} - ${nights} night${nights > 1 ? "s" : ""}`,
               description: `Booking at Dar Lys, Fès`,
             },
-            unit_amount: Math.round(totalPrice * 100),
+            unit_amount: Math.round(authoritativeTotal * 100),
           },
           quantity: 1,
         },
@@ -137,7 +177,7 @@ serve(async (req) => {
           (guestPhone ? `📞 ${escapeHtml(guestPhone)}\n` : "") +
           `🛏 ${escapeHtml(roomName)}\n` +
           `📅 ${escapeHtml(checkIn ?? "Selected dates")} → ${escapeHtml(checkOut ?? "")} (${nights} night${nights > 1 ? "s" : ""})\n` +
-          `💶 ${Number(totalPrice).toFixed(2)} EUR\n` +
+          `💶 ${Number(authoritativeTotal).toFixed(2)} EUR\n` +
           `🔗 Payment checkout created`;
 
         const tgRes = await fetch("https://connector-gateway.lovable.dev/telegram/sendMessage", {

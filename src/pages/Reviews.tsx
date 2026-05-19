@@ -36,7 +36,7 @@ const Reviews = () => {
 
   useEffect(() => {
     supabase
-      .from("stay_surveys")
+      .from("public_stay_surveys")
       .select("id, guest_name, overall_rating, cleanliness, service, comfort, food, would_recommend, comments, photo_url, created_at")
       .order("created_at", { ascending: false })
       .then(({ data }) => {

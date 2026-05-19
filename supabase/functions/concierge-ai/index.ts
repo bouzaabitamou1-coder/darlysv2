@@ -24,11 +24,24 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, lang: langRaw, tenantSlug: slugRaw } = await req.json();
+    const { messages: messagesRaw, lang: langRaw, tenantSlug: slugRaw } = await req.json();
     const lang: "en" | "fr" | "ar" = langRaw === "fr" || langRaw === "ar" ? langRaw : "en";
     const tenantSlug = typeof slugRaw === "string" && slugRaw.length > 0 ? slugRaw : "dar-lys";
-    if (!Array.isArray(messages)) {
+    if (!Array.isArray(messagesRaw)) {
       return new Response(JSON.stringify({ error: "messages required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // Abuse caps: max 20 turns, 2000 chars per message, 20000 total
+    if (messagesRaw.length > 20) {
+      return new Response(JSON.stringify({ error: "Too many messages" }), { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const messages = messagesRaw.slice(-10).map((m: any) => ({
+      role: m?.role === "assistant" ? "assistant" : "user",
+      content: typeof m?.content === "string" ? m.content.slice(0, 2000) : "",
+    })).filter((m: any) => m.content.length > 0);
+    const totalChars = messages.reduce((s: number, m: any) => s + m.content.length, 0);
+    if (totalChars > 20000) {
+      return new Response(JSON.stringify({ error: "Conversation too long" }), { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const supabase = createClient(
