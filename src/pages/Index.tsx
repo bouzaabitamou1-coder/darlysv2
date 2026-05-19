@@ -4,6 +4,7 @@ import { Star, Utensils, Sparkles, ArrowRight } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { photo, video } from "@/data/siteMedia";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -12,7 +13,9 @@ const fadeUp = {
   transition: { duration: 0.7 },
 };
 
-const HeroSection = () => (
+const HeroSection = () => {
+  const { t } = useLanguage();
+  return (
   <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
     <video
       className="absolute inset-0 w-full h-full object-cover"
@@ -33,7 +36,7 @@ const HeroSection = () => (
         transition={{ duration: 0.8, delay: 0.2 }}
         className="text-gold-light text-sm tracking-[0.45em] uppercase font-body mb-4"
       >
-        Riad d’exception — Fès
+        {t("hero.eyebrow")}
       </motion.p>
       <motion.h1
         initial={{ opacity: 0, y: 30 }}
@@ -57,7 +60,7 @@ const HeroSection = () => (
         transition={{ duration: 0.8, delay: 0.6 }}
         className="text-cream/70 text-lg sm:text-xl font-accent italic max-w-xl mx-auto mb-10"
       >
-        Riad de charme au cœur de la médina millénaire de Fès
+        {t("hero.tagline")}
       </motion.p>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -66,10 +69,10 @@ const HeroSection = () => (
         className="flex flex-col sm:flex-row gap-4 justify-center"
       >
         <Link to="/rooms" className="btn-hero">
-          Discover Rooms
+          {t("hero.discover")}
         </Link>
         <Link to="/about" className="btn-hero border-cream/30 bg-transparent hover:bg-cream/10 hover:border-cream/50">
-          Our Story
+          {t("hero.story")}
         </Link>
       </motion.div>
     </div>
@@ -82,7 +85,8 @@ const HeroSection = () => (
       <div className="w-px h-16 bg-gradient-to-b from-transparent via-gold/50 to-transparent" />
     </motion.div>
   </section>
-);
+  );
+};
 
 const AboutPreview = () => (
   <section className="section-padding bg-cream zellige-pattern">

@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom";
 import { MapPin, Phone, Mail, Instagram, Facebook } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
-const Footer = () => (
+const Footer = () => {
+  const { t } = useLanguage();
+  return (
   <footer className="bg-charcoal text-cream/80 relative">
     <div className="absolute inset-0 opacity-5 zellige-pattern" />
     <div className="container-luxury section-padding relative z-10">
@@ -17,7 +20,7 @@ const Footer = () => (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
         <div>
           <p className="text-sm leading-relaxed opacity-70 mb-6">
-            Riad de charme en plein cœur de la médina de Fès, offrant un séjour authentique dans la capitale spirituelle du Maroc.
+            {t("footer.tagline")}
           </p>
           <div className="flex gap-4">
             <a href="https://www.instagram.com/dar_lys_fes/" target="_blank" rel="noopener noreferrer" className="text-cream/50 hover:text-gold transition-colors" aria-label="Instagram">
@@ -30,15 +33,15 @@ const Footer = () => (
         </div>
 
         <div>
-          <h4 className="text-sm tracking-[0.2em] uppercase font-body text-gold mb-6">Explorer</h4>
+          <h4 className="text-sm tracking-[0.2em] uppercase font-body text-gold mb-6">{t("footer.explore")}</h4>
           <div className="space-y-3">
             {[
-              { label: "Chambres", path: "/rooms" },
-              { label: "Restaurant & Bar", path: "/restaurant" },
-              { label: "Lotus Spa", path: "/spa" },
-              { label: "Offres", path: "/offers" },
-              { label: "Événements", path: "/events" },
-              { label: "Galerie", path: "/gallery" },
+              { label: t("nav.rooms"), path: "/rooms" },
+              { label: t("nav.restaurant"), path: "/restaurant" },
+              { label: t("nav.spa"), path: "/spa" },
+              { label: t("nav.offers"), path: "/offers" },
+              { label: t("nav.events"), path: "/events" },
+              { label: t("nav.gallery"), path: "/gallery" },
             ].map((link) => (
               <Link key={link.path} to={link.path} className="block text-sm opacity-70 hover:opacity-100 hover:text-gold transition-all">
                 {link.label}
@@ -48,12 +51,12 @@ const Footer = () => (
         </div>
 
         <div>
-          <h4 className="text-sm tracking-[0.2em] uppercase font-body text-gold mb-6">Information</h4>
+          <h4 className="text-sm tracking-[0.2em] uppercase font-body text-gold mb-6">{t("footer.info")}</h4>
           <div className="space-y-3">
             {[
-              { label: "À Propos", path: "/about" },
-              { label: "Accès", path: "/access" },
-              { label: "Contact", path: "/contact" },
+              { label: t("nav.about"), path: "/about" },
+              { label: t("nav.access"), path: "/access" },
+              { label: t("nav.contact"), path: "/contact" },
               { label: "FAQ", path: "/faq" },
             ].map((link) => (
               <Link key={link.path} to={link.path} className="block text-sm opacity-70 hover:opacity-100 hover:text-gold transition-all">
@@ -64,7 +67,7 @@ const Footer = () => (
         </div>
 
         <div>
-          <h4 className="text-sm tracking-[0.2em] uppercase font-body text-gold mb-6">Contact</h4>
+          <h4 className="text-sm tracking-[0.2em] uppercase font-body text-gold mb-6">{t("footer.contact")}</h4>
           <div className="space-y-4">
             <div className="flex items-start gap-3">
               <MapPin className="w-4 h-4 mt-1 text-gold shrink-0" />
@@ -83,11 +86,12 @@ const Footer = () => (
       </div>
 
       <div className="mt-16 pt-8 arabesque-border flex flex-col sm:flex-row justify-between items-center gap-4">
-        <p className="text-xs opacity-50">© {new Date().getFullYear()} Dar Lys. Tous droits réservés.</p>
-        <p className="text-xs opacity-50">Créé avec passion au cœur de Fès — Made by Bouzaabita Mohammed</p>
+        <p className="text-xs opacity-50">© {new Date().getFullYear()} Dar Lys. {t("footer.rights")}</p>
+        <p className="text-xs opacity-50">{t("footer.madeBy")}</p>
       </div>
     </div>
   </footer>
-);
+  );
+};
 
 export default Footer;
