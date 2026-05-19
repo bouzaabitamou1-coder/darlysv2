@@ -56,12 +56,12 @@ const Header = () => {
             </span>
           </Link>
 
-          <nav className="hidden xl:flex items-center gap-5 flex-wrap justify-end max-w-3xl">
+          <nav className="hidden xl:flex items-center gap-3 2xl:gap-4 flex-nowrap justify-end min-w-0">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-[11px] tracking-[0.12em] uppercase font-body transition-all duration-300 hover:opacity-100 ${
+                className={`whitespace-nowrap text-[10px] 2xl:text-[11px] tracking-[0.08em] 2xl:tracking-[0.12em] uppercase font-body leading-none transition-all duration-300 hover:opacity-100 ${
                   location.pathname === link.path ? "opacity-100" : "opacity-70"
                 } ${textColor}`}
               >
@@ -70,12 +70,12 @@ const Header = () => {
             ))}
           </nav>
 
-          <div className="hidden xl:flex items-center gap-4 shrink-0">
+          <div className="hidden xl:flex items-center gap-3 2xl:gap-4 shrink-0">
             <LanguageSwitcher textColor={textColor} />
-            <a href="tel:+212535555555" className={`flex items-center gap-2 text-sm ${textColor} opacity-70 hover:opacity-100 transition-opacity`}>
+            <a href="tel:+212535555555" className={`inline-flex h-9 w-9 items-center justify-center ${textColor} opacity-70 hover:opacity-100 transition-opacity`}>
               <Phone className="w-4 h-4" />
             </a>
-            <Link to="/rooms" className="btn-luxury text-xs py-2 px-6">
+            <Link to="/rooms" className="btn-luxury h-9 text-[10px] 2xl:text-xs py-0 px-4 2xl:px-6 whitespace-nowrap">
               {t("cta.bookNow")}
             </Link>
           </div>
