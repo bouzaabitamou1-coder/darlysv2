@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import Layout from "@/components/layout/Layout";
 import { toast } from "sonner";
 import { BarChart3, Lock, ShieldCheck, Sparkles } from "lucide-react";
 
@@ -41,8 +40,7 @@ const AdminLogin = () => {
   };
 
   return (
-    <Layout>
-      <section className="min-h-screen bg-charcoal pt-28 pb-16 relative overflow-hidden">
+    <section className="min-h-screen bg-charcoal py-16 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10 zellige-pattern" />
         <div className="container-luxury px-4 relative z-10">
           <div className="grid lg:grid-cols-[1.1fr_0.9fr] min-h-[72vh] border border-gold/20 bg-charcoal-light/30 shadow-elevated">
@@ -98,8 +96,7 @@ const AdminLogin = () => {
             </div>
           </div>
         </div>
-      </section>
-    </Layout>
+    </section>
   );
 };
 
