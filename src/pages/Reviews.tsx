@@ -17,6 +17,7 @@ type Survey = {
   food: number | null;
   would_recommend: boolean | null;
   comments: string | null;
+  photo_url: string | null;
   created_at: string;
 };
 
@@ -36,7 +37,7 @@ const Reviews = () => {
   useEffect(() => {
     supabase
       .from("stay_surveys")
-      .select("id, guest_name, overall_rating, cleanliness, service, comfort, food, would_recommend, comments, created_at")
+      .select("id, guest_name, overall_rating, cleanliness, service, comfort, food, would_recommend, comments, photo_url, created_at")
       .order("created_at", { ascending: false })
       .then(({ data }) => {
         setSurveys((data as Survey[]) || []);
@@ -115,6 +116,16 @@ const Reviews = () => {
                     </div>
                     {s.comments && (
                       <p className="text-sm text-foreground/80 italic font-body leading-relaxed mb-3">"{s.comments}"</p>
+                    )}
+                    {s.photo_url && (
+                      <a href={s.photo_url} target="_blank" rel="noopener noreferrer" className="block mb-3">
+                        <img
+                          src={s.photo_url}
+                          alt={`Photo shared by ${s.guest_name || "guest"}`}
+                          loading="lazy"
+                          className="max-h-80 w-auto rounded-md border border-border hover:opacity-90 transition-opacity"
+                        />
+                      </a>
                     )}
                     <div className="flex flex-wrap gap-2 text-[11px]">
                       {[

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Star, CheckCircle2, Loader2, Sparkles } from "lucide-react";
+import { Star, CheckCircle2, Loader2, Sparkles, ImagePlus, X } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,6 +52,19 @@ const StaySurvey = () => {
   });
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+
+  const onPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (!f.type.startsWith("image/")) { toast.error("Please choose an image file."); return; }
+    if (f.size > 8 * 1024 * 1024) { toast.error("Image must be under 8MB."); return; }
+    setPhotoFile(f);
+    setPhotoPreview(URL.createObjectURL(f));
+  };
+
+  const clearPhoto = () => { setPhotoFile(null); setPhotoPreview(null); };
 
   const setRating = (key: RatingKey, n: number) => setForm((f) => ({ ...f, [key]: n }));
 
@@ -66,6 +79,18 @@ const StaySurvey = () => {
     }
     setSubmitting(true);
     try {
+      let photo_url: string | null = null;
+      if (photoFile) {
+        const ext = photoFile.name.split(".").pop() || "jpg";
+        const path = `${crypto.randomUUID()}.${ext}`;
+        const { error: upErr } = await supabase.storage.from("survey-photos").upload(path, photoFile, {
+          contentType: photoFile.type,
+          upsert: false,
+        });
+        if (upErr) throw upErr;
+        const { data: pub } = supabase.storage.from("survey-photos").getPublicUrl(path);
+        photo_url = pub.publicUrl;
+      }
       const { error } = await supabase.from("stay_surveys").insert({
         booking_id: bookingId,
         guest_name: form.guestName || null,
@@ -77,6 +102,7 @@ const StaySurvey = () => {
         food: form.food || null,
         would_recommend: form.wouldRecommend,
         comments: form.comments || null,
+        photo_url,
       });
       if (error) throw error;
       setDone(true);
@@ -187,6 +213,32 @@ const StaySurvey = () => {
                     placeholder="Tell us what enchanted you, and what we can improve."
                     className="w-full bg-background border border-border px-4 py-3 text-sm font-body rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-xs tracking-[0.15em] uppercase font-body text-muted-foreground mb-2">
+                    Add a photo (optional)
+                  </label>
+                  {photoPreview ? (
+                    <div className="relative inline-block">
+                      <img src={photoPreview} alt="Preview" className="max-h-56 rounded-md border border-border" />
+                      <button
+                        type="button"
+                        onClick={clearPhoto}
+                        className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-background border border-border shadow flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                        aria-label="Remove photo"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center gap-2 cursor-pointer border-2 border-dashed border-border hover:border-primary rounded-md py-8 px-4 text-muted-foreground hover:text-primary transition-colors">
+                      <ImagePlus className="w-7 h-7" />
+                      <span className="text-sm font-body">Click to upload a photo of your stay</span>
+                      <span className="text-xs opacity-70">JPG / PNG — up to 8MB</span>
+                      <input type="file" accept="image/*" onChange={onPhotoChange} className="hidden" />
+                    </label>
+                  )}
                 </div>
 
                 <Button onClick={submit} disabled={submitting} className="w-full" size="lg">
