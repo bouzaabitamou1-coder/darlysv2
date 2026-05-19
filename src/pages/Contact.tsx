@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { supabase } from "@/integrations/supabase/client";
+import { useTenant } from "@/contexts/TenantContext";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { photo } from "@/data/siteMedia";
 import { toast } from "sonner";

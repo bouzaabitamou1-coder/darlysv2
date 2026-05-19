@@ -274,6 +274,7 @@ const BookingPage = () => {
       // Refresh / extend any previous lock for this session
       await supabase.from("reservation_locks").delete().eq("session_id", sessionId);
       const { error: lockErr } = await supabase.from("reservation_locks").insert({
+        tenant_id: room.tenant_id,
         room_id: room.id,
         check_in: form.checkIn,
         check_out: form.checkOut,
@@ -352,6 +353,7 @@ const BookingPage = () => {
 
       const { error } = await supabase.from("bookings").insert({
         id: bookingId,
+        tenant_id: room.tenant_id,
         room_id: room.id,
         user_id: session?.user?.id ?? null,
         guest_name: `${form.guestName} ${form.familyName}`.trim(),
@@ -376,6 +378,7 @@ const BookingPage = () => {
       if (transport.enabled && transport.estimate && transport.address && transport.time) {
         const pickup = new Date(`${form.checkIn}T${transport.time}`);
         await supabase.from("transport_bookings").insert({
+          tenant_id: room.tenant_id,
           user_id: session?.user?.id ?? null,
           booking_id: bookingId,
           guest_name: form.guestName,
