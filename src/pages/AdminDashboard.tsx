@@ -451,10 +451,6 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {activeTab === "payments" && (
-          <></>
-        )}
-
         {activeTab === "surveys" && (
           <div className="space-y-4">
             {surveys.length === 0 && <p className="text-center text-slate-500 text-sm p-8">No guest surveys submitted yet.</p>}
