@@ -2,18 +2,20 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "@/i18n/LanguageContext";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const navLinks = [
-  { label: "Home", path: "/" },
-  { label: "About", path: "/about" },
-  { label: "Rooms", path: "/rooms" },
-  { label: "Restaurant", path: "/restaurant" },
-  { label: "Spa", path: "/spa" },
-  { label: "Offers", path: "/offers" },
-  { label: "Events", path: "/events" },
-  { label: "Gallery", path: "/gallery" },
-  { label: "Access", path: "/access" },
-  { label: "Contact", path: "/contact" },
+  { key: "nav.home", path: "/" },
+  { key: "nav.about", path: "/about" },
+  { key: "nav.rooms", path: "/rooms" },
+  { key: "nav.restaurant", path: "/restaurant" },
+  { key: "nav.spa", path: "/spa" },
+  { key: "nav.offers", path: "/offers" },
+  { key: "nav.events", path: "/events" },
+  { key: "nav.gallery", path: "/gallery" },
+  { key: "nav.access", path: "/access" },
+  { key: "nav.contact", path: "/contact" },
 ];
 
 const Header = () => {
@@ -21,6 +23,7 @@ const Header = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const location = useLocation();
   const isHome = location.pathname === "/";
+  const { t } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -61,27 +64,31 @@ const Header = () => {
                   location.pathname === link.path ? "opacity-100" : "opacity-70"
                 } ${textColor}`}
               >
-                {link.label}
+                {t(link.key)}
               </Link>
             ))}
           </nav>
 
           <div className="hidden xl:flex items-center gap-4 shrink-0">
+            <LanguageSwitcher textColor={textColor} />
             <a href="tel:+212535555555" className={`flex items-center gap-2 text-sm ${textColor} opacity-70 hover:opacity-100 transition-opacity`}>
               <Phone className="w-4 h-4" />
             </a>
             <Link to="/rooms" className="btn-luxury text-xs py-2 px-6">
-              Book Now
+              {t("cta.bookNow")}
             </Link>
           </div>
 
-          <button
-            onClick={() => setIsMobileOpen(!isMobileOpen)}
-            className={`xl:hidden p-2 ${textColor}`}
-            aria-label="Toggle menu"
-          >
-            {isMobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          <div className="xl:hidden flex items-center gap-2">
+            <LanguageSwitcher textColor={textColor} />
+            <button
+              onClick={() => setIsMobileOpen(!isMobileOpen)}
+              className={`p-2 ${textColor}`}
+              aria-label="Toggle menu"
+            >
+              {isMobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -102,12 +109,12 @@ const Header = () => {
                     location.pathname === link.path ? "text-gold" : "text-charcoal"
                   }`}
                 >
-                  {link.label}
+                  {t(link.key)}
                 </Link>
               ))}
               <div className="pt-4">
                 <Link to="/rooms" className="btn-luxury w-full text-center block">
-                  Book Now
+                  {t("cta.bookNow")}
                 </Link>
               </div>
             </div>

@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
+import { LanguageProvider } from "@/i18n/LanguageContext";
+import ScrollProgress from "@/components/layout/ScrollProgress";
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Rooms from "./pages/Rooms";
@@ -35,10 +37,12 @@ const ScrollToTop = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <AuthProvider>
-        <Sonner />
-        <BrowserRouter>
-          <ScrollToTop />
+      <LanguageProvider>
+        <AuthProvider>
+          <Sonner />
+          <BrowserRouter>
+            <ScrollToTop />
+            <ScrollProgress />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<About />} />
@@ -58,8 +62,9 @@ const App = () => (
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </AuthProvider>
+          </BrowserRouter>
+        </AuthProvider>
+      </LanguageProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

@@ -56,6 +56,7 @@ export default {
         display: ["Playfair Display", "serif"],
         body: ["Inter", "sans-serif"],
         accent: ["Cormorant Garamond", "serif"],
+        arabic: ["Amiri", "serif"],
       },
       borderRadius: {
         lg: "var(--radius)",

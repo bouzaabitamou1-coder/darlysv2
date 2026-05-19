@@ -83,6 +83,21 @@
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
   }
+
+  html.lang-ar body,
+  html.lang-ar h1,
+  html.lang-ar h2,
+  html.lang-ar h3,
+  html.lang-ar h4,
+  html.lang-ar h5,
+  html.lang-ar h6 {
+    font-family: var(--font-arabic);
+  }
+
+  html[dir="rtl"] .star-separator,
+  html[dir="rtl"] .moroccan-divider {
+    direction: ltr;
+  }
 }
 
 @layer components {
