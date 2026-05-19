@@ -12,11 +12,20 @@ serve(async (req) => {
   }
 
   try {
-    const { roomId, checkIn, checkOut } = await req.json();
+    const { roomId, checkIn, checkOut, sessionId } = await req.json();
 
     if (!roomId || !checkIn || !checkOut) {
       return new Response(
         JSON.stringify({ error: "Missing roomId, checkIn, or checkOut" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+      );
+    }
+
+    const checkInDate = new Date(`${checkIn}T00:00:00Z`);
+    const checkOutDate = new Date(`${checkOut}T00:00:00Z`);
+    if (Number.isNaN(checkInDate.getTime()) || Number.isNaN(checkOutDate.getTime()) || checkOutDate <= checkInDate) {
+      return new Response(
+        JSON.stringify({ available: false, error: "Check-out must be after check-in" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
       );
     }
@@ -29,13 +38,28 @@ serve(async (req) => {
     // Clean up expired locks first
     await supabaseAdmin.rpc("cleanup_expired_locks");
 
-    const { data: available, error } = await supabaseAdmin.rpc("check_availability", {
-      _room_id: roomId,
-      _check_in: checkIn,
-      _check_out: checkOut,
-    });
+    const [{ data: bookingConflicts, error: bookingError }, { data: lockConflicts, error: lockError }] = await Promise.all([
+      supabaseAdmin
+        .from("bookings")
+        .select("id")
+        .eq("room_id", roomId)
+        .in("status", ["pending", "confirmed"])
+        .lt("check_in", checkOut)
+        .gt("check_out", checkIn),
+      supabaseAdmin
+        .from("reservation_locks")
+        .select("id, session_id")
+        .eq("room_id", roomId)
+        .gt("expires_at", new Date().toISOString())
+        .lt("check_in", checkOut)
+        .gt("check_out", checkIn),
+    ]);
 
-    if (error) throw error;
+    if (bookingError) throw bookingError;
+    if (lockError) throw lockError;
+
+    const activeForeignLocks = (lockConflicts ?? []).filter((lock) => lock.session_id !== sessionId);
+    const available = (bookingConflicts ?? []).length === 0 && activeForeignLocks.length === 0;
 
     return new Response(
       JSON.stringify({ available: !!available }),

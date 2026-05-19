@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
-import { MapPin, Plane, Train, Car, Navigation, Crosshair, Loader2 } from "lucide-react";
+import { MapPin, Plane, Train, Car, Navigation, Crosshair, Loader2, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { photo } from "@/data/siteMedia";
@@ -182,6 +183,12 @@ const DriverPickupCalculator = () => {
           <p className="sm:col-span-3 text-[11px] text-cream/50 font-body">
             Estimate based on straight-line distance × {RATE_PER_KM} DH/km. Final fare may vary slightly depending on the route. To confirm a pickup, contact the riad.
           </p>
+          <Link
+            to="/transport"
+            className="sm:col-span-3 inline-flex items-center justify-center gap-2 bg-gold text-cream px-5 py-3 text-xs uppercase tracking-[0.15em] font-body hover:bg-gold-dark transition-colors"
+          >
+            Book private driver only <ArrowRight className="w-4 h-4" />
+          </Link>
         </motion.div>
       )}
     </div>

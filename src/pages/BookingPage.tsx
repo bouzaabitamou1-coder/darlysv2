@@ -18,10 +18,11 @@ const dh = (eur: number) => `${(eur * EUR_TO_MAD).toFixed(0)} DH`;
 const addOns = [
   { id: "breakfast", label: "Extra Breakfast", price: 15 },
   { id: "spa", label: "Spa Treatment", price: 70 },
-  { id: "transfer", label: "Airport Transfer", price: 25 },
   { id: "late-checkout", label: "Late Check-out", price: 30 },
   { id: "romantic", label: "Romantic Setup", price: 50 },
 ];
+
+const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
 const BookingPage = () => {
   const [searchParams] = useSearchParams();
@@ -145,6 +146,17 @@ const BookingPage = () => {
     setAvailabilityError(null);
     setIsAvailable(false);
 
+    if (field === "checkIn" && next.checkOut && value >= next.checkOut) {
+      next.checkOut = "";
+      toast.info("Please choose a check-out date after your check-in date.");
+    }
+
+    if (field === "checkOut" && next.checkIn && value <= next.checkIn) {
+      setAvailabilityError("Check-out must be after check-in.");
+      setForm(next);
+      return;
+    }
+
     // Validate the date itself
     if (value && dateInUnavailable(value)) {
       toast.error("That date is already booked. Please pick another.");
@@ -191,15 +203,27 @@ const BookingPage = () => {
 
   const checkAvailability = async (): Promise<boolean> => {
     if (!room || !form.checkIn || !form.checkOut) return false;
+    if (form.checkOut <= form.checkIn) {
+      setAvailabilityError("Check-out must be after check-in.");
+      setIsAvailable(false);
+      return false;
+    }
     setCheckingAvailability(true);
     setAvailabilityError(null);
     setInventoryWarning(null);
     setIsAvailable(false);
     try {
       const { data, error } = await supabase.functions.invoke("check-availability", {
-        body: { roomId: room.id, checkIn: form.checkIn, checkOut: form.checkOut },
+        body: { roomId: room.id, checkIn: form.checkIn, checkOut: form.checkOut, sessionId: lockSessionId },
       });
-      if (error) throw error;
+      if (error) {
+        const message = String(error.message || "").toLowerCase();
+        if (message.includes("check-out") || message.includes("400")) {
+          setAvailabilityError("Check-out must be after check-in.");
+          return false;
+        }
+        throw error;
+      }
       if (!data?.available) {
         setAvailabilityError("This room is not available for the selected dates.");
         return false;
@@ -234,6 +258,11 @@ const BookingPage = () => {
   const handleStep1Continue = async () => {
     if (!room || !form.checkIn || !form.checkOut) {
       toast.error("Please select dates and room.");
+      return;
+    }
+    if (form.checkOut <= form.checkIn) {
+      setAvailabilityError("Check-out must be after check-in.");
+      toast.error("Please choose a check-out date after your check-in date.");
       return;
     }
     const available = await checkAvailability();
@@ -301,6 +330,16 @@ const BookingPage = () => {
   const handleSubmit = async () => {
     if (!room || !form.checkIn || !form.checkOut || !form.guestName || !form.guestEmail) {
       toast.error("Please fill in all required fields.");
+      return;
+    }
+    if (!isEmail(form.guestEmail)) {
+      toast.error("Please enter a valid email address so Stripe can open payment.");
+      setStep(2);
+      return;
+    }
+    if (transport.enabled && (!transport.address || !transport.time || !transport.estimate)) {
+      toast.error("Please complete the private driver pickup details or turn it off.");
+      setStep(2);
       return;
     }
     setLoading(true);
@@ -377,8 +416,7 @@ const BookingPage = () => {
       });
 
       if (checkoutError || !checkoutData?.url) {
-        toast.info("We'll contact you for payment.");
-        navigate(`/booking-confirmation?id=${bookingId}`);
+        toast.error(checkoutError?.message || "Payment could not open. Please check your email and try again.");
         return;
       }
       window.location.href = checkoutData.url;
@@ -507,8 +545,14 @@ const BookingPage = () => {
                       </div>
                     )}
 
-                    {isAvailable && !availabilityError && !inventoryWarning && (
-                      <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md text-sm font-body text-green-700">
+                    {checkingAvailability && (
+                      <div className="flex items-center gap-2 p-3 bg-primary/5 border border-primary/20 rounded-md text-sm font-body text-primary">
+                        <Loader2 className="w-4 h-4 shrink-0 animate-spin" /> Checking these dates now…
+                      </div>
+                    )}
+
+                    {isAvailable && !checkingAvailability && !availabilityError && !inventoryWarning && (
+                      <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/30 rounded-md text-sm font-body text-foreground">
                         <CheckCircle2 className="w-4 h-4 shrink-0" />
                         Great news — this room is available for your selected dates. You can proceed with your reservation.
                       </div>
@@ -643,7 +687,7 @@ const BookingPage = () => {
 
                     <div className="flex gap-4">
                       <Button variant="outline" onClick={() => setStep(1)} className="flex-1">Back</Button>
-                      <Button onClick={() => { if (form.guestName && form.guestEmail) setStep(3); else toast.error("Please fill in name and email."); }} className="flex-1">Continue</Button>
+                      <Button onClick={() => { if (!form.guestName || !form.guestEmail) toast.error("Please fill in name and email."); else if (!isEmail(form.guestEmail)) toast.error("Please enter a valid email address."); else setStep(3); }} className="flex-1">Continue</Button>
                     </div>
                   </motion.div>
                 )}
