@@ -138,7 +138,7 @@ serve(async (req) => {
               name: `${roomName} - ${nights} night${nights > 1 ? "s" : ""}`,
               description: `Booking at Dar Lys, Fès`,
             },
-            unit_amount: Math.round(totalPrice * 100),
+            unit_amount: Math.round(authoritativeTotal * 100),
           },
           quantity: 1,
         },
@@ -177,7 +177,7 @@ serve(async (req) => {
           (guestPhone ? `📞 ${escapeHtml(guestPhone)}\n` : "") +
           `🛏 ${escapeHtml(roomName)}\n` +
           `📅 ${escapeHtml(checkIn ?? "Selected dates")} → ${escapeHtml(checkOut ?? "")} (${nights} night${nights > 1 ? "s" : ""})\n` +
-          `💶 ${Number(totalPrice).toFixed(2)} EUR\n` +
+          `💶 ${Number(authoritativeTotal).toFixed(2)} EUR\n` +
           `🔗 Payment checkout created`;
 
         const tgRes = await fetch("https://connector-gateway.lovable.dev/telegram/sendMessage", {
