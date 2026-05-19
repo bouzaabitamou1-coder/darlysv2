@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
       .eq("tenant_id", tenant.id);
 
     const roomsCtx = (rooms ?? [])
-      .map((r: any) => `- ${r.name} (${r.category}): ${r.price_per_night} MAD/night, up to ${r.max_guests} guests, ${r.size}. ${r.description ?? ""} Amenities: ${(r.amenities ?? []).join(", ")}`)
+      .map((r: any) => `- ${r.name} (${r.category}): ${Number(r.price_per_night)} MAD/night (Moroccan Dirhams — NOT USD, NOT EUR), up to ${r.max_guests} guests, ${r.size}. ${r.description ?? ""} Amenities: ${(r.amenities ?? []).join(", ")}`)
       .join("\n");
 
     // Optional cross-property recommendations: load sibling properties' rooms
@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
         const cur = p.default_currency || "MAD";
         lines.push(`• ${p.name} (slug: ${p.slug}):`);
         for (const r of avail.slice(0, 4)) {
-          lines.push(`   - ${r.name} (${r.category}): ${r.price_per_night} ${cur}/night, up to ${r.max_guests} guests, ${r.size}`);
+          lines.push(`   - ${r.name} (${r.category}): ${Number(r.price_per_night)} ${cur}/night (currency = ${cur}; never relabel as $ or €), up to ${r.max_guests} guests, ${r.size}`);
         }
       }
       peersCtx = lines.join("\n");
@@ -114,9 +114,15 @@ Deno.serve(async (req) => {
 
     const system = `You are ${conciergeName}, the concierge AI of ${hotelName}. Warm, precise, concise (~150 words max).${persona}
 
+CURRENCY RULES — READ CAREFULLY:
+- ALL room prices below are in **${currency}** (Moroccan Dirhams). They are NOT US dollars and NOT euros. "1200 MAD" ≈ 110 EUR ≈ 120 USD.
+- When you state a price, ALWAYS append the currency code "${currency}" after the number (e.g. "1200 ${currency}"). NEVER write "$1200" or "€1200" for these prices.
+- If the guest gives a budget in another currency, CONVERT it to ${currency} before filtering. Rates: 1 EUR ≈ 11 MAD, 1 USD ≈ 10 MAD, 1 GBP ≈ 13 MAD. Briefly show the conversion (e.g. "your $200 ≈ 2000 MAD").
+- Output prices as plain digits without thousands separators (write "1200", not "1,200" and not "1.200").
+
 ROOM RECOMMENDATION RULES (very important):
-- Convert budget to ${currency} if given in another currency (1€≈11 MAD, 1$≈10 MAD when applicable). Treat budget as PER NIGHT unless the user gives total + nights (then divide).
-- Filter rooms strictly: price_per_night must fit budget AND max_guests must fit the party size.
+- Treat budget as PER NIGHT unless the user gives total + nights (then divide).
+- Filter rooms strictly: price_per_night (already in ${currency}) must fit the converted budget AND max_guests must fit the party size.
 - If multiple rooms fit, recommend the BEST value: the highest category (Suite > Deluxe > Standard) within budget, then the one whose amenities best match stated preferences (romantic, family, work, view, etc.).
 - Always name ONE primary recommendation with: name, category, exact price/night in ${currency}, capacity, 1-line why it fits, and 2-3 key amenities. Optionally mention 1 alternative.
 - If NO room fits the budget, say so honestly and suggest the cheapest available room with its price, or recommend reducing nights / increasing budget. Never invent rooms or prices.
