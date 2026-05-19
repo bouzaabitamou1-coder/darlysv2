@@ -13,6 +13,9 @@ const escapeHtml = (value: unknown) =>
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 
+const isValidEmail = (value: unknown) =>
+  typeof value === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -23,6 +26,13 @@ serve(async (req) => {
 
     if (!bookingId || !totalPrice || !guestEmail) {
       throw new Error("Missing required fields");
+    }
+
+    if (!isValidEmail(guestEmail)) {
+      return new Response(JSON.stringify({ error: "Please enter a valid email address before payment." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
     }
 
     const supabaseAdmin = createClient(
@@ -95,7 +105,7 @@ serve(async (req) => {
       ],
       mode: "payment",
       success_url: `${origin}/booking-confirmation?id=${bookingId}`,
-      cancel_url: `${origin}/booking?room=`,
+      cancel_url: `${origin}/booking${roomId ? `?room=${roomId}` : ""}`,
       metadata: {
         booking_id: bookingId,
       },
