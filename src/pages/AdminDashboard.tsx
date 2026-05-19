@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   BarChart3, CalendarDays, DollarSign, Mail, BedDouble,
-  Users, LogOut, Eye, Check, X, Pencil, Trash2, CreditCard, RefreshCw, Printer, Undo2, ChevronDown, ChevronUp, Car, MapPin
+  Users, LogOut, Eye, Check, X, Pencil, Trash2, CreditCard, RefreshCw, Printer, Undo2, ChevronDown, ChevronUp, Car, MapPin, Star, Save
 } from "lucide-react";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { printInvoice } from "@/lib/printInvoice";
@@ -24,6 +24,9 @@ const AdminDashboard = () => {
   const [paymentEvents, setPaymentEvents] = useState<any[]>([]);
   const [syncLogs, setSyncLogs] = useState<any[]>([]);
   const [transportBookings, setTransportBookings] = useState<any[]>([]);
+  const [surveys, setSurveys] = useState<any[]>([]);
+  const [editingRoomId, setEditingRoomId] = useState<string | null>(null);
+  const [editPrice, setEditPrice] = useState<string>("");
   const [refundingId, setRefundingId] = useState<string | null>(null);
   const [expandedSyncLog, setExpandedSyncLog] = useState<string | null>(null);
 
@@ -40,13 +43,14 @@ const AdminDashboard = () => {
   }, [isAdmin]);
 
   const loadData = async () => {
-    const [bookingsRes, messagesRes, roomsRes, eventsRes, syncRes, transportRes] = await Promise.all([
+    const [bookingsRes, messagesRes, roomsRes, eventsRes, syncRes, transportRes, surveysRes] = await Promise.all([
       supabase.from("bookings").select("*, rooms(name)").order("created_at", { ascending: false }),
       supabase.from("contact_messages").select("*").order("created_at", { ascending: false }),
       supabase.from("rooms").select("*").order("name"),
       supabase.from("payment_events").select("*").order("created_at", { ascending: false }).limit(50),
       supabase.from("opera_sync_log").select("*").order("created_at", { ascending: false }).limit(50),
       supabase.from("transport_bookings").select("*").order("created_at", { ascending: false }),
+      supabase.from("stay_surveys").select("*").order("created_at", { ascending: false }),
     ]);
 
     const b = bookingsRes.data || [];
@@ -59,6 +63,7 @@ const AdminDashboard = () => {
     setPaymentEvents(eventsRes.data || []);
     setSyncLogs(syncRes.data || []);
     setTransportBookings(transportRes.data || []);
+    setSurveys(surveysRes.data || []);
     setStats({
       bookings: b.length,
       revenue: b.filter((x) => x.payment_status === "paid").reduce((s, x) => s + Number(x.total_price), 0),
@@ -128,6 +133,16 @@ const AdminDashboard = () => {
     loadData();
   };
 
+  const saveRoomPrice = async (id: string) => {
+    const price = parseFloat(editPrice);
+    if (isNaN(price) || price <= 0) { toast.error("Enter a valid price"); return; }
+    const { error } = await supabase.from("rooms").update({ price_per_night: price }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Price updated");
+    setEditingRoomId(null);
+    loadData();
+  };
+
   if (loading || !isAdmin) return null;
 
   const tabs = [
@@ -136,6 +151,7 @@ const AdminDashboard = () => {
     { id: "transport", label: "Transport", icon: Car },
     { id: "rooms", label: "Rooms", icon: BedDouble },
     { id: "messages", label: "Messages", icon: Mail },
+    { id: "surveys", label: "Surveys", icon: Star },
     { id: "payments", label: "Payments", icon: CreditCard },
     { id: "opera", label: "Opera PMS", icon: RefreshCw },
   ];
