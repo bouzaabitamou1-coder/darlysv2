@@ -416,8 +416,7 @@ const BookingPage = () => {
       });
 
       if (checkoutError || !checkoutData?.url) {
-        toast.info("We'll contact you for payment.");
-        navigate(`/booking-confirmation?id=${bookingId}`);
+        toast.error(checkoutError?.message || "Payment could not open. Please check your email and try again.");
         return;
       }
       window.location.href = checkoutData.url;
