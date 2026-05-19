@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { supabase } from "@/integrations/supabase/client";
+import { useTenant } from "@/contexts/TenantContext";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { photo } from "@/data/siteMedia";
 import { toast } from "sonner";
@@ -19,6 +20,7 @@ type ContactLocationState = { subject?: string; body?: string };
 
 const Contact = () => {
   const location = useLocation();
+  const { tenant } = useTenant();
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [sending, setSending] = useState(false);
 
@@ -40,6 +42,7 @@ const Contact = () => {
     }
     setSending(true);
     const { error } = await supabase.from("contact_messages").insert({
+      tenant_id: tenant.id,
       name: form.name.trim(),
       email: form.email.trim(),
       subject: form.subject.trim() || null,

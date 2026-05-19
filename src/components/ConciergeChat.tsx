@@ -3,6 +3,7 @@ import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useTenant } from "@/contexts/TenantContext";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -62,6 +63,7 @@ const LOCALE = {
 
 const ConciergeChat = () => {
   const { lang } = useLanguage();
+  const { tenant } = useTenant();
   const L = LOCALE[lang] ?? LOCALE.en;
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -92,6 +94,7 @@ const ConciergeChat = () => {
         body: {
           messages: next.map((m) => ({ role: m.role, content: m.content })),
           lang,
+          tenantSlug: tenant.slug,
         },
       });
       if (error) throw error;

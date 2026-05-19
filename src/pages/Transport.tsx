@@ -6,6 +6,7 @@ import SectionHeading from "@/components/ui/SectionHeading";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { useTenant } from "@/contexts/TenantContext";
 import { toast } from "sonner";
 import {
   DAR_LYS_LAT,
@@ -17,6 +18,7 @@ import {
 } from "@/lib/transport";
 
 const Transport = () => {
+  const { tenant } = useTenant();
   const [form, setForm] = useState({
     guestName: "",
     guestEmail: "",
@@ -91,6 +93,7 @@ const Transport = () => {
       const { data: { session } } = await supabase.auth.getSession();
       const pickup = new Date(`${form.pickupDate}T${form.pickupTime}`);
       const { error } = await supabase.from("transport_bookings").insert({
+        tenant_id: tenant.id,
         user_id: session?.user?.id ?? null,
         guest_name: form.guestName,
         guest_email: form.guestEmail,

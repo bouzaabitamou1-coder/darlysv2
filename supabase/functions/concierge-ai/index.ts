@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const FAQ = `
+const DEFAULT_FAQ = `
 Cancellation: Free up to 7 days before check-in. Within 7 days: 50% of first night. No-show: full first night.
 Breakfast: Traditional Moroccan breakfast included with every room.
 Dietary: Vegetarian, vegan, gluten-free, halal available with 24h notice.
@@ -24,8 +24,9 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, lang: langRaw } = await req.json();
+    const { messages, lang: langRaw, tenantSlug: slugRaw } = await req.json();
     const lang: "en" | "fr" | "ar" = langRaw === "fr" || langRaw === "ar" ? langRaw : "en";
+    const tenantSlug = typeof slugRaw === "string" && slugRaw.length > 0 ? slugRaw : "dar-lys";
     if (!Array.isArray(messages)) {
       return new Response(JSON.stringify({ error: "messages required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -34,38 +35,71 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
+
+    // Load tenant by slug
+    const { data: tenant } = await supabase
+      .from("tenants")
+      .select("id, name, concierge_name, concierge_persona, faq, driver_rate_per_km, default_currency, location_lat, location_lng, phone, address, allowed_origins")
+      .eq("slug", tenantSlug)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (!tenant) {
+      return new Response(JSON.stringify({ error: "tenant not found" }), {
+        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Per-tenant CORS: if Origin is in allowed_origins, reflect it
+    const origin = req.headers.get("origin") ?? "";
+    const allowed: string[] = tenant.allowed_origins ?? [];
+    const tenantCors = {
+      ...corsHeaders,
+      "Access-Control-Allow-Origin":
+        allowed.includes(origin) || allowed.length === 0 ? (origin || "*") : "*",
+    };
+
     const { data: rooms } = await supabase
       .from("rooms")
       .select("name,category,price_per_night,max_guests,size,description,amenities")
-      .eq("is_available", true);
+      .eq("is_available", true)
+      .eq("tenant_id", tenant.id);
 
     const roomsCtx = (rooms ?? [])
       .map((r: any) => `- ${r.name} (${r.category}): ${r.price_per_night} MAD/night, up to ${r.max_guests} guests, ${r.size}. ${r.description ?? ""} Amenities: ${(r.amenities ?? []).join(", ")}`)
       .join("\n");
 
-    const system = `You are Lys, the concierge AI of Dar Lys riad in Fès, Morocco. Warm, precise, concise (~150 words max).
+    const conciergeName = tenant.concierge_name || "Lys";
+    const hotelName = tenant.name;
+    const rate = Number(tenant.driver_rate_per_km ?? 10);
+    const currency = tenant.default_currency || "MAD";
+    const faqText = (tenant.faq && tenant.faq.trim().length > 0 ? tenant.faq : DEFAULT_FAQ);
+    const persona = tenant.concierge_persona ? `\nPERSONA: ${tenant.concierge_persona}\n` : "";
+
+    const system = `You are ${conciergeName}, the concierge AI of ${hotelName}. Warm, precise, concise (~150 words max).${persona}
 
 ROOM RECOMMENDATION RULES (very important):
-- Convert budget to MAD if given in EUR/USD (1€≈11 MAD, 1$≈10 MAD). Treat budget as PER NIGHT unless the user gives total + nights (then divide).
+- Convert budget to ${currency} if given in another currency (1€≈11 MAD, 1$≈10 MAD when applicable). Treat budget as PER NIGHT unless the user gives total + nights (then divide).
 - Filter rooms strictly: price_per_night must fit budget AND max_guests must fit the party size.
 - If multiple rooms fit, recommend the BEST value: the highest category (Suite > Deluxe > Standard) within budget, then the one whose amenities best match stated preferences (romantic, family, work, view, etc.).
-- Always name ONE primary recommendation with: name, category, exact price/night in MAD, capacity, 1-line why it fits, and 2-3 key amenities. Optionally mention 1 alternative.
+- Always name ONE primary recommendation with: name, category, exact price/night in ${currency}, capacity, 1-line why it fits, and 2-3 key amenities. Optionally mention 1 alternative.
 - If NO room fits the budget, say so honestly and suggest the cheapest available room with its price, or recommend reducing nights / increasing budget. Never invent rooms or prices.
 - If budget or guest count is missing, ask ONE short clarifying question before recommending.
 - End room replies with a link suggestion: "See details: /rooms" or "Book now: /booking".
 
 PRIVATE DRIVER RULES:
-- Rate is 10 MAD per km from the riad. Recommend it for: airport arrival/late nights, day trips (Chefchaouen ~200km, Meknès ~60km, Volubilis ~80km, Sahara/Merzouga ~470km), heavy luggage, families with kids, or guests with limited time.
+- Rate is ${rate} ${currency} per km from the hotel. Recommend it for: airport arrival/late nights, day trips, heavy luggage, families with kids, or guests with limited time.
 - NOT needed for medina sightseeing (pedestrian-only).
-- If recommending, give a rough cost estimate (km × 10 MAD round-trip) and link /transport.
+- If recommending, give a rough cost estimate (km × ${rate} ${currency} round-trip) and link /transport.
 
-FAQ: answer directly from the RIAD INFO below. If unknown, say so and suggest contacting +212 535 366 423.
+FAQ: answer directly from the HOTEL INFO below. If unknown, say so and suggest contacting ${tenant.phone ?? "the hotel"}.
 
 AVAILABLE ROOMS (use ONLY these — do not invent):
 ${roomsCtx || "(no rooms loaded)"}
 
-RIAD INFO:
-${FAQ}
+HOTEL INFO:
+${faqText}
+${tenant.phone ? `Phone: ${tenant.phone}\n` : ""}${tenant.address ? `Address: ${tenant.address}\n` : ""}
 
 CRITICAL LANGUAGE RULE — NON-NEGOTIABLE:
 You MUST write the ENTIRE response in ${lang === "fr" ? "FRENCH (français)" : lang === "ar" ? "ARABIC (العربية)" : "ENGLISH"} only.
@@ -103,14 +137,14 @@ Use light markdown (bold room names, short bullets).`;
       const txt = await aiRes.text();
       return new Response(JSON.stringify({ error: `AI error ${aiRes.status}: ${txt}` }), {
         status: aiRes.status,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...tenantCors, "Content-Type": "application/json" },
       });
     }
 
     const data = await aiRes.json();
     const reply = data?.choices?.[0]?.message?.content ?? "";
     return new Response(JSON.stringify({ reply }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...tenantCors, "Content-Type": "application/json" },
     });
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), {
