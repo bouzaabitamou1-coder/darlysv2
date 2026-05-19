@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import Layout from "@/components/layout/Layout";
 import { toast } from "sonner";
 import { ShieldCheck } from "lucide-react";
 
@@ -30,16 +29,15 @@ const AdminBootstrap = () => {
   };
 
   return (
-    <Layout>
-      <section className="min-h-[80vh] flex items-center justify-center bg-cream pt-24 pb-16">
+    <section className="min-h-screen flex items-center justify-center bg-charcoal py-16">
         <div className="w-full max-w-md px-4">
-          <div className="bg-cream-dark p-8 lg:p-10">
+          <div className="bg-charcoal-light/40 border border-gold/20 p-8 lg:p-10">
             <div className="text-center mb-8">
               <div className="w-14 h-14 bg-gold/10 flex items-center justify-center mx-auto mb-4">
                 <ShieldCheck className="w-7 h-7 text-gold" />
               </div>
-              <h1 className="text-2xl font-display font-bold text-charcoal">Admin Bootstrap</h1>
-              <p className="text-sm text-muted-foreground font-body mt-2">
+              <h1 className="text-2xl font-display font-bold text-cream">Admin Bootstrap</h1>
+              <p className="text-sm text-cream/60 font-body mt-2">
                 Create or reset the admin credentials. Requires the bootstrap secret stored in the backend.
               </p>
             </div>
@@ -54,8 +52,7 @@ const AdminBootstrap = () => {
             </form>
           </div>
         </div>
-      </section>
-    </Layout>
+    </section>
   );
 };
 
