@@ -702,7 +702,14 @@ const BookingPage = () => {
 
                     <div className="flex gap-4">
                       <Button variant="outline" onClick={() => setStep(1)} className="flex-1">Back</Button>
-                      <Button onClick={() => { if (!form.guestName || !form.guestEmail) toast.error("Please fill in name and email."); else if (!isEmail(form.guestEmail)) toast.error("Please enter a valid email address."); else setStep(3); }} className="flex-1">Continue</Button>
+                      <Button onClick={() => {
+                        if (!form.guestName || !form.familyName || !form.guestEmail || !form.guestPhone || !form.idDocument) {
+                          toast.error("Please fill in name, family name, email, phone, and ID / passport.");
+                          return;
+                        }
+                        if (!isEmail(form.guestEmail)) { toast.error("Please enter a valid email address."); return; }
+                        setStep(3);
+                      }} className="flex-1">Continue</Button>
                     </div>
                   </motion.div>
                 )}
@@ -725,8 +732,9 @@ const BookingPage = () => {
                       </div>
 
                       <div className="bg-muted/30 p-4 border border-border rounded-md space-y-2">
-                        <p className="text-sm font-body text-muted-foreground">{form.guestName} · {form.guestEmail}</p>
-                        {form.guestPhone && <p className="text-sm font-body text-muted-foreground">{form.guestPhone}</p>}
+                        <p className="text-sm font-body text-foreground">{form.guestName} {form.familyName}</p>
+                        <p className="text-sm font-body text-muted-foreground">{form.guestEmail} · {form.guestPhone}</p>
+                        <p className="text-sm font-body text-muted-foreground">ID / Passport: <span className="text-foreground font-mono">{form.idDocument}</span></p>
                         {form.specialRequests && <p className="text-sm font-body text-muted-foreground italic">"{form.specialRequests}"</p>}
                       </div>
 
