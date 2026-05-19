@@ -21,6 +21,15 @@ serve(async (req) => {
       );
     }
 
+    const checkInDate = new Date(`${checkIn}T00:00:00Z`);
+    const checkOutDate = new Date(`${checkOut}T00:00:00Z`);
+    if (Number.isNaN(checkInDate.getTime()) || Number.isNaN(checkOutDate.getTime()) || checkOutDate <= checkInDate) {
+      return new Response(
+        JSON.stringify({ available: false, error: "Check-out must be after check-in" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+      );
+    }
+
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
