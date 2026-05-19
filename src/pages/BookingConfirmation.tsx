@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { CheckCircle, Loader2, Printer } from "lucide-react";
+import { CheckCircle, Loader2, Printer, Star } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { StatusBadge } from "@/components/ui/StatusBadge";
@@ -113,6 +113,21 @@ const BookingConfirmation = () => {
                 </Button>
                 <Link to="/">
                   <Button>Return Home</Button>
+                </Link>
+              </div>
+
+              <div className="mt-6 p-5 bg-primary/5 border border-primary/20 rounded-lg text-left">
+                <div className="flex items-center gap-2 text-primary mb-1">
+                  <Star className="w-4 h-4 fill-primary" />
+                  <span className="text-xs tracking-[0.2em] uppercase font-body">After your stay</span>
+                </div>
+                <p className="text-sm font-body text-foreground mb-3">
+                  We'd love to hear how everything went. Share your impressions and help us perfect every detail.
+                </p>
+                <Link to={`/feedback?booking=${booking.id}`}>
+                  <Button variant="outline" className="gap-2">
+                    <Star className="w-4 h-4" /> Leave feedback
+                  </Button>
                 </Link>
               </div>
             </>
