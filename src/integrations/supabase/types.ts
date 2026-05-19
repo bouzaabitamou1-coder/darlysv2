@@ -544,11 +544,13 @@ export type Database = {
           contact_email: string | null
           created_at: string
           default_currency: string | null
+          description: string | null
           driver_rate_per_km: number | null
           faq: string | null
           font_body: string | null
           font_display: string | null
           id: string
+          images: string[]
           is_active: boolean
           location_lat: number | null
           location_lng: number | null
@@ -568,11 +570,13 @@ export type Database = {
           contact_email?: string | null
           created_at?: string
           default_currency?: string | null
+          description?: string | null
           driver_rate_per_km?: number | null
           faq?: string | null
           font_body?: string | null
           font_display?: string | null
           id?: string
+          images?: string[]
           is_active?: boolean
           location_lat?: number | null
           location_lng?: number | null
@@ -592,11 +596,13 @@ export type Database = {
           contact_email?: string | null
           created_at?: string
           default_currency?: string | null
+          description?: string | null
           driver_rate_per_km?: number | null
           faq?: string | null
           font_body?: string | null
           font_display?: string | null
           id?: string
+          images?: string[]
           is_active?: boolean
           location_lat?: number | null
           location_lng?: number | null
@@ -775,9 +781,11 @@ export type Database = {
           accent_color: string | null
           concierge_name: string | null
           default_currency: string | null
+          description: string | null
           font_body: string | null
           font_display: string | null
           id: string | null
+          images: string[] | null
           is_active: boolean | null
           location_lat: number | null
           location_lng: number | null
@@ -790,9 +798,11 @@ export type Database = {
           accent_color?: string | null
           concierge_name?: string | null
           default_currency?: string | null
+          description?: string | null
           font_body?: string | null
           font_display?: string | null
           id?: string | null
+          images?: string[] | null
           is_active?: boolean | null
           location_lat?: number | null
           location_lng?: number | null
@@ -805,9 +815,11 @@ export type Database = {
           accent_color?: string | null
           concierge_name?: string | null
           default_currency?: string | null
+          description?: string | null
           font_body?: string | null
           font_display?: string | null
           id?: string | null
+          images?: string[] | null
           is_active?: boolean | null
           location_lat?: number | null
           location_lng?: number | null
