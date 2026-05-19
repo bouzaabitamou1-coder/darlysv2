@@ -171,6 +171,13 @@ const SuperAdmin = () => {
                 <a href={`/?tenant=${t.slug}`} target="_blank" rel="noreferrer" className="text-xs underline flex items-center gap-1">
                   Preview <ExternalLink className="w-3 h-3" />
                 </a>
+                <button
+                  onClick={() => toggleCrossRecs(t)}
+                  className={`text-xs px-2 py-1 rounded border ${t.allow_cross_recommendations ? "bg-primary text-primary-foreground border-primary" : "border-muted-foreground/30"}`}
+                  title="Allow concierge AI to suggest rooms from other network properties when no in-house room fits"
+                >
+                  Cross-recs: {t.allow_cross_recommendations ? "ON" : "OFF"}
+                </button>
               </div>
             </div>
             <div className="bg-muted p-2 rounded text-xs font-mono break-all flex items-start gap-2">
