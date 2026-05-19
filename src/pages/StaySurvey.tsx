@@ -5,6 +5,7 @@ import { Star, CheckCircle2, Loader2, Sparkles, ImagePlus, X } from "lucide-reac
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useTenant } from "@/contexts/TenantContext";
 import { toast } from "sonner";
 
 type RatingKey = "overall" | "cleanliness" | "service" | "comfort" | "food";

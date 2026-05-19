@@ -20,6 +20,7 @@ type ContactLocationState = { subject?: string; body?: string };
 
 const Contact = () => {
   const location = useLocation();
+  const { tenant } = useTenant();
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [sending, setSending] = useState(false);
 
@@ -41,6 +42,7 @@ const Contact = () => {
     }
     setSending(true);
     const { error } = await supabase.from("contact_messages").insert({
+      tenant_id: tenant.id,
       name: form.name.trim(),
       email: form.email.trim(),
       subject: form.subject.trim() || null,
