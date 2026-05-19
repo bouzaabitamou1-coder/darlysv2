@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Calendar, Users, CreditCard, ChevronRight, AlertCircle, Tag, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
+import { Calendar, Users, CreditCard, ChevronRight, AlertCircle, Tag, AlertTriangle, CheckCircle2, Clock, Car, Crosshair, Loader2 } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { DAR_LYS_LAT, DAR_LYS_LNG, RATE_PER_KM, haversineKm, geocodeAddress, reverseGeocode } from "@/lib/transport";
 
 // EUR -> MAD conversion rate (approximate)
 const EUR_TO_MAD = 10.8;
@@ -31,6 +33,58 @@ const BookingPage = () => {
     checkIn: "", checkOut: "", numGuests: 1,
     specialRequests: "", selectedAddOns: [] as string[],
   });
+  // Optional private-driver pickup add-on attached to this room booking
+  const [transport, setTransport] = useState({
+    enabled: false,
+    address: "",
+    time: "",
+    passengers: 1,
+    flightOrTrainNo: "",
+    coords: null as { lat: number; lng: number } | null,
+    estimate: null as { km: number; dh: number } | null,
+    loading: false,
+  });
+
+  const transportFeeEur = transport.enabled && transport.estimate
+    ? transport.estimate.dh / EUR_TO_MAD
+    : 0;
+
+  const computeTransport = (lat: number, lng: number, label?: string) => {
+    const km = haversineKm(lat, lng, DAR_LYS_LAT, DAR_LYS_LNG);
+    setTransport((t) => ({
+      ...t,
+      coords: { lat, lng },
+      estimate: { km, dh: km * RATE_PER_KM },
+      address: label ?? t.address,
+    }));
+  };
+
+  const transportUseMyLocation = () => {
+    if (!navigator.geolocation) { toast.error("Geolocation not supported."); return; }
+    setTransport((t) => ({ ...t, loading: true }));
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const label = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+        computeTransport(pos.coords.latitude, pos.coords.longitude, label);
+        setTransport((t) => ({ ...t, loading: false }));
+      },
+      (err) => { toast.error(err.message || "Unable to retrieve location."); setTransport((t) => ({ ...t, loading: false })); },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
+
+  const transportEstimateAddress = async () => {
+    if (!transport.address.trim()) return;
+    setTransport((t) => ({ ...t, loading: true }));
+    try {
+      const r = await geocodeAddress(transport.address);
+      if (!r) { toast.error("Address not found."); return; }
+      computeTransport(r.lat, r.lng, r.label);
+    } finally {
+      setTransport((t) => ({ ...t, loading: false }));
+    }
+  };
+
   const [room, setRoom] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [checkingAvailability, setCheckingAvailability] = useState(false);
@@ -124,7 +178,7 @@ const BookingPage = () => {
     return sum + (addon?.price || 0);
   }, 0);
 
-  const totalPrice = discountedRoomPrice + addOnTotal;
+  const totalPrice = discountedRoomPrice + addOnTotal + transportFeeEur;
 
   const toggleAddOn = (id: string) => {
     setForm((prev) => ({
@@ -274,6 +328,30 @@ const BookingPage = () => {
       });
 
       if (error) throw error;
+
+      // If the guest opted in for a private driver pickup, store it as a
+      // separate transport request linked to this booking. Admin sees both.
+      if (transport.enabled && transport.estimate && transport.address && transport.time) {
+        const pickup = new Date(`${form.checkIn}T${transport.time}`);
+        await supabase.from("transport_bookings").insert({
+          user_id: session?.user?.id ?? null,
+          booking_id: bookingId,
+          guest_name: form.guestName,
+          guest_email: form.guestEmail,
+          guest_phone: form.guestPhone || null,
+          pickup_address: transport.address,
+          pickup_lat: transport.coords?.lat ?? null,
+          pickup_lng: transport.coords?.lng ?? null,
+          pickup_datetime: pickup.toISOString(),
+          distance_km: Number(transport.estimate.km.toFixed(2)),
+          estimated_fee_dh: Math.round(transport.estimate.dh),
+          passengers: transport.passengers,
+          flight_or_train_no: transport.flightOrTrainNo || null,
+          notes: "Booked with room reservation",
+          status: "pending",
+        });
+      }
+
       toast.success("Booking created successfully!");
 
       // The booking is now created — keep the lock alive through Stripe via the edge
