@@ -476,6 +476,11 @@ const AdminDashboard = () => {
                   ))}
                 </div>
                 {s.comments && <p className="text-sm text-slate-300 italic border-l-2 border-amber-500/40 pl-3">"{s.comments}"</p>}
+                {s.photo_url && (
+                  <a href={s.photo_url} target="_blank" rel="noopener noreferrer" className="block mt-3">
+                    <img src={s.photo_url} alt="Guest photo" className="max-h-48 rounded border border-slate-800" />
+                  </a>
+                )}
                 {s.would_recommend !== null && (
                   <p className="mt-2 text-xs text-slate-400">Would recommend: <span className={s.would_recommend ? "text-emerald-400" : "text-rose-400"}>{s.would_recommend ? "Yes" : "No"}</span></p>
                 )}
