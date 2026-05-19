@@ -382,14 +382,45 @@ const AdminDashboard = () => {
               <div key={room.id} className="bg-slate-900 p-6 border border-slate-800 rounded-lg flex items-center justify-between hover:border-slate-700 transition-colors">
                 <div>
                   <h3 className="font-semibold text-slate-100">{room.name}</h3>
-                  <p className="text-sm text-slate-400">{room.category} · {room.size} · {formatCurrency(Number(room.price_per_night))}/night</p>
+                  <p className="text-sm text-slate-400">{room.category} · {room.size}</p>
+                  {editingRoomId === room.id ? (
+                    <div className="mt-2 flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={editPrice}
+                        onChange={(e) => setEditPrice(e.target.value)}
+                        className="w-32 bg-slate-950 border border-slate-700 text-slate-100 text-sm px-3 py-1.5 rounded focus:outline-none focus:border-amber-500"
+                        autoFocus
+                      />
+                      <span className="text-xs text-slate-500">/ night</span>
+                      <button onClick={() => saveRoomPrice(room.id)} className="px-3 py-1.5 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 rounded text-xs flex items-center gap-1">
+                        <Save className="w-3 h-3" /> Save
+                      </button>
+                      <button onClick={() => setEditingRoomId(null)} className="px-3 py-1.5 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded text-xs">
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="mt-1 flex items-center gap-2">
+                      <span className="text-sm font-medium text-amber-300">{formatCurrency(Number(room.price_per_night))}/night</span>
+                      <button
+                        onClick={() => { setEditingRoomId(room.id); setEditPrice(String(room.price_per_night)); }}
+                        className="text-xs text-slate-400 hover:text-amber-300 flex items-center gap-1"
+                        title="Edit price"
+                      >
+                        <Pencil className="w-3 h-3" /> Edit price
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-3">
                   <span className={`text-xs px-3 py-1 rounded-full ${room.is_available ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-rose-500/10 text-rose-400 border border-rose-500/20"}`}>
                     {room.is_available ? "Available" : "Unavailable"}
                   </span>
-                  <button onClick={() => updateRoomAvailability(room.id, !room.is_available)} className="p-2 text-slate-400 hover:text-slate-100 transition-colors" title="Toggle availability">
-                    <Pencil className="w-4 h-4" />
+                  <button onClick={() => updateRoomAvailability(room.id, !room.is_available)} className="px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 rounded transition-colors" title="Toggle availability">
+                    {room.is_available ? "Mark unavailable" : "Mark available"}
                   </button>
                 </div>
               </div>
