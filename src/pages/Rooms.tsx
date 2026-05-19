@@ -5,6 +5,7 @@ import { Users, Maximize2, Wifi, Bed, Check } from "lucide-react";
 import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { supabase } from "@/integrations/supabase/client";
+import { useTenant } from "@/contexts/TenantContext";
 import { photo, roomGallery, video } from "@/data/siteMedia";
 
 const fadeUp = {
