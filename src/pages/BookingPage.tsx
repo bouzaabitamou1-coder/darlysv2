@@ -692,6 +692,12 @@ const BookingPage = () => {
                               </div>
                             ) : null;
                           })}
+                          {transport.enabled && transport.estimate && (
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Private driver pickup ({transport.estimate.km.toFixed(1)} km)</span>
+                              <span className="text-foreground">€{transportFeeEur.toFixed(2)} <span className="text-muted-foreground">({Math.round(transport.estimate.dh)} DH)</span></span>
+                            </div>
+                          )}
                           <div className="border-t border-border pt-2 mt-2 flex justify-between font-semibold">
                             <span className="text-foreground">Total</span>
                             <span className="text-primary text-lg">€{totalPrice.toFixed(2)} <span className="text-sm text-muted-foreground">({dh(totalPrice)})</span></span>
