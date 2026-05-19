@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
     // Load tenant by slug
     const { data: tenant } = await supabase
       .from("tenants")
-      .select("id, name, concierge_name, concierge_persona, faq, driver_rate_per_km, default_currency, location_lat, location_lng, phone, address, allowed_origins")
+      .select("id, name, concierge_name, concierge_persona, faq, driver_rate_per_km, default_currency, location_lat, location_lng, phone, address, allowed_origins, allow_cross_recommendations")
       .eq("slug", tenantSlug)
       .eq("is_active", true)
       .maybeSingle();
@@ -82,6 +82,29 @@ Deno.serve(async (req) => {
       .map((r: any) => `- ${r.name} (${r.category}): ${r.price_per_night} MAD/night, up to ${r.max_guests} guests, ${r.size}. ${r.description ?? ""} Amenities: ${(r.amenities ?? []).join(", ")}`)
       .join("\n");
 
+    // Optional cross-property recommendations: load sibling properties' rooms
+    // (only properties that have ALSO opted in to cross recommendations).
+    let peersCtx = "";
+    if (tenant.allow_cross_recommendations) {
+      const { data: peers } = await supabase
+        .from("tenants")
+        .select("id, name, slug, default_currency, rooms:rooms(name,category,price_per_night,max_guests,size,is_available)")
+        .neq("id", tenant.id)
+        .eq("is_active", true)
+        .eq("allow_cross_recommendations", true);
+      const lines: string[] = [];
+      for (const p of peers ?? []) {
+        const avail = (p.rooms ?? []).filter((r: any) => r.is_available);
+        if (avail.length === 0) continue;
+        const cur = p.default_currency || "MAD";
+        lines.push(`• ${p.name} (slug: ${p.slug}):`);
+        for (const r of avail.slice(0, 4)) {
+          lines.push(`   - ${r.name} (${r.category}): ${r.price_per_night} ${cur}/night, up to ${r.max_guests} guests, ${r.size}`);
+        }
+      }
+      peersCtx = lines.join("\n");
+    }
+
     const conciergeName = tenant.concierge_name || "Lys";
     const hotelName = tenant.name;
     const rate = Number(tenant.driver_rate_per_km ?? 10);
@@ -107,8 +130,9 @@ PRIVATE DRIVER RULES:
 
 FAQ: answer directly from the HOTEL INFO below. If unknown, say so and suggest contacting ${tenant.phone ?? "the hotel"}.
 
-AVAILABLE ROOMS (use ONLY these — do not invent):
+AVAILABLE ROOMS at ${hotelName} (use ONLY these — do not invent):
 ${roomsCtx || "(no rooms loaded)"}
+${peersCtx ? `\nSISTER PROPERTIES (only suggest these if NO room at ${hotelName} fits the guest's budget or party size; never invent):\n${peersCtx}\nWhen recommending a sister property, name it and add: "(another property in our network — link: /?tenant=<slug>)".\n` : ""}
 
 HOTEL INFO:
 ${faqText}

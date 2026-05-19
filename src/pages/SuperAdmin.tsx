@@ -20,6 +20,7 @@ type Tenant = {
   accent_color: string | null;
   is_active: boolean;
   allowed_origins: string[] | null;
+  allow_cross_recommendations: boolean | null;
 };
 
 const SuperAdmin = () => {
@@ -52,9 +53,20 @@ const SuperAdmin = () => {
   const loadTenants = async () => {
     const { data } = await supabase
       .from("tenants")
-      .select("id, slug, name, description, images, contact_email, primary_color, accent_color, is_active, allowed_origins")
+      .select("id, slug, name, description, images, contact_email, primary_color, accent_color, is_active, allowed_origins, allow_cross_recommendations")
       .order("created_at", { ascending: false });
     setTenants((data as Tenant[]) ?? []);
+  };
+
+  const toggleCrossRecs = async (t: Tenant) => {
+    const next = !t.allow_cross_recommendations;
+    const { error } = await supabase
+      .from("tenants")
+      .update({ allow_cross_recommendations: next })
+      .eq("id", t.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(next ? "Cross recommendations ON" : "Cross recommendations OFF");
+    loadTenants();
   };
 
   useEffect(() => { if (isSuper) loadTenants(); }, [isSuper]);
@@ -159,6 +171,13 @@ const SuperAdmin = () => {
                 <a href={`/?tenant=${t.slug}`} target="_blank" rel="noreferrer" className="text-xs underline flex items-center gap-1">
                   Preview <ExternalLink className="w-3 h-3" />
                 </a>
+                <button
+                  onClick={() => toggleCrossRecs(t)}
+                  className={`text-xs px-2 py-1 rounded border ${t.allow_cross_recommendations ? "bg-primary text-primary-foreground border-primary" : "border-muted-foreground/30"}`}
+                  title="Allow concierge AI to suggest rooms from other network properties when no in-house room fits"
+                >
+                  Cross-recs: {t.allow_cross_recommendations ? "ON" : "OFF"}
+                </button>
               </div>
             </div>
             <div className="bg-muted p-2 rounded text-xs font-mono break-all flex items-start gap-2">

@@ -538,6 +538,7 @@ export type Database = {
         Row: {
           accent_color: string | null
           address: string | null
+          allow_cross_recommendations: boolean
           allowed_origins: string[] | null
           concierge_name: string | null
           concierge_persona: string | null
@@ -564,6 +565,7 @@ export type Database = {
         Insert: {
           accent_color?: string | null
           address?: string | null
+          allow_cross_recommendations?: boolean
           allowed_origins?: string[] | null
           concierge_name?: string | null
           concierge_persona?: string | null
@@ -590,6 +592,7 @@ export type Database = {
         Update: {
           accent_color?: string | null
           address?: string | null
+          allow_cross_recommendations?: boolean
           allowed_origins?: string[] | null
           concierge_name?: string | null
           concierge_persona?: string | null
@@ -779,7 +782,10 @@ export type Database = {
       public_tenants: {
         Row: {
           accent_color: string | null
+          address: string | null
+          allow_cross_recommendations: boolean | null
           concierge_name: string | null
+          contact_email: string | null
           default_currency: string | null
           description: string | null
           font_body: string | null
@@ -791,12 +797,16 @@ export type Database = {
           location_lng: number | null
           logo_url: string | null
           name: string | null
+          phone: string | null
           primary_color: string | null
           slug: string | null
         }
         Insert: {
           accent_color?: string | null
+          address?: string | null
+          allow_cross_recommendations?: boolean | null
           concierge_name?: string | null
+          contact_email?: string | null
           default_currency?: string | null
           description?: string | null
           font_body?: string | null
@@ -808,12 +818,16 @@ export type Database = {
           location_lng?: number | null
           logo_url?: string | null
           name?: string | null
+          phone?: string | null
           primary_color?: string | null
           slug?: string | null
         }
         Update: {
           accent_color?: string | null
+          address?: string | null
+          allow_cross_recommendations?: boolean | null
           concierge_name?: string | null
+          contact_email?: string | null
           default_currency?: string | null
           description?: string | null
           font_body?: string | null
@@ -825,6 +839,7 @@ export type Database = {
           location_lng?: number | null
           logo_url?: string | null
           name?: string | null
+          phone?: string | null
           primary_color?: string | null
           slug?: string | null
         }
