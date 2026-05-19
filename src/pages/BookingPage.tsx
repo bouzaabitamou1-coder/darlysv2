@@ -30,7 +30,7 @@ const BookingPage = () => {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    guestName: "", guestEmail: "", guestPhone: "",
+    guestName: "", familyName: "", guestEmail: "", guestPhone: "", idDocument: "",
     checkIn: "", checkOut: "", numGuests: 1,
     specialRequests: "", selectedAddOns: [] as string[],
   });
@@ -328,8 +328,9 @@ const BookingPage = () => {
   };
 
   const handleSubmit = async () => {
-    if (!room || !form.checkIn || !form.checkOut || !form.guestName || !form.guestEmail) {
-      toast.error("Please fill in all required fields.");
+    if (!room || !form.checkIn || !form.checkOut || !form.guestName || !form.familyName || !form.guestEmail || !form.guestPhone || !form.idDocument) {
+      toast.error("Please fill in all required fields (name, family name, email, phone, ID / passport).");
+      setStep(2);
       return;
     }
     if (!isEmail(form.guestEmail)) {
@@ -353,9 +354,11 @@ const BookingPage = () => {
         id: bookingId,
         room_id: room.id,
         user_id: session?.user?.id ?? null,
-        guest_name: form.guestName,
+        guest_name: `${form.guestName} ${form.familyName}`.trim(),
+        family_name: form.familyName,
         guest_email: form.guestEmail,
-        guest_phone: form.guestPhone || null,
+        guest_phone: form.guestPhone,
+        id_document: form.idDocument,
         check_in: form.checkIn,
         check_out: form.checkOut,
         num_guests: form.numGuests,
