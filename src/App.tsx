@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/i18n/LanguageContext";
+import { TenantProvider } from "@/contexts/TenantContext";
 import ScrollProgress from "@/components/layout/ScrollProgress";
 import Index from "./pages/Index";
 import About from "./pages/About";
@@ -25,6 +26,8 @@ import Reviews from "./pages/Reviews";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminBootstrap from "./pages/AdminBootstrap";
+import SuperAdmin from "./pages/SuperAdmin";
+import ConciergeEmbed from "./pages/ConciergeEmbed";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +44,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <LanguageProvider>
+        <TenantProvider>
         <AuthProvider>
           <Sonner />
           <BrowserRouter>
@@ -66,10 +70,13 @@ const App = () => (
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/bootstrap" element={<AdminBootstrap />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/super-admin" element={<SuperAdmin />} />
+            <Route path="/embed/concierge" element={<ConciergeEmbed />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </BrowserRouter>
         </AuthProvider>
+        </TenantProvider>
       </LanguageProvider>
     </TooltipProvider>
   </QueryClientProvider>
