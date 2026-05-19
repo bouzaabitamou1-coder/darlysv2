@@ -24,7 +24,8 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, lang } = await req.json();
+    const { messages, lang: langRaw } = await req.json();
+    const lang: "en" | "fr" | "ar" = langRaw === "fr" || langRaw === "ar" ? langRaw : "en";
     if (!Array.isArray(messages)) {
       return new Response(JSON.stringify({ error: "messages required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -66,7 +67,13 @@ ${roomsCtx || "(no rooms loaded)"}
 RIAD INFO:
 ${FAQ}
 
-REQUIRED LANGUAGE: ${lang === "fr" ? "French" : lang === "ar" ? "Arabic" : "English"}. ALWAYS reply in this language regardless of the user's input language. Use light markdown (bold room names, short bullets).`;
+CRITICAL LANGUAGE RULE — NON-NEGOTIABLE:
+You MUST write the ENTIRE response in ${lang === "fr" ? "FRENCH (français)" : lang === "ar" ? "ARABIC (العربية)" : "ENGLISH"} only.
+Do NOT mix languages. Do NOT reply in English when the required language is French or Arabic.
+Even if the user writes in another language, your reply MUST be in ${lang === "fr" ? "French" : lang === "ar" ? "Arabic" : "English"}.
+${lang === "fr" ? "Exemple: 'Je vous recommande la chambre **Yasmine**...'" : lang === "ar" ? "مثال: 'أنصحك بـ **غرفة الياسمين**...'" : ""}
+
+Use light markdown (bold room names, short bullets).`;
 
     const apiKey = Deno.env.get("LOVABLE_API_KEY");
     if (!apiKey) {
@@ -81,7 +88,14 @@ REQUIRED LANGUAGE: ${lang === "fr" ? "French" : lang === "ar" ? "Arabic" : "Engl
       },
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
-        messages: [{ role: "system", content: system }, ...messages],
+        messages: [
+          { role: "system", content: system },
+          ...messages,
+          {
+            role: "system",
+            content: `Reminder: respond ONLY in ${lang === "fr" ? "French" : lang === "ar" ? "Arabic" : "English"}.`,
+          },
+        ],
       }),
     });
 
