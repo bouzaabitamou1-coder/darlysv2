@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   BarChart3, CalendarDays, DollarSign, Mail, BedDouble,
-  Users, LogOut, Eye, Check, X, Pencil, Trash2, CreditCard, RefreshCw, Printer, Undo2, ChevronDown, ChevronUp, Car, MapPin
+  Users, LogOut, Eye, Check, X, Pencil, Trash2, CreditCard, RefreshCw, Printer, Undo2, ChevronDown, ChevronUp, Car, MapPin, Star, Save
 } from "lucide-react";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { printInvoice } from "@/lib/printInvoice";
@@ -24,6 +24,9 @@ const AdminDashboard = () => {
   const [paymentEvents, setPaymentEvents] = useState<any[]>([]);
   const [syncLogs, setSyncLogs] = useState<any[]>([]);
   const [transportBookings, setTransportBookings] = useState<any[]>([]);
+  const [surveys, setSurveys] = useState<any[]>([]);
+  const [editingRoomId, setEditingRoomId] = useState<string | null>(null);
+  const [editPrice, setEditPrice] = useState<string>("");
   const [refundingId, setRefundingId] = useState<string | null>(null);
   const [expandedSyncLog, setExpandedSyncLog] = useState<string | null>(null);
 
@@ -40,13 +43,14 @@ const AdminDashboard = () => {
   }, [isAdmin]);
 
   const loadData = async () => {
-    const [bookingsRes, messagesRes, roomsRes, eventsRes, syncRes, transportRes] = await Promise.all([
+    const [bookingsRes, messagesRes, roomsRes, eventsRes, syncRes, transportRes, surveysRes] = await Promise.all([
       supabase.from("bookings").select("*, rooms(name)").order("created_at", { ascending: false }),
       supabase.from("contact_messages").select("*").order("created_at", { ascending: false }),
       supabase.from("rooms").select("*").order("name"),
       supabase.from("payment_events").select("*").order("created_at", { ascending: false }).limit(50),
       supabase.from("opera_sync_log").select("*").order("created_at", { ascending: false }).limit(50),
       supabase.from("transport_bookings").select("*").order("created_at", { ascending: false }),
+      supabase.from("stay_surveys").select("*").order("created_at", { ascending: false }),
     ]);
 
     const b = bookingsRes.data || [];
@@ -59,6 +63,7 @@ const AdminDashboard = () => {
     setPaymentEvents(eventsRes.data || []);
     setSyncLogs(syncRes.data || []);
     setTransportBookings(transportRes.data || []);
+    setSurveys(surveysRes.data || []);
     setStats({
       bookings: b.length,
       revenue: b.filter((x) => x.payment_status === "paid").reduce((s, x) => s + Number(x.total_price), 0),
@@ -128,6 +133,16 @@ const AdminDashboard = () => {
     loadData();
   };
 
+  const saveRoomPrice = async (id: string) => {
+    const price = parseFloat(editPrice);
+    if (isNaN(price) || price <= 0) { toast.error("Enter a valid price"); return; }
+    const { error } = await supabase.from("rooms").update({ price_per_night: price }).eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Price updated");
+    setEditingRoomId(null);
+    loadData();
+  };
+
   if (loading || !isAdmin) return null;
 
   const tabs = [
@@ -136,6 +151,7 @@ const AdminDashboard = () => {
     { id: "transport", label: "Transport", icon: Car },
     { id: "rooms", label: "Rooms", icon: BedDouble },
     { id: "messages", label: "Messages", icon: Mail },
+    { id: "surveys", label: "Surveys", icon: Star },
     { id: "payments", label: "Payments", icon: CreditCard },
     { id: "opera", label: "Opera PMS", icon: RefreshCw },
   ];
@@ -366,14 +382,45 @@ const AdminDashboard = () => {
               <div key={room.id} className="bg-slate-900 p-6 border border-slate-800 rounded-lg flex items-center justify-between hover:border-slate-700 transition-colors">
                 <div>
                   <h3 className="font-semibold text-slate-100">{room.name}</h3>
-                  <p className="text-sm text-slate-400">{room.category} · {room.size} · {formatCurrency(Number(room.price_per_night))}/night</p>
+                  <p className="text-sm text-slate-400">{room.category} · {room.size}</p>
+                  {editingRoomId === room.id ? (
+                    <div className="mt-2 flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={editPrice}
+                        onChange={(e) => setEditPrice(e.target.value)}
+                        className="w-32 bg-slate-950 border border-slate-700 text-slate-100 text-sm px-3 py-1.5 rounded focus:outline-none focus:border-amber-500"
+                        autoFocus
+                      />
+                      <span className="text-xs text-slate-500">/ night</span>
+                      <button onClick={() => saveRoomPrice(room.id)} className="px-3 py-1.5 bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 rounded text-xs flex items-center gap-1">
+                        <Save className="w-3 h-3" /> Save
+                      </button>
+                      <button onClick={() => setEditingRoomId(null)} className="px-3 py-1.5 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded text-xs">
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="mt-1 flex items-center gap-2">
+                      <span className="text-sm font-medium text-amber-300">{formatCurrency(Number(room.price_per_night))}/night</span>
+                      <button
+                        onClick={() => { setEditingRoomId(room.id); setEditPrice(String(room.price_per_night)); }}
+                        className="text-xs text-slate-400 hover:text-amber-300 flex items-center gap-1"
+                        title="Edit price"
+                      >
+                        <Pencil className="w-3 h-3" /> Edit price
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-3">
                   <span className={`text-xs px-3 py-1 rounded-full ${room.is_available ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-rose-500/10 text-rose-400 border border-rose-500/20"}`}>
                     {room.is_available ? "Available" : "Unavailable"}
                   </span>
-                  <button onClick={() => updateRoomAvailability(room.id, !room.is_available)} className="p-2 text-slate-400 hover:text-slate-100 transition-colors" title="Toggle availability">
-                    <Pencil className="w-4 h-4" />
+                  <button onClick={() => updateRoomAvailability(room.id, !room.is_available)} className="px-3 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 rounded transition-colors" title="Toggle availability">
+                    {room.is_available ? "Mark unavailable" : "Mark available"}
                   </button>
                 </div>
               </div>
@@ -401,6 +448,39 @@ const AdminDashboard = () => {
               </div>
             ))}
             {messages.length === 0 && <p className="text-slate-500 text-sm">No messages yet.</p>}
+          </div>
+        )}
+
+        {activeTab === "surveys" && (
+          <div className="space-y-4">
+            {surveys.length === 0 && <p className="text-center text-slate-500 text-sm p-8">No guest surveys submitted yet.</p>}
+            {surveys.map((s) => (
+              <div key={s.id} className="bg-slate-900 p-6 border border-slate-800 rounded-lg">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <p className="font-semibold text-slate-100">{s.guest_name || s.guest_email}</p>
+                    <p className="text-xs text-slate-500">{s.guest_email} · {formatDateTime(s.created_at)}</p>
+                  </div>
+                  <div className="flex items-center gap-1 text-amber-400">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className={`w-4 h-4 ${i < (s.overall_rating || 0) ? "fill-amber-400" : "text-slate-700"}`} />
+                    ))}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-3">
+                  {["cleanliness", "service", "comfort", "food"].map((k) => (
+                    <div key={k} className="bg-slate-950/50 border border-slate-800 rounded px-3 py-2">
+                      <p className="text-slate-500 capitalize">{k}</p>
+                      <p className="text-slate-200 font-semibold">{s[k] ?? "—"}/5</p>
+                    </div>
+                  ))}
+                </div>
+                {s.comments && <p className="text-sm text-slate-300 italic border-l-2 border-amber-500/40 pl-3">"{s.comments}"</p>}
+                {s.would_recommend !== null && (
+                  <p className="mt-2 text-xs text-slate-400">Would recommend: <span className={s.would_recommend ? "text-emerald-400" : "text-rose-400"}>{s.would_recommend ? "Yes" : "No"}</span></p>
+                )}
+              </div>
+            ))}
           </div>
         )}
 
