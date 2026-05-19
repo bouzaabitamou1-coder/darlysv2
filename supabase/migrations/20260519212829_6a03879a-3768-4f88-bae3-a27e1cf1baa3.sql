@@ -1,0 +1,1 @@
+CREATE POLICY "Anyone can view stay surveys" ON public.stay_surveys FOR SELECT USING (true);
