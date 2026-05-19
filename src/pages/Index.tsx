@@ -101,30 +101,42 @@ const HeroSection = () => {
   );
 };
 
-const AboutPreview = () => (
+const AboutPreview = () => {
+  const { tenant, slug } = useTenant();
+  const isCustom = slug !== DEFAULT_TENANT_SLUG;
+  const aboutImage = tenant.images?.[1] ?? tenant.images?.[0] ?? photo.courtyard;
+  return (
   <section className="section-padding bg-cream zellige-pattern">
     <div className="container-luxury">
       <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
         <motion.div {...fadeUp}>
-          <span className="text-sm tracking-[0.3em] uppercase font-body text-gold block mb-3">Bienvenue à Dar Lys</span>
+          <span className="text-sm tracking-[0.3em] uppercase font-body text-gold block mb-3">Bienvenue à {tenant.name ?? "Dar Lys"}</span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-bold text-charcoal leading-tight mb-2">
             Un Havre de Paix
           </h2>
           <p className="text-muted-foreground text-sm tracking-[0.2em] uppercase font-body mb-4">Heritage & contemporary comfort</p>
           <div className="moroccan-divider !mx-0 mb-6" />
-          <p className="text-muted-foreground leading-relaxed mb-4 font-body">
-            Dar Lys est la nouvelle adresse en plein cœur de la médina de Fès. Des murs en tadelakt se marient harmonieusement au zellige et stucs aux motifs de lys ou nids d'abeilles.
-          </p>
-          <p className="text-muted-foreground leading-relaxed mb-8 font-body">
-            Dar Lys a été entièrement construit dans le respect de l'esprit de la médina et des anciennes demeures fassies. Un lieu authentique qui invite modernité et tradition.
-          </p>
+          {isCustom && tenant.description ? (
+            <p className="text-muted-foreground leading-relaxed mb-8 font-body whitespace-pre-line">
+              {tenant.description}
+            </p>
+          ) : (
+            <>
+              <p className="text-muted-foreground leading-relaxed mb-4 font-body">
+                Dar Lys est la nouvelle adresse en plein cœur de la médina de Fès. Des murs en tadelakt se marient harmonieusement au zellige et stucs aux motifs de lys ou nids d'abeilles.
+              </p>
+              <p className="text-muted-foreground leading-relaxed mb-8 font-body">
+                Dar Lys a été entièrement construit dans le respect de l'esprit de la médina et des anciennes demeures fassies. Un lieu authentique qui invite modernité et tradition.
+              </p>
+            </>
+          )}
           <Link to="/about" className="btn-outline-luxury">
             Discover Our Story
           </Link>
         </motion.div>
         <motion.div {...fadeUp} transition={{ duration: 0.7, delay: 0.2 }} className="relative">
           <div className="moroccan-arch">
-            <img src={photo.courtyard} alt="Riad courtyard" className="w-full aspect-[4/5] object-cover" loading="lazy" width={1280} height={960} />
+            <img src={aboutImage} alt={`${tenant.name ?? "Riad"} courtyard`} className="w-full aspect-[4/5] object-cover" loading="lazy" width={1280} height={960} />
           </div>
           <div className="absolute -bottom-6 -left-6 bg-gold p-6 hidden lg:block">
             <p className="text-cream text-3xl font-display font-bold">18</p>
@@ -134,7 +146,8 @@ const AboutPreview = () => (
       </div>
     </div>
   </section>
-);
+  );
+};
 
 const rooms = [
   { name: "La Classique", size: "19 sqm", image: photo.roomClassique, desc: "Warm tones, natural light, and discreet elegance — up to 2 adults and a baby under 2." },
