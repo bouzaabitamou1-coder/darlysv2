@@ -587,7 +587,12 @@ const BookingPage = () => {
                           {availabilityError && (
                           <div className="flex items-start gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md text-sm font-body text-destructive">
                             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                            <span className="flex-1 break-words">{availabilityError}</span>
+                            <span className="flex-1 break-words">
+                              {availabilityError}
+                              {foreignLockExpiresAt && foreignLockSecondsLeft > 0 && (
+                                <> {" "}<strong>Try again in {formatTimer(foreignLockSecondsLeft)}.</strong></>
+                              )}
+                            </span>
                           </div>
                         )}
                         {checkingAvailability && (
