@@ -92,6 +92,8 @@ const BookingPage = () => {
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
   const [isAvailable, setIsAvailable] = useState(false);
   const [inventoryWarning, setInventoryWarning] = useState<string | null>(null);
+  const [foreignLockExpiresAt, setForeignLockExpiresAt] = useState<number | null>(null);
+  const [foreignLockSecondsLeft, setForeignLockSecondsLeft] = useState<number>(0);
   const [step, setStep] = useState(1);
   const [unavailableRanges, setUnavailableRanges] = useState<{ start: string; end: string }[]>([]);
   const [lockSessionId, setLockSessionId] = useState<string | null>(null);
@@ -212,6 +214,7 @@ const BookingPage = () => {
     setAvailabilityError(null);
     setInventoryWarning(null);
     setIsAvailable(false);
+    setForeignLockExpiresAt(null);
     try {
       const { data, error } = await supabase.functions.invoke("check-availability", {
         body: { roomId: room.id, checkIn: form.checkIn, checkOut: form.checkOut, sessionId: lockSessionId },
@@ -225,7 +228,16 @@ const BookingPage = () => {
         throw error;
       }
       if (!data?.available) {
-        setAvailabilityError("This room is not available for the selected dates.");
+        if (data?.reason === "held") {
+          if (data?.lockExpiresAt) {
+            setForeignLockExpiresAt(new Date(data.lockExpiresAt).getTime());
+          }
+          setAvailabilityError(
+            "Another guest is currently holding these dates. They have up to 15 minutes to complete their booking. Please try again shortly or pick different dates."
+          );
+        } else {
+          setAvailabilityError("This room is not available for the selected dates.");
+        }
         return false;
       }
 
