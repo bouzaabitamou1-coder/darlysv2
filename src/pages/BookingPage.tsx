@@ -324,6 +324,24 @@ const BookingPage = () => {
     return () => clearInterval(id);
   }, [lockExpiresAt, lockSessionId]);
 
+  // Countdown for someone else's hold so we can show "try again in X:XX"
+  useEffect(() => {
+    if (!foreignLockExpiresAt) { setForeignLockSecondsLeft(0); return; }
+    const tick = () => {
+      const s = Math.max(0, Math.floor((foreignLockExpiresAt - Date.now()) / 1000));
+      setForeignLockSecondsLeft(s);
+      if (s === 0) {
+        setForeignLockExpiresAt(null);
+        // Re-check now that the other guest's hold has expired
+        if (form.checkIn && form.checkOut) checkAvailability();
+      }
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [foreignLockExpiresAt]);
+
   // Release the hold when leaving the page (unless we're heading to Stripe checkout)
   useEffect(() => {
     return () => {
