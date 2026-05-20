@@ -92,6 +92,8 @@ const BookingPage = () => {
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
   const [isAvailable, setIsAvailable] = useState(false);
   const [inventoryWarning, setInventoryWarning] = useState<string | null>(null);
+  const [foreignLockExpiresAt, setForeignLockExpiresAt] = useState<number | null>(null);
+  const [foreignLockSecondsLeft, setForeignLockSecondsLeft] = useState<number>(0);
   const [step, setStep] = useState(1);
   const [unavailableRanges, setUnavailableRanges] = useState<{ start: string; end: string }[]>([]);
   const [lockSessionId, setLockSessionId] = useState<string | null>(null);
@@ -212,6 +214,7 @@ const BookingPage = () => {
     setAvailabilityError(null);
     setInventoryWarning(null);
     setIsAvailable(false);
+    setForeignLockExpiresAt(null);
     try {
       const { data, error } = await supabase.functions.invoke("check-availability", {
         body: { roomId: room.id, checkIn: form.checkIn, checkOut: form.checkOut, sessionId: lockSessionId },
@@ -225,7 +228,16 @@ const BookingPage = () => {
         throw error;
       }
       if (!data?.available) {
-        setAvailabilityError("This room is not available for the selected dates.");
+        if (data?.reason === "held") {
+          if (data?.lockExpiresAt) {
+            setForeignLockExpiresAt(new Date(data.lockExpiresAt).getTime());
+          }
+          setAvailabilityError(
+            "Another guest is currently holding these dates. They have up to 15 minutes to complete their booking. Please try again shortly or pick different dates."
+          );
+        } else {
+          setAvailabilityError("This room is not available for the selected dates.");
+        }
         return false;
       }
 
@@ -311,6 +323,24 @@ const BookingPage = () => {
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [lockExpiresAt, lockSessionId]);
+
+  // Countdown for someone else's hold so we can show "try again in X:XX"
+  useEffect(() => {
+    if (!foreignLockExpiresAt) { setForeignLockSecondsLeft(0); return; }
+    const tick = () => {
+      const s = Math.max(0, Math.floor((foreignLockExpiresAt - Date.now()) / 1000));
+      setForeignLockSecondsLeft(s);
+      if (s === 0) {
+        setForeignLockExpiresAt(null);
+        // Re-check now that the other guest's hold has expired
+        if (form.checkIn && form.checkOut) checkAvailability();
+      }
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [foreignLockExpiresAt]);
 
   // Release the hold when leaving the page (unless we're heading to Stripe checkout)
   useEffect(() => {
@@ -557,7 +587,12 @@ const BookingPage = () => {
                           {availabilityError && (
                           <div className="flex items-start gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md text-sm font-body text-destructive">
                             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                            <span className="flex-1 break-words">{availabilityError}</span>
+                            <span className="flex-1 break-words">
+                              {availabilityError}
+                              {foreignLockExpiresAt && foreignLockSecondsLeft > 0 && (
+                                <> {" "}<strong>Try again in {formatTimer(foreignLockSecondsLeft)}.</strong></>
+                              )}
+                            </span>
                           </div>
                         )}
                         {checkingAvailability && (
