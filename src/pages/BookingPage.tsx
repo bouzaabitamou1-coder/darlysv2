@@ -545,9 +545,16 @@ const BookingPage = () => {
                       </div>
                     )}
 
-                    {form.checkIn && form.checkOut && (
-                      <div aria-live="polite" className="space-y-2">
-                        {availabilityError && (
+                    <div aria-live="polite" aria-atomic="true" className="space-y-2">
+                      {(!form.checkIn || !form.checkOut) && !availabilityError && (
+                        <div className="flex items-start gap-2 p-3 bg-muted/40 border border-border rounded-md text-sm font-body text-muted-foreground">
+                          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                          <span className="flex-1 break-words">Select your check-in and check-out dates to see availability.</span>
+                        </div>
+                      )}
+                      {form.checkIn && form.checkOut && (
+                        <>
+                          {availabilityError && (
                           <div className="flex items-start gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md text-sm font-body text-destructive">
                             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                             <span className="flex-1 break-words">{availabilityError}</span>
@@ -571,8 +578,9 @@ const BookingPage = () => {
                             <span className="flex-1 break-words">{inventoryWarning}</span>
                           </div>
                         )}
-                      </div>
-                    )}
+                        </>
+                      )}
+                    </div>
 
                     <div>
                       <label className={labelClass}>Number of Guests</label>
