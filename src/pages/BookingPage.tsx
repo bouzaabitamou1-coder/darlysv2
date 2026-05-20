@@ -545,28 +545,32 @@ const BookingPage = () => {
                       </div>
                     )}
 
-                    {availabilityError && (
-                      <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md text-sm font-body text-destructive">
-                        <AlertCircle className="w-4 h-4 shrink-0" /> {availabilityError}
-                      </div>
-                    )}
-
-                    {checkingAvailability && (
-                      <div className="flex items-center gap-2 p-3 bg-primary/5 border border-primary/20 rounded-md text-sm font-body text-primary">
-                        <Loader2 className="w-4 h-4 shrink-0 animate-spin" /> Checking these dates now…
-                      </div>
-                    )}
-
-                    {isAvailable && !checkingAvailability && !availabilityError && !inventoryWarning && (
-                      <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/30 rounded-md text-sm font-body text-foreground">
-                        <CheckCircle2 className="w-4 h-4 shrink-0" />
-                        Great news — this room is available for your selected dates. You can proceed with your reservation.
-                      </div>
-                    )}
-
-                    {inventoryWarning && (
-                      <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-md text-sm font-body text-amber-700">
-                        <AlertTriangle className="w-4 h-4 shrink-0" /> {inventoryWarning}
+                    {form.checkIn && form.checkOut && (
+                      <div aria-live="polite" className="space-y-2">
+                        {availabilityError && (
+                          <div className="flex items-start gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-md text-sm font-body text-destructive">
+                            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                            <span className="flex-1 break-words">{availabilityError}</span>
+                          </div>
+                        )}
+                        {checkingAvailability && (
+                          <div className="flex items-start gap-2 p-3 bg-primary/5 border border-primary/20 rounded-md text-sm font-body text-primary">
+                            <Loader2 className="w-4 h-4 shrink-0 mt-0.5 animate-spin" />
+                            <span className="flex-1 break-words">Checking these dates now…</span>
+                          </div>
+                        )}
+                        {isAvailable && !checkingAvailability && !availabilityError && !inventoryWarning && (
+                          <div className="flex items-start gap-2 p-3 bg-primary/10 border border-primary/30 rounded-md text-sm font-body text-foreground">
+                            <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+                            <span className="flex-1 break-words">Great news — this room is available for your selected dates. You can proceed with your reservation.</span>
+                          </div>
+                        )}
+                        {inventoryWarning && (
+                          <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-md text-sm font-body text-amber-700">
+                            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                            <span className="flex-1 break-words">{inventoryWarning}</span>
+                          </div>
+                        )}
                       </div>
                     )}
 

@@ -312,8 +312,8 @@ const SpaBotanikaSection = () => (
         description="Our spa and bathrooms use Botanika refill dispensers — Moroccan, ecological formulas without parabens, aluminum salts, or GMOs, not tested on animals."
         light
       />
-      <motion.div {...fadeUp} className="max-w-3xl mx-auto rounded-sm overflow-hidden border border-cream/15 shadow-2xl">
-        <video className="w-full aspect-video object-cover" controls playsInline poster={photo.spaInterior}>
+      <motion.div {...fadeUp} className="max-w-3xl mx-auto rounded-sm overflow-hidden border border-cream/15 shadow-2xl bg-charcoal">
+        <video className="w-full h-auto max-h-[80vh] object-contain mx-auto" controls playsInline poster={photo.spaInterior}>
           <source src={video.spa} type="video/mp4" />
         </video>
       </motion.div>
