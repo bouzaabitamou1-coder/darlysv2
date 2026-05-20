@@ -59,10 +59,25 @@ serve(async (req) => {
     if (lockError) throw lockError;
 
     const activeForeignLocks = (lockConflicts ?? []).filter((lock) => lock.session_id !== sessionId);
-    const available = (bookingConflicts ?? []).length === 0 && activeForeignLocks.length === 0;
+    const hasBookingConflict = (bookingConflicts ?? []).length > 0;
+    const hasLockConflict = activeForeignLocks.length > 0;
+    const available = !hasBookingConflict && !hasLockConflict;
+
+    // Surface the soonest lock expiry so the other device can show a countdown
+    let lockExpiresAt: string | null = null;
+    if (hasLockConflict) {
+      const soonest = [...activeForeignLocks]
+        .map((l: any) => l.expires_at)
+        .sort()[0];
+      lockExpiresAt = soonest ?? null;
+    }
 
     return new Response(
-      JSON.stringify({ available: !!available }),
+      JSON.stringify({
+        available,
+        reason: available ? null : hasBookingConflict ? "booked" : "held",
+        lockExpiresAt,
+      }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
   } catch (error) {
