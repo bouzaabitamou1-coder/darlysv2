@@ -48,7 +48,7 @@ serve(async (req) => {
         .gt("check_out", checkIn),
       supabaseAdmin
         .from("reservation_locks")
-        .select("id, session_id")
+        .select("id, session_id, expires_at")
         .eq("room_id", roomId)
         .gt("expires_at", new Date().toISOString())
         .lt("check_in", checkOut)
