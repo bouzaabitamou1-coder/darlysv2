@@ -856,6 +856,13 @@ export type Database = {
         Returns: number
       }
       cleanup_expired_locks: { Args: never; Returns: undefined }
+      get_room_unavailable_ranges: {
+        Args: { _room_id: string }
+        Returns: {
+          check_in: string
+          check_out: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

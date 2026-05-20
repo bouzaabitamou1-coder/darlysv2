@@ -113,25 +113,16 @@ const BookingPage = () => {
   // Fetch unavailable date ranges (existing bookings + active locks) for the selected room
   useEffect(() => {
     if (!room?.id) { setUnavailableRanges([]); return; }
-    const today = new Date().toISOString().split("T")[0];
     (async () => {
-      const [{ data: bookings }, { data: locks }] = await Promise.all([
-        supabase
-          .from("bookings")
-          .select("check_in, check_out")
-          .eq("room_id", room.id)
-          .in("status", ["pending", "confirmed"])
-          .gte("check_out", today),
-        supabase
-          .from("reservation_locks")
-          .select("check_in, check_out, expires_at")
-          .eq("room_id", room.id)
-          .gt("expires_at", new Date().toISOString()),
-      ]);
-      const ranges = [
-        ...(bookings ?? []).map((b: any) => ({ start: b.check_in, end: b.check_out })),
-        ...(locks ?? []).map((l: any) => ({ start: l.check_in, end: l.check_out })),
-      ];
+      const { data, error } = await supabase.rpc("get_room_unavailable_ranges", {
+        _room_id: room.id,
+      });
+      if (error) {
+        console.error("Failed to load unavailable ranges:", error);
+        setUnavailableRanges([]);
+        return;
+      }
+      const ranges = (data ?? []).map((r: any) => ({ start: r.check_in, end: r.check_out }));
       setUnavailableRanges(ranges);
     })();
   }, [room?.id]);
