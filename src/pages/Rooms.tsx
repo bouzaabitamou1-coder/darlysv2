@@ -6,6 +6,7 @@ import Layout from "@/components/layout/Layout";
 import SectionHeading from "@/components/ui/SectionHeading";
 import { supabase } from "@/integrations/supabase/client";
 import { photo, roomGallery, video } from "@/data/siteMedia";
+import { useCurrency } from "@/i18n/CurrencyContext";
 
 const fadeUp = {
   initial: { opacity: 0, y: 30 },
@@ -132,6 +133,7 @@ function RoomGallery({ images, altBase }: { images: string[]; altBase: string })
 const Rooms = () => {
   const [filter, setFilter] = useState<"All" | RoomCategory>("All");
   const [dbRooms, setDbRooms] = useState<{ id: string; slug: string; price_per_night: number; name: string }[]>([]);
+  const { format } = useCurrency();
 
   useEffect(() => {
     supabase
@@ -259,7 +261,7 @@ const Rooms = () => {
                         {db ? (
                           <>
                             <span className="text-sm text-muted-foreground font-body">From </span>
-                            <span className="text-2xl font-display font-bold text-gold">€{Number(db.price_per_night)}</span>
+                            <span className="text-2xl font-display font-bold text-gold">{format(Number(db.price_per_night))}</span>
                             <span className="text-sm text-muted-foreground font-body"> / night</span>
                           </>
                         ) : (

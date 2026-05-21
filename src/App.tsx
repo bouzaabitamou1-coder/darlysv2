@@ -5,6 +5,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/i18n/LanguageContext";
+import { CurrencyProvider } from "@/i18n/CurrencyContext";
 import { TenantProvider } from "@/contexts/TenantContext";
 import ScrollProgress from "@/components/layout/ScrollProgress";
 import Index from "./pages/Index";
@@ -44,6 +45,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <LanguageProvider>
+        <CurrencyProvider>
         <TenantProvider>
         <AuthProvider>
           <Sonner />
@@ -77,6 +79,7 @@ const App = () => (
           </BrowserRouter>
         </AuthProvider>
         </TenantProvider>
+        </CurrencyProvider>
       </LanguageProvider>
     </TooltipProvider>
   </QueryClientProvider>

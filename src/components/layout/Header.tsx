@@ -4,6 +4,7 @@ import { Menu, X, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/i18n/LanguageContext";
 import LanguageSwitcher from "./LanguageSwitcher";
+import CurrencySwitcher from "./CurrencySwitcher";
 
 const navLinks = [
   { key: "nav.home", path: "/" },
@@ -71,6 +72,7 @@ const Header = () => {
             ))}
             <div className="flex items-center gap-3 2xl:gap-4 shrink-0 pl-2 ml-1 border-l border-current/20">
               <LanguageSwitcher textColor={textColor} />
+              <CurrencySwitcher textColor={textColor} />
               <a href="tel:+212535366423" className={`inline-flex h-9 w-9 items-center justify-center ${textColor} opacity-70 hover:opacity-100 transition-opacity`}>
                 <Phone className="w-4 h-4" />
               </a>
@@ -82,6 +84,7 @@ const Header = () => {
 
           <div className="xl:hidden flex items-center gap-2">
             <LanguageSwitcher textColor={textColor} />
+            <CurrencySwitcher textColor={textColor} />
             <button
               onClick={() => setIsMobileOpen(!isMobileOpen)}
               className={`p-2 ${textColor}`}
