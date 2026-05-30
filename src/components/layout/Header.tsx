@@ -47,10 +47,10 @@ const Header = () => {
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${headerBg}`}>
-      <div className="container-luxury">
-        <div className="flex items-center justify-between h-20 lg:h-24 px-4 sm:px-6 lg:px-8">
-          <Link to="/" className="flex items-center gap-2 shrink-0 mr-6">
-            <span className={`text-2xl lg:text-3xl font-display font-bold tracking-wide whitespace-nowrap leading-none transition-colors duration-300 ${logoColor}`}>
+      <div className="w-full">
+        <div className="flex items-center justify-between h-20 lg:h-24 px-4 sm:px-6 lg:px-8 2xl:px-12 gap-6">
+          <Link to="/" className="flex items-center gap-2 shrink-0">
+            <span className={`text-2xl xl:text-2xl 2xl:text-3xl font-display font-bold tracking-wide whitespace-nowrap leading-none transition-colors duration-300 ${logoColor}`}>
               Dar Lys
             </span>
             <span className={`hidden sm:block xl:hidden text-xs tracking-[0.3em] uppercase font-body whitespace-nowrap transition-colors duration-300 ${textColor} opacity-60`}>
@@ -58,25 +58,25 @@ const Header = () => {
             </span>
           </Link>
 
-          <nav className="hidden xl:flex items-center gap-3 2xl:gap-4 flex-nowrap justify-end min-w-0">
+          <nav className="hidden xl:flex items-center gap-2 2xl:gap-4 flex-nowrap justify-end min-w-0">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`inline-flex items-center h-9 whitespace-nowrap text-[10px] 2xl:text-[11px] tracking-[0.08em] 2xl:tracking-[0.12em] uppercase font-body leading-none transition-all duration-300 hover:opacity-100 ${
+                className={`inline-flex items-center h-9 whitespace-nowrap text-[10px] 2xl:text-[11px] tracking-[0.06em] 2xl:tracking-[0.12em] uppercase font-body leading-none transition-all duration-300 hover:opacity-100 ${
                   location.pathname === link.path ? "opacity-100" : "opacity-70"
                 } ${textColor}`}
               >
                 {t(link.key)}
               </Link>
             ))}
-            <div className="flex items-center gap-3 2xl:gap-4 shrink-0 pl-2 ml-1 border-l border-current/20">
+            <div className="flex items-center gap-2 2xl:gap-4 shrink-0 pl-3 ml-2 border-l border-current/20">
               <LanguageSwitcher textColor={textColor} />
               <CurrencySwitcher textColor={textColor} />
-              <a href="tel:+212535366423" className={`inline-flex h-9 w-9 items-center justify-center ${textColor} opacity-70 hover:opacity-100 transition-opacity`}>
+              <a href="tel:+212535366423" className={`hidden 2xl:inline-flex h-9 w-9 items-center justify-center ${textColor} opacity-70 hover:opacity-100 transition-opacity`}>
                 <Phone className="w-4 h-4" />
               </a>
-              <Link to="/rooms" className="btn-luxury inline-flex items-center justify-center h-9 text-[10px] 2xl:text-xs py-0 px-4 2xl:px-6 whitespace-nowrap leading-none">
+              <Link to="/rooms" className="btn-luxury inline-flex items-center justify-center h-9 text-[10px] 2xl:text-xs py-0 px-3 2xl:px-6 whitespace-nowrap leading-none">
                 {t("cta.bookNow")}
               </Link>
             </div>
