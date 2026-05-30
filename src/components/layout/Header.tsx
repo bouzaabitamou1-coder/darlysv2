@@ -49,8 +49,8 @@ const Header = () => {
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${headerBg}`}>
       <div className="container-luxury">
         <div className="flex items-center justify-between h-20 lg:h-24 px-4 sm:px-6 lg:px-8">
-          <Link to="/" className="flex items-center gap-2">
-            <span className={`text-2xl lg:text-3xl font-display font-bold tracking-wide transition-colors duration-300 ${logoColor}`}>
+          <Link to="/" className="flex items-center gap-2 shrink-0">
+            <span className={`text-2xl lg:text-3xl font-display font-bold tracking-wide whitespace-nowrap transition-colors duration-300 ${logoColor}`}>
               Dar Lys
             </span>
             <span className={`hidden sm:block text-xs tracking-[0.3em] uppercase font-body transition-colors duration-300 ${textColor} opacity-60`}>
